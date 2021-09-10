@@ -39,6 +39,7 @@
 #include <getopt.h>
 #include "git.h"
 #include "Miner.h"
+#include "cuda/miner.h"
 
 #ifdef MINERCUDA
 #include "cuda/sha256.h"
@@ -231,9 +232,13 @@ int main(int argc, char* const argv[]) {
     }
   }
 #ifdef MINERCUDA
+  for (i = 0; i < MAX_GPUS; i++) {
+    device_map[i] = i;
+    device_name[i] = NULL;
+  }
   cuda_devicenames();
   cuda_print_devices();
-  if (gpu_id < 0 ) {
+  if (gpu_id < 0) {
     std::cerr << "unknown GPU ID" << std::endl;
     return usage();
   }

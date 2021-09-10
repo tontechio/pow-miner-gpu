@@ -71,10 +71,12 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
     if (options.token_) {
       break;
     }
+    if (options.expire_at && options.expire_at.value().is_in_past(td::Timestamp::now())) {
+      break;
+    }
   }
   if (options.hashes_computed) {
     *options.hashes_computed += i;
   }
-  init = false;
   return 0;
 }
