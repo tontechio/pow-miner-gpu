@@ -194,7 +194,7 @@ __global__ __launch_bounds__(256, 3) void bitcredit_gpu_hash(uint32_t cpu_id, ui
   uint32_t rdata01 = c_data[1] & ~(0xff) | (uint8_t)(expired >> 24);
   uint32_t rdata02 = (expired << 8) & ~(0xff) | (uint8_t)(c_data[2]);
 
-  uint32_t rdata10 = c_data[10] | (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 0];
+  uint32_t rdata10 = c_data[10] & ~(0xff) | (uint8_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 0];
   uint32_t rdata11 = (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 1] << 24 |
                      (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 2] << 16 |
                      (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 3] << 8 |
@@ -221,7 +221,7 @@ __global__ __launch_bounds__(256, 3) void bitcredit_gpu_hash(uint32_t cpu_id, ui
   uint32_t rdata17 = (uint32_t)(rdata1 >> 24);
   uint32_t rdata18 = (uint32_t)(rdata1 << 8) & ~(0xff) | (uint8_t)(c_data[18]);
 
-  uint32_t rdata22 = c_data[22] | (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 0];
+  uint32_t rdata22 = c_data[22] & ~(0xff) | (uint8_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 0];
   uint32_t rdata23 = rdata11;
   uint32_t rdata24 = rdata12;
   uint32_t rdata25 = rdata13;

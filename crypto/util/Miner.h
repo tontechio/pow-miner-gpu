@@ -39,6 +39,7 @@ class Miner {
     std::atomic<td::uint64>* hashes_computed{nullptr};
     td::CancellationToken token_;
     td::int32 gpu_id;
+    td::int32 threads;
   };
 
   static td::optional<std::string> run(const Options& options, const int thread_id);

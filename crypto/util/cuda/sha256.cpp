@@ -24,15 +24,15 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
 
   // mine
   if (device_name[options.gpu_id] == NULL) {
-    std::cout << "GPU #" << options.gpu_id << " not found!" << std::endl;
+    std::cout << "not found!" << std::endl;
     exit(4);
   }
   int rc = scanhash_credits(options.gpu_id, cpu_id, H, options, pdata, target, options.max_iterations, rdata);
 
   // found
   if (rc != 0) {
-    std::cout << cpu_id << ": "
-              << "FOUND! nonce=" << pdata[0] << " vcpu=" << pdata[1] << " expired=" << pdata[2] << std::endl;
+    std::cout << "FOUND! GPU ID: " << options.gpu_id << ", CPU thread: " << cpu_id << ", VCPU: " << pdata[1]
+              << ", nonce=" << pdata[0] << ", expired=" << pdata[2] << std::endl;
 
     //    std::cout << cpu_id << ": "<< "rdata[" << pdata[1] << "]: ";
     //    for (int i = 0; i < 32; i++) {

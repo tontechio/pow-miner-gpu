@@ -199,6 +199,6 @@ void cuda_reset_device(int thr_id, bool *init) {
 void cudaReportHardwareFailure(int thr_id, cudaError_t err, const char *func) {
   struct cgpu_info *gpu = &thr_info[thr_id].gpu;
   gpu->hw_errors++;
-  std::cerr << "GPU #" << device_map[thr_id] << ": " << func << " " << cudaGetErrorString(err) << std::endl;
+  std::cerr << "[ GPU #" << device_map[thr_id] << ": " << func << " " << cudaGetErrorString(err) << " ]" << std::endl;
   sleep(1);
 }

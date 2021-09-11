@@ -9,12 +9,11 @@
 
 extern void bitcredit_setBlockTarget(uint32_t cpu_id, unsigned char *data, const void *ptarget, unsigned char *rdata);
 extern void bitcredit_cpu_init(uint32_t gpu_id, uint32_t cpu_id, uint64_t threads);
-extern HashResult bitcredit_cpu_hash(uint32_t gpu_id, uint32_t cpu_id, uint64_t threads, uint64_t startNounce, uint32_t expired);
+extern HashResult bitcredit_cpu_hash(uint32_t gpu_id, uint32_t cpu_id, uint64_t threads, uint64_t startNounce,
+                                     uint32_t expired);
 
-static bool init = false;
-
-extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const ton::Miner::Options &options, uint64_t *pdata,
-                                const uint32_t *ptarget, uint64_t max_nonce, unsigned char *rdata) {
+extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const ton::Miner::Options &options,
+                                uint64_t *pdata, const uint32_t *ptarget, uint64_t max_nonce, unsigned char *rdata) {
   td::Slice data = H.as_slice();
   constexpr size_t prefix_size = 72;
   td::Slice head = data.substr(0, prefix_size);
@@ -22,19 +21,13 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
   char guard = head.back();
 
   // throughput
-  td::uint64 throughput = device_intensity(gpu_id, __func__, 1U << 25); // 256*256*64*8
+  td::uint64 throughput = device_intensity(gpu_id, __func__, 1U << 25);  // 256*256*64*8
+  throughput = (td::uint64)(throughput/options.threads/32) * 32;
   if (options.max_iterations < throughput) {
     throughput = options.max_iterations;
   }
-  std::cout << cpu_id << ": " << "GPU throughput: " << throughput << ", VCPUS: " << MAX_VCPUS << std::endl;
-
-  // cuda device
-  if (!init) {
-    cudaSetDevice(device_map[gpu_id]);
-    cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
-    cudaDeviceSetCacheConfig(cudaFuncCachePreferL1);
-    init = true;
-  }
+  std::cout << "[ GPU ID: " << gpu_id << ", CPU thread: " << cpu_id << ", VCPUS: " << MAX_VCPUS
+            << ", throughput: " << throughput << " ]" << std::endl;
 
   // allocate mem
   bitcredit_cpu_init(gpu_id, cpu_id, throughput);

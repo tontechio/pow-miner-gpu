@@ -44,11 +44,11 @@
 #ifdef MINERCUDA
 #include "cuda/sha256.h"
 #include "cuda/cuda.hpp"
-#define MAX_THREADS 2016
+#include "cuda/cuda_helper.h"
+#define MAX_THREADS 128
 #else
 #define MAX_THREADS 256
 #endif
-
 
 const char* progname;
 
@@ -102,6 +102,8 @@ block::StdAddress miner_address;
 int verbosity = 0;
 std::atomic<td::uint64> hashes_computed{0};
 td::Timestamp start_at;
+td::CancellationTokenSource token;
+bool boc_created = false;
 
 void print_stats() {
   auto passed = td::Timestamp::now().at() - start_at.at();
@@ -133,13 +135,8 @@ int found(td::Slice data) {
               << std::endl;
     td::write_file(boc_filename, boc).ensure();
   }
-  if (verbosity > 0) {
-    print_stats();
-  }
-#ifdef MINERCUDA
-  cuda_shutdown();
-#endif
-  std::exit(0);
+  token.cancel();
+  boc_created = true;
   return 0;
 }
 
@@ -151,6 +148,9 @@ void miner(const ton::Miner::Options& options, const int thread_id) {
 #endif
   if (res) {
     found(res.value());
+    // exit immediately, won't wait for all threads to terminate
+    // note: this action causes the cuda error in func 'bitcredit_cpu_hash' at line 467 : driver shutting down.
+    //std::exit(0);
   }
 }
 
@@ -197,6 +197,7 @@ int main(int argc, char* const argv[]) {
       case 'w':
         threads = atoi(optarg);
         CHECK(threads > 0 && threads <= MAX_THREADS);
+        options.threads = threads;
         break;
 #ifdef MINERCUDA
       case 'g':
@@ -243,7 +244,14 @@ int main(int argc, char* const argv[]) {
     return usage();
   }
   options.gpu_id = gpu_id;
+  // init cuda device
+  cudaSetDevice(device_map[gpu_id]);
+  cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
+  cudaDeviceSetCacheConfig(cudaFuncCachePreferL1);
+  std::atexit(cuda_shutdown);
 #endif
+
+  options.token_ = token.get_cancellation_token();
 
   if (benchmark && argc == optind) {
     td::bench(MinerBench(gpu_id));
@@ -296,8 +304,7 @@ int main(int argc, char* const argv[]) {
   if (verbosity > 0) {
     print_stats();
   }
-#ifdef MINERCUDA
-  cuda_shutdown();
-#endif
-  std::exit(1);
+  if (!boc_created) {
+    std::exit(1);
+  }
 }

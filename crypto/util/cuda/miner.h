@@ -18,9 +18,9 @@ extern struct thr_info *thr_info;
 typedef unsigned char uchar;
 
 #define MAX_GPUS 16
-#define MAX_CPUS 2016
+#define MAX_CPUS 128
 #ifndef MAX_VCPUS
-#define MAX_VCPUS 1
+#define MAX_VCPUS 8
 #endif
 extern char *device_name[MAX_GPUS];
 extern short device_map[MAX_GPUS];
