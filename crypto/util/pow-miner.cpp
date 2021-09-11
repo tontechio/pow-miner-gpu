@@ -142,6 +142,11 @@ int found(td::Slice data) {
 
 void miner(const ton::Miner::Options& options, const int thread_id) {
 #ifdef MINERCUDA
+  // init cuda device for thread
+  cudaSetDevice(options.gpu_id);
+  cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
+  cudaDeviceSetCacheConfig(cudaFuncCachePreferL1);
+
   auto res = ton::MinerCuda::run(options, thread_id);
 #else
   auto res = ton::Miner::run(options, thread_id);
@@ -244,10 +249,6 @@ int main(int argc, char* const argv[]) {
     return usage();
   }
   options.gpu_id = gpu_id;
-  // init cuda device
-  cudaSetDevice(device_map[gpu_id]);
-  cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
-  cudaDeviceSetCacheConfig(cudaFuncCachePreferL1);
   std::atexit(cuda_shutdown);
 #endif
 
