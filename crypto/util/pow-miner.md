@@ -49,7 +49,7 @@ To use CUDA on your system, you will need the following installed:
     export CUDA_HOME=/usr/local/cuda
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64
     export PATH=$PATH:$CUDA_HOME/bin
-    cmake -DCMAKE_BUILD_TYPE=Release -DMINERCUDA=true /usr/src/ton
+    cmake -DCMAKE_BUILD_TYPE=Release -DMINERCUDA=true /usr/src/pow-miner-gpu
     make -j 8 pow-miner pow-miner-cuda lite-client
     ```
 
