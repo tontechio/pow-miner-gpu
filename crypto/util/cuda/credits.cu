@@ -7,7 +7,8 @@
 #include "td/utils/Slice-decl.h"
 #include "td/utils/misc.h"
 
-extern void bitcredit_setBlockTarget(uint32_t cpu_id, unsigned char *data, const void *ptarget, unsigned char *rdata);
+extern bool bitcredit_setBlockTarget(uint32_t gpu_id, uint32_t cpu_id, unsigned char *data, const void *ptarget,
+                                     unsigned char *rdata);
 extern void bitcredit_cpu_init(uint32_t gpu_id, uint32_t cpu_id, uint64_t threads);
 extern HashResult bitcredit_cpu_hash(uint32_t gpu_id, uint32_t cpu_id, uint64_t threads, uint64_t startNounce,
                                      uint32_t expired);
@@ -22,9 +23,6 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
 
   // throughput
   td::uint64 throughput = device_intensity(gpu_id, __func__, 1U << 25);  // 256*256*64*8
-  if (options.threads > 32) {
-    throughput = ((td::uint64)(throughput/(options.threads/32)/32)) * 32;
-  }
   if (options.max_iterations < throughput) {
     throughput = options.max_iterations;
   }
@@ -38,7 +36,9 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
   // std::cout << "data: " << hex_encode(data) << std::endl;
   unsigned char input[123], complexity[32];
   memcpy(input, data.ubegin(), data.size());
-  bitcredit_setBlockTarget(cpu_id, input, options.complexity.data(), rdata);
+  if (bitcredit_setBlockTarget(gpu_id, cpu_id, input, options.complexity.data(), rdata) == false) {
+    return 0;
+  }
 
   uint32_t expired;
   td::int64 i = 0;

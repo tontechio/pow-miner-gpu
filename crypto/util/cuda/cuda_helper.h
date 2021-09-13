@@ -36,7 +36,7 @@ extern uint32_t cuda_check_hash(int thr_id, uint32_t threads, uint32_t startNoun
 extern uint32_t cuda_check_hash_suppl(int thr_id, uint32_t threads, uint32_t startNounce, uint32_t *d_inputHash,
                                       uint8_t numNonce);
 extern cudaError_t MyStreamSynchronize(cudaStream_t stream, int situation, int thr_id);
-extern void cudaReportHardwareFailure(int thr_id, cudaError_t error, const char *func);
+extern void cudaReportHardwareFailure(int gpu_id, cudaError_t error, const char *func);
 extern __device__ __device_builtin__ void __syncthreads(void);
 extern __device__ __device_builtin__ void __threadfence(void);
 
@@ -171,7 +171,7 @@ __device__ __host__ __forceinline__ void xchg(uint32_t &x, uint32_t &y) {
   do {                                                      \
     cudaError_t err = call;                                 \
     if (cudaSuccess != err) {                               \
-      cudaReportHardwareFailure(thr_id, err, __FUNCTION__); \
+      cudaReportHardwareFailure(gpu_id, err, __FUNCTION__); \
       return;                                               \
     }                                                       \
   } while (0)
@@ -180,7 +180,7 @@ __device__ __host__ __forceinline__ void xchg(uint32_t &x, uint32_t &y) {
   do {                                                      \
     cudaError_t err = call;                                 \
     if (cudaSuccess != err) {                               \
-      cudaReportHardwareFailure(thr_id, err, __FUNCTION__); \
+      cudaReportHardwareFailure(gpu_id, err, __FUNCTION__); \
       return ret;                                           \
     }                                                       \
   } while (0)

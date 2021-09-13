@@ -126,9 +126,9 @@ int cuda_finddevice(char *name) {
   return -1;
 }
 
-uint32_t device_intensity(int thr_id, const char *func, uint32_t defcount) {
-  uint32_t throughput = gpus_intensity[thr_id] ? gpus_intensity[thr_id] : defcount;
-//  api_set_throughput(thr_id, throughput);
+uint32_t device_intensity(int gpu_id, const char *func, uint32_t defcount) {
+  uint32_t throughput = gpus_intensity[gpu_id] ? gpus_intensity[gpu_id] : defcount;
+//  api_set_throughput(gpu_id, throughput);
   return throughput;
 }
 
@@ -137,7 +137,7 @@ uint32_t device_intensity(int thr_id, const char *func, uint32_t defcount) {
 typedef struct {
   double value[8];
 } tsumarray;
-cudaError_t MyStreamSynchronize(cudaStream_t stream, int situation, int thr_id) {
+cudaError_t MyStreamSynchronize(cudaStream_t stream, int situation, int gpu_id) {
   cudaError_t result = cudaSuccess;
   if (situation >= 0) {
     static std::map<int, tsumarray> tsum;
@@ -149,7 +149,7 @@ cudaError_t MyStreamSynchronize(cudaStream_t stream, int situation, int thr_id) 
     }  // faster initial convergence
 
     double tsync = 0.0;
-    double tsleep = 0.95 * tsum[situation].value[thr_id];
+    double tsleep = 0.95 * tsum[situation].value[gpu_id];
     if (cudaStreamQuery(stream) == cudaErrorNotReady) {
       usleep((useconds_t)(1e6 * tsleep));
       struct timeval tv_start, tv_end;
@@ -159,7 +159,7 @@ cudaError_t MyStreamSynchronize(cudaStream_t stream, int situation, int thr_id) 
       tsync = 1e-6 * (tv_end.tv_usec - tv_start.tv_usec) + (tv_end.tv_sec - tv_start.tv_sec);
     }
     if (tsync >= 0)
-      tsum[situation].value[thr_id] = a * tsum[situation].value[thr_id] + b * (tsleep + tsync);
+      tsum[situation].value[gpu_id] = a * tsum[situation].value[gpu_id] + b * (tsleep + tsync);
   } else
     result = cudaStreamSynchronize(stream);
   return result;
@@ -177,8 +177,8 @@ int cuda_gpu_clocks(struct cgpu_info *gpu) {
 }
 
 // if we use 2 threads on the same gpu, we need to reinit the threads
-void cuda_reset_device(int thr_id, bool *init) {
-  int dev_id = device_map[thr_id];
+void cuda_reset_device(int gpu_id, bool *init) {
+  int dev_id = device_map[gpu_id];
   cudaSetDevice(dev_id);
   if (init != NULL) {
     // with init array, its meant to be used in algo's scan code...
@@ -196,9 +196,6 @@ void cuda_reset_device(int thr_id, bool *init) {
   cudaDeviceReset();
 }
 
-void cudaReportHardwareFailure(int thr_id, cudaError_t err, const char *func) {
-  struct cgpu_info *gpu = &thr_info[thr_id].gpu;
-  gpu->hw_errors++;
-  std::cerr << "[ GPU #" << device_map[thr_id] << ": " << func << " " << cudaGetErrorString(err) << " ]" << std::endl;
-  sleep(1);
+void cudaReportHardwareFailure(int gpu_id, cudaError_t err, const char *func) {
+  std::cerr << "[ GPU #" << device_map[gpu_id] << ": " << func << " " << cudaGetErrorString(err) << " ]" << std::endl;
 }
