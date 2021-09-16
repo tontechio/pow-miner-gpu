@@ -43,7 +43,7 @@ To use OpenCL on your system, you will need the following installed:
    
    a) CUDA Toolkit and Driver: [https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)
 
-   b) OpenCL SDK from your favourite vendor
+   b) OpenCL SDK from your favourite vendor. If you don't know which one you need, start from here: [https://github.com/KhronosGroup/OpenCL-SDK](https://github.com/KhronosGroup/OpenCL-SDK)
 
 
 4. Clone repository:
