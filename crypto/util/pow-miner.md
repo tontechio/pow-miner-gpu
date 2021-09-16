@@ -97,7 +97,7 @@ This is a GPU-miner compatible with Nvidia hardware. Can be used in multi-GPU en
 to see the list of available GPUs in the system.
 
 ```shell
-usage: crypto/pow-miner-cuda [-v][-B][-w<threads>][-g<gpu-id>][-G<gpu-threads>] [-t<timeout>] <my-address> <pow-seed> <pow-complexity> <iterations> [<miner-addr> <output-ext-msg-boc>] [-V]
+usage: crypto/pow-miner-cuda [-v][-B][-g<gpu-id>][-G<gpu-threads>] [-t<timeout>] <my-address> <pow-seed> <pow-complexity> <iterations> [<miner-addr> <output-ext-msg-boc>] [-V]
 Outputs a valid <rdata> value for proof-of-work testgiver after computing at most <iterations> hashes or terminates with non-zero exit code
 ```
 
@@ -107,7 +107,7 @@ This is a GPU-miner compatible with AMD hardware. Can be used in multi-GPU envir
 to see the list of available GPUs in the system.
 
 ```shell
-usage: crypto/pow-miner-cuda [-v][-B][-w<threads>][-g<gpu-id>][-G<gpu-threads>] [-t<timeout>] <my-address> <pow-seed> <pow-complexity> <iterations> [<miner-addr> <output-ext-msg-boc>] [-V]
+usage: crypto/pow-miner-cuda [-v][-B][-g<gpu-id>][-G<gpu-threads>] [-t<timeout>] <my-address> <pow-seed> <pow-complexity> <iterations> [<miner-addr> <output-ext-msg-boc>] [-V]
 Outputs a valid <rdata> value for proof-of-work testgiver after computing at most <iterations> hashes or terminates with non-zero exit code
 ```
 

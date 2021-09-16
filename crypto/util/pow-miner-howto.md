@@ -1,14 +1,13 @@
 # GPU miner how-to
 
-Invoke the pow-miner-cuda utility as follows:
+Invoke the pow-miner-cuda (pow-miner-opencl) utility as follows:
 
 ```
-$ crypto/pow-miner-cuda -vv -w<num-threads> -g<gpu-id> -G<gpu-threads> -t<timeout-in-sec> <your-wallet-address> <seed> <complexity> <iterations> <pow-giver-address> <boc-filename>
+$ crypto/pow-miner-cuda -vv -g<gpu-id> -G<gpu-threads> -t<timeout-in-sec> <your-wallet-address> <seed> <complexity> <iterations> <pow-giver-address> <boc-filename>
 ```
 
 Here:
 
-- `num-threads`: the number of threads that you want to use for mining, each running thread emulates 8 CPU cores
 - `gpu-id`: GPU device ID
 - `gpu-threads`: the number of virtual CPU cores simultaneously hashed in a GPU kernel
 - `timeout-in-sec`: max amount of seconds that the miner would run before admitting failure
@@ -21,7 +20,7 @@ For example, if you have one GPU device and your wallet address is `kQBWkNKqzCAw
 
 ```
 $ crypto/pow-miner-cuda \
- -vv -g 0 -G 16 -w 1 -t 43200 \
+ -vv -g 0 -G 16 -t 43200 \
  kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 \
  229760179690128740373110445116482216837 \
  53919893334301279589334030174039261347274288845081144962207220498432 \
@@ -35,7 +34,7 @@ The program will run at least 100000000000 iterations in total (distributed to a
 ## Example
 
 ```
-$ crypto/pow-miner-cuda -vv -g 0 -G 16 -w 1 -t 43200 kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 229760179690128740373110445116482216837 53919893334301279589334030174039261347274288845081144962207220498432 100000000000 kf-kkdY_B7p-77TLn2hUhM6QidWrrsl8FYWCIvBMpZKprBtN mined.boc
+$ crypto/pow-miner-cuda -vv -g 0 -G 16 -t 43200 kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 229760179690128740373110445116482216837 53919893334301279589334030174039261347274288845081144962207220498432 100000000000 kf-kkdY_B7p-77TLn2hUhM6QidWrrsl8FYWCIvBMpZKprBtN mined.boc
 GPU #0: SM 6.1 NVIDIA GeForce GTX 1080
 [ expected required hashes for success: 2147483648 ]
 [ GPU ID: 0, CPU thread: 0, GPU threads: 16, throughput: 33554432 ]

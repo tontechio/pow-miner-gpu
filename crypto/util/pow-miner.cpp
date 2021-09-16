@@ -207,7 +207,7 @@ int main(int argc, char* const argv[]) {
   ton::Miner::Options options;
 
   progname = argv[0];
-  int i, threads, gpu_threads, gpu_id = -1;
+  int i, threads = 1, gpu_threads, gpu_id = -1;
   bool bounce = false, benchmark = false;
   while ((i = getopt(argc, argv, "bnvw:g:G:t:Bh:V")) != -1) {
     switch (i) {
@@ -215,8 +215,10 @@ int main(int argc, char* const argv[]) {
         ++verbosity;
         break;
       case 'w':
+#if !defined MINERCUDA && !defined MINEROPENCL
         threads = atoi(optarg);
-        CHECK(threads > 0 && threads <= 1);  // MAX_THREADS
+        CHECK(threads > 0 && threads <= 256); // MAX_THREADS
+#endif
         options.threads = threads;
         break;
 #if defined MINERCUDA || defined MINEROPENCL
