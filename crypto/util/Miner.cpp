@@ -25,7 +25,7 @@
 #include <openssl/sha.h>
 
 namespace ton {
-td::optional<std::string> Miner::run(const Options& options, const int thread_id) {
+td::optional<std::string> Miner::run(const Options &options, const int thread_id) {
   HDataEnv H;
   H.init(options.my_address, td::Slice(options.seed.data(), options.seed.size()));
 
@@ -35,7 +35,7 @@ td::optional<std::string> Miner::run(const Options& options, const int thread_id
   constexpr size_t prefix_size = 72;
   constexpr size_t guard_pos = prefix_size - (72 - 28);
   CHECK(0 <= guard_pos && guard_pos < 32);
-  size_t got_prefix_size = (const unsigned char*)H.body.rdata1 + guard_pos + 1 - (const unsigned char*)&H;
+  size_t got_prefix_size = (const unsigned char *)H.body.rdata1 + guard_pos + 1 - (const unsigned char *)&H;
   CHECK(prefix_size == got_prefix_size);
 
   auto head = data.substr(0, prefix_size);
@@ -81,5 +81,45 @@ td::optional<std::string> Miner::run(const Options& options, const int thread_id
     *options.hashes_computed += i - i0;
   }
   return {};
+}
+
+td::optional<std::string> build_mine_result(int cpu_id, ton::HDataEnv H, const ton::Miner::Options &options,
+                                            unsigned char *rdata, uint64_t nonce, uint64_t vcpu, uint32_t expired) {
+  std::cout << "FOUND! GPU ID: " << options.gpu_id << ", CPU thread: " << cpu_id << ", GPU thread: " << vcpu
+            << ", nonce=" << nonce << ", expired=" << expired << std::endl;
+
+  //    std::cout << cpu_id << ": "<< "rdata[" << vcpu << "]: ";
+  //    for (int i = 0; i < 32; i++) {
+  //      printf("%02x", rdata[32 * vcpu + i]);
+  //    }
+  //    std::cout << std::endl;
+
+  // read last 8 bytes of rdata1
+  uint64_t rdata1 = (uint64_t)rdata[32 * vcpu + 24] << (8 * 7) | (uint64_t)rdata[32 * vcpu + 25] << (8 * 6) |
+                    (uint64_t)rdata[32 * vcpu + 26] << (8 * 5) | (uint64_t)rdata[32 * vcpu + 27] << (8 * 4) |
+                    (uint64_t)rdata[32 * vcpu + 28] << (8 * 3) | (uint64_t)rdata[32 * vcpu + 29] << (8 * 2) |
+                    (uint64_t)rdata[32 * vcpu + 30] << (8 * 1) | (uint64_t)rdata[32 * vcpu + 31];
+
+  rdata1 += nonce;  // add nonce
+
+  // write rdata1
+  for (int i = 0; i <= 23; i++) {
+    H.body.rdata1[i] = rdata[32 * vcpu + i];
+  }
+  H.body.rdata1[24] = (uint8_t)(rdata1 >> 7 * 8);
+  H.body.rdata1[25] = (uint8_t)(rdata1 >> 6 * 8);
+  H.body.rdata1[26] = (uint8_t)(rdata1 >> 5 * 8);
+  H.body.rdata1[27] = (uint8_t)(rdata1 >> 4 * 8);
+  H.body.rdata1[28] = (uint8_t)(rdata1 >> 3 * 8);
+  H.body.rdata1[29] = (uint8_t)(rdata1 >> 2 * 8);
+  H.body.rdata1[30] = (uint8_t)(rdata1 >> 1 * 8);
+  H.body.rdata1[31] = (uint8_t)(rdata1);
+  // write back rdata2
+  std::memcpy(H.body.rdata2, H.body.rdata1, 32);
+
+  // set expire
+  H.body.set_expire(expired);
+
+  return H.body.as_slice().str();
 }
 }  // namespace ton

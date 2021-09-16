@@ -313,7 +313,7 @@ if(MINERCUDA)
   find_package(CUDA REQUIRED)
   include_directories("${CUDA_INCLUDE_DIRS}")
 
-  add_library(pow-miner-cuda-lib util/MinerCuda.cpp util/Miner.h util/cuda/miner.h util/cuda/sha256.cpp util/cuda/sha256.h
+  add_library(pow-miner-cuda-lib util/Miner.cpp util/MinerCuda.cpp util/Miner.h util/cuda/miner.h util/cuda/sha256.cpp util/cuda/sha256.h
     util/cuda/cuda.hpp util/cuda/cuda.cpp util/cuda/cuda_vector.h util/cuda/credits.cu util/cuda/cuda_credits.cu)
   target_include_directories(pow-miner-cuda-lib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
   target_link_libraries(pow-miner-cuda-lib PUBLIC ton_crypto ton_block ${CUDA_LIBRARIES})
@@ -321,6 +321,17 @@ if(MINERCUDA)
   add_executable(pow-miner-cuda util/pow-miner.cpp)
   target_compile_definitions(pow-miner-cuda PRIVATE MINERCUDA=${MINERCUDA})
   target_link_libraries(pow-miner-cuda PRIVATE ton_crypto ton_block pow-miner-cuda-lib git)
+endif()
+
+if(MINEROPENCL)
+  add_library(pow-miner-opencl-lib util/Miner.cpp util/MinerOpenCL.cpp util/Miner.h util/opencl/miner.h util/opencl/opencl_helper.h
+          util/opencl/opencl.h util/opencl/opencl.cpp util/opencl/sha256.cpp util/opencl/sha256.h)
+  target_include_directories(pow-miner-opencl-lib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+  target_link_libraries(pow-miner-opencl-lib PUBLIC ton_crypto ton_block "-framework OpenCL")
+
+  add_executable(pow-miner-opencl util/pow-miner.cpp)
+  target_compile_definitions(pow-miner-opencl PRIVATE MINEROPENCL=${MINEROPENCL})
+  target_link_libraries(pow-miner-opencl PRIVATE ton_crypto ton_block pow-miner-opencl-lib git)
 endif()
 
 add_library(pow-miner-lib util/Miner.cpp util/Miner.h)

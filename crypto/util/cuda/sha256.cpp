@@ -31,42 +31,7 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
 
   // found
   if (rc != 0) {
-    std::cout << "FOUND! GPU ID: " << options.gpu_id << ", CPU thread: " << cpu_id << ", VCPU: " << pdata[1]
-              << ", nonce=" << pdata[0] << ", expired=" << pdata[2] << std::endl;
-
-    //    std::cout << cpu_id << ": "<< "rdata[" << pdata[1] << "]: ";
-    //    for (int i = 0; i < 32; i++) {
-    //      printf("%02x", rdata[32 * pdata[1] + i]);
-    //    }
-    //    std::cout << std::endl;
-
-    // read last 8 bytes of rdata1
-    uint64_t rdata1 = (uint64_t)rdata[32 * pdata[1] + 24] << (8 * 7) | (uint64_t)rdata[32 * pdata[1] + 25] << (8 * 6) |
-                      (uint64_t)rdata[32 * pdata[1] + 26] << (8 * 5) | (uint64_t)rdata[32 * pdata[1] + 27] << (8 * 4) |
-                      (uint64_t)rdata[32 * pdata[1] + 28] << (8 * 3) | (uint64_t)rdata[32 * pdata[1] + 29] << (8 * 2) |
-                      (uint64_t)rdata[32 * pdata[1] + 30] << (8 * 1) | (uint64_t)rdata[32 * pdata[1] + 31];
-
-    rdata1 += pdata[0];  // add nonce
-
-    // write rdata1
-    for (int i = 0; i <= 23; i++) {
-      H.body.rdata1[i] = rdata[32 * pdata[1] + i];
-    }
-    H.body.rdata1[24] = (uint8_t)(rdata1 >> 7 * 8);
-    H.body.rdata1[25] = (uint8_t)(rdata1 >> 6 * 8);
-    H.body.rdata1[26] = (uint8_t)(rdata1 >> 5 * 8);
-    H.body.rdata1[27] = (uint8_t)(rdata1 >> 4 * 8);
-    H.body.rdata1[28] = (uint8_t)(rdata1 >> 3 * 8);
-    H.body.rdata1[29] = (uint8_t)(rdata1 >> 2 * 8);
-    H.body.rdata1[30] = (uint8_t)(rdata1 >> 1 * 8);
-    H.body.rdata1[31] = (uint8_t)(rdata1);
-    // write back rdata2
-    std::memcpy(H.body.rdata2, H.body.rdata1, 32);
-
-    // set expire
-    H.body.set_expire((uint32_t)pdata[2]);
-
-    return H.body.as_slice().str();
+    return ton::build_mine_result(cpu_id, H, options, rdata, pdata[0], pdata[1], (uint32_t)pdata[2]);
   }
   return {};
 }

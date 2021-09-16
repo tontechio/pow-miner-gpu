@@ -40,12 +40,18 @@ class Miner {
     td::CancellationToken token_;
     td::int32 gpu_id;
     td::int32 threads;
+    td::uint32 gpu_threads = 8;
   };
 
   static td::optional<std::string> run(const Options& options, const int thread_id);
 };
 
 class MinerCuda : public Miner {
+ public:
+  static td::optional<std::string> run(const Options& options, const int thread_id);
+};
+
+class MinerOpenCL : public Miner {
  public:
   static td::optional<std::string> run(const Options& options, const int thread_id);
 };
@@ -97,4 +103,7 @@ struct HDataEnv {
 
 static_assert(std::is_trivially_copyable<HDataEnv>::value, "HDataEnv must be a trivial type");
 #pragma pack(pop)
+
+td::optional<std::string> build_mine_result(int cpu_id, HDataEnv H, const ton::Miner::Options& options,
+                                            unsigned char* rdata, uint64_t nonce, uint64_t vcpu, uint32_t expired);
 }  // namespace ton

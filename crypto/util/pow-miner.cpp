@@ -39,13 +39,21 @@
 #include <getopt.h>
 #include "git.h"
 #include "Miner.h"
-#include "cuda/miner.h"
 
-#ifdef MINERCUDA
+#if defined MINERCUDA
+#include "cuda/miner.h"
 #include "cuda/sha256.h"
 #include "cuda/cuda.hpp"
 #include "cuda/cuda_helper.h"
-#define MAX_THREADS 128
+#endif
+
+#if defined MINEROPENCL
+#include "opencl/miner.h"
+#include "opencl/sha256.h"
+#endif
+
+#if defined MINERCUDA || defined MINEROPENCL
+#define MAX_THREADS 1
 #else
 #define MAX_THREADS 256
 #endif
@@ -55,8 +63,9 @@ const char* progname;
 int usage() {
   std::cerr << "usage: " << progname
             << " [-v][-B][-w<threads>]"
-#ifdef MINERCUDA
+#if defined MINERCUDA || defined MINEROPENCL
                "[-g<gpu-id>]"
+               "[-T<gpu-threads>]"
 #endif
                " [-t<timeout>] <my-address> <pow-seed> <pow-complexity> <iterations> "
                "[<miner-addr> <output-ext-msg-boc>] [-V]\n"
@@ -141,13 +150,15 @@ int found(td::Slice data) {
 }
 
 void miner(const ton::Miner::Options& options, const int thread_id) {
-#ifdef MINERCUDA
+#if defined MINERCUDA
   // init cuda device for thread
   cudaSetDevice(options.gpu_id);
   cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
   cudaDeviceSetCacheConfig(cudaFuncCachePreferL1);
 
   auto res = ton::MinerCuda::run(options, thread_id);
+#elif defined MINEROPENCL
+  auto res = ton::MinerOpenCL::run(options, thread_id);
 #else
   auto res = ton::Miner::run(options, thread_id);
 #endif
@@ -174,10 +185,13 @@ class MinerBench : public td::Benchmark {
     options.my_address.parse_addr("EQDU86V5wyPrLd4nQ0RHPcCLPZq_y1O5wFWyTsMw63vjXTOv");
     std::fill(options.seed.begin(), options.seed.end(), 0xa7);
     std::fill(options.complexity.begin(), options.complexity.end(), 0);
-#ifdef MINERCUDA
-    options.max_iterations = 0xfffffff;
     options.gpu_id = gpu_id_;
+#if defined MINERCUDA
+    options.max_iterations = 0xfffffff;
     CHECK(!ton::MinerCuda::run(options, 0));  // same thread_id for all runs
+#elif defined MINEROPENCL
+    options.max_iterations = 0xfffffff;
+    CHECK(!ton::MinerOpenCL::run(options, 0));
 #else
     options.max_iterations = n;
     CHECK(!ton::Miner::run(options, 0));
@@ -192,22 +206,27 @@ int main(int argc, char* const argv[]) {
   ton::Miner::Options options;
 
   progname = argv[0];
-  int i, threads = 0, gpu_id = -1;
+  int i, threads, gpu_threads, gpu_id = -1;
   bool bounce = false, benchmark = false;
-  while ((i = getopt(argc, argv, "bnvw:g:t:Bh:V")) != -1) {
+  while ((i = getopt(argc, argv, "bnvw:g:G:t:Bh:V")) != -1) {
     switch (i) {
       case 'v':
         ++verbosity;
         break;
       case 'w':
         threads = atoi(optarg);
-        CHECK(threads > 0 && threads <= MAX_THREADS);
+        CHECK(threads > 0 && threads <= 1);  // MAX_THREADS
         options.threads = threads;
         break;
-#ifdef MINERCUDA
+#if defined MINERCUDA || defined MINEROPENCL
       case 'g':
         gpu_id = atoi(optarg);
         CHECK(gpu_id >= 0 && gpu_id <= 16);
+        break;
+      case 'G':
+        gpu_threads = atoi(optarg);
+        CHECK(gpu_threads >= 0 && gpu_threads <= 1792);  // MAX_GPU_THREADS
+        options.gpu_threads = gpu_threads;
         break;
 #endif
       case 't': {
@@ -237,7 +256,7 @@ int main(int argc, char* const argv[]) {
         return usage();
     }
   }
-#ifdef MINERCUDA
+#if defined MINERCUDA
   for (i = 0; i < MAX_GPUS; i++) {
     device_map[i] = i;
     device_name[i] = NULL;
@@ -248,10 +267,14 @@ int main(int argc, char* const argv[]) {
     std::cerr << "unknown GPU ID" << std::endl;
     return usage();
   }
-  options.gpu_id = gpu_id;
   std::atexit(cuda_shutdown);
 #endif
 
+#if defined MINEROPENCL
+  // todo
+#endif
+
+  options.gpu_id = gpu_id;
   options.token_ = token.get_cancellation_token();
 
   if (benchmark && argc == optind) {

@@ -9,7 +9,7 @@
 
 uint64_t *d_BitNonce[MAX_CPUS];
 uint64_t *d_BitVcpu[MAX_CPUS];
-__constant__ uint8_t c_rdata[MAX_CPUS * 32 * MAX_VCPUS];
+__constant__ uint8_t c_rdata[MAX_CPUS * 32 * MAX_GPU_THREADS];
 __constant__ uint32_t pTarget[8];  // 8*4 = 32
 __constant__ uint32_t c_data[48];  // 48*4 = 192
 
@@ -159,9 +159,9 @@ static __device__ __forceinline__ uint8 sha256_Transform2(uint16 in[1],
   return (r + tmp);
 }
 
-__global__ __launch_bounds__(256, 3) void bitcredit_gpu_hash(uint32_t cpu_id, uint64_t threads, uint64_t startNonce,
-                                                             uint32_t expired, uint64_t *NonceVector,
-                                                             uint64_t *VcpuVector) {
+__global__ __launch_bounds__(256, 3) void bitcredit_gpu_hash(uint32_t gpu_threads, uint32_t cpu_id, uint64_t threads,
+                                                             uint64_t startNonce, uint32_t expired,
+                                                             uint64_t *NonceVector, uint64_t *VcpuVector) {
   // 2d grid of 1d blocks
   // int blockId = blockIdx.y * gridDim.x + blockIdx.x;
   // int threadId = blockId * blockDim.x + threadIdx.x;
@@ -179,49 +179,49 @@ __global__ __launch_bounds__(256, 3) void bitcredit_gpu_hash(uint32_t cpu_id, ui
 
   // read rdata from offset
   // 24:31 bytes
-  uint64_t rdata1 = ((uint64_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 24]) << 56 |
-                    ((uint64_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 25]) << 48 |
-                    ((uint64_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 26]) << 40 |
-                    ((uint64_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 27]) << 32 |
-                    ((uint64_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 28]) << 24 |
-                    ((uint64_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 29]) << 16 |
-                    ((uint64_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 30]) << 8 |
-                    ((uint64_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 31]);
+  uint64_t rdata1 = ((uint64_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 24]) << 56 |
+                    ((uint64_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 25]) << 48 |
+                    ((uint64_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 26]) << 40 |
+                    ((uint64_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 27]) << 32 |
+                    ((uint64_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 28]) << 24 |
+                    ((uint64_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 29]) << 16 |
+                    ((uint64_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 30]) << 8 |
+                    ((uint64_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 31]);
 
   // increment rdata1 & rdata2
   rdata1 += nonce;
 
-  uint32_t rdata01 = c_data[1] & ~(0xff) | (uint8_t)(expired >> 24);
-  uint32_t rdata02 = (expired << 8) & ~(0xff) | (uint8_t)(c_data[2]);
+  uint32_t rdata01 = (c_data[1] & ~(0xff)) | (uint8_t)(expired >> 24);
+  uint32_t rdata02 = ((expired << 8) & ~(0xff)) | (uint8_t)(c_data[2]);
 
-  uint32_t rdata10 = c_data[10] & ~(0xff) | (uint8_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 0];
-  uint32_t rdata11 = (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 1] << 24 |
-                     (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 2] << 16 |
-                     (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 3] << 8 |
-                     (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 4];
-  uint32_t rdata12 = (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 5] << 24 |
-                     (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 6] << 16 |
-                     (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 7] << 8 |
-                     (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 8];
-  uint32_t rdata13 = (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 9] << 24 |
-                     (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 10] << 16 |
-                     (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 11] << 8 |
-                     (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 12];
-  uint32_t rdata14 = (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 13] << 24 |
-                     (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 14] << 16 |
-                     (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 15] << 8 |
-                     (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 16];
-  uint32_t rdata15 = (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 17] << 24 |
-                     (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 18] << 16 |
-                     (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 19] << 8 |
-                     (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 20];
-  uint32_t rdata16 = (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 21] << 24 |
-                     (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 22] << 16 |
-                     (uint32_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 23] << 8 | (uint8_t)(rdata1 >> 56);
+  uint32_t rdata10 = (c_data[10] & ~(0xff)) | (uint8_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 0];
+  uint32_t rdata11 = (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 1] << 24 |
+                     (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 2] << 16 |
+                     (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 3] << 8 |
+                     (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 4];
+  uint32_t rdata12 = (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 5] << 24 |
+                     (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 6] << 16 |
+                     (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 7] << 8 |
+                     (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 8];
+  uint32_t rdata13 = (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 9] << 24 |
+                     (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 10] << 16 |
+                     (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 11] << 8 |
+                     (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 12];
+  uint32_t rdata14 = (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 13] << 24 |
+                     (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 14] << 16 |
+                     (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 15] << 8 |
+                     (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 16];
+  uint32_t rdata15 = (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 17] << 24 |
+                     (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 18] << 16 |
+                     (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 19] << 8 |
+                     (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 20];
+  uint32_t rdata16 = (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 21] << 24 |
+                     (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 22] << 16 |
+                     (uint32_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 23] << 8 | (uint8_t)(rdata1 >> 56);
   uint32_t rdata17 = (uint32_t)(rdata1 >> 24);
-  uint32_t rdata18 = (uint32_t)(rdata1 << 8) & ~(0xff) | (uint8_t)(c_data[18]);
+  uint32_t rdata18 = ((uint32_t)(rdata1 << 8) & ~(0xff)) | (uint8_t)(c_data[18]);
 
-  uint32_t rdata22 = c_data[22] & ~(0xff) | (uint8_t)c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 0];
+  uint32_t rdata22 = (c_data[22] & ~(0xff)) | (uint8_t)c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 0];
   uint32_t rdata23 = rdata11;
   uint32_t rdata24 = rdata12;
   uint32_t rdata25 = rdata13;
@@ -229,7 +229,7 @@ __global__ __launch_bounds__(256, 3) void bitcredit_gpu_hash(uint32_t cpu_id, ui
   uint32_t rdata27 = rdata15;
   uint32_t rdata28 = rdata16;
   uint32_t rdata29 = rdata17;
-  uint32_t rdata30 = (uint32_t)(rdata1 << 8) & ~(0xff) | (uint8_t)(c_data[30]);
+  uint32_t rdata30 = ((uint32_t)(rdata1 << 8) & ~(0xff)) | (uint8_t)(c_data[30]);
   //  printf(
   //      "[%d:%lld]: rdata1=%016llX rdata01=%04x rdata02=%04x rdata16=%04x rdata17=%04x rdata18=%04x rdata28=%04x "
   //      "rdata29=%04x rdata30=%04x\n",
@@ -317,47 +317,47 @@ __global__ __launch_bounds__(256, 3) void bitcredit_gpu_hash(uint32_t cpu_id, ui
   else if (state.s0 == pTarget[0]) {
     // check s1
     if (state.s1 < pTarget[1]) {
-//      printf("%d: hash[%d:%lld]: %04x = %04x, %04x < %04x\n", cpu_id, vcpu, nonce, state.s0, pTarget[0], state.s1,
-//             pTarget[1]);
-//
-//      printf("%d: data0[%d:%lld]: %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x\n",
-//             cpu_id, vcpu, nonce, c_data[0], rdata01, rdata02, c_data[3], c_data[4], c_data[5], c_data[6], c_data[7],
-//             c_data[8], c_data[9], rdata10, rdata11, rdata12, rdata13, rdata14, rdata15);
-//
-//      printf("%d: data1[%d:%lld]: %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x\n",
-//             cpu_id, vcpu, nonce, rdata16, rdata17, rdata18, c_data[19], c_data[20], c_data[21], rdata22, rdata23,
-//             rdata24, rdata25, rdata26, rdata27, rdata28, rdata29, rdata30, c_data[31]);
-//
-//      printf("%d: data2[%d:%lld]: %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x\n",
-//             cpu_id, vcpu, nonce, c_data[32], c_data[33], c_data[34], c_data[35], c_data[36], c_data[37], c_data[38],
-//             c_data[39], c_data[40], c_data[41], c_data[42], c_data[43], c_data[44], c_data[45], c_data[46],
-//             c_data[47]);
-//
-//      printf("%d: hash[%d:%lld]: %04x %04x %04x %04x %04x %04x %04x %04x\n", cpu_id, vcpu, nonce, state.s0, state.s1,
-//             state.s2, state.s3, state.s4, state.s5, state.s6, state.s7);
-//
-//      printf("%d: complexity[%d:%lld]: %04x %04x %04x %04x %04x %04x %04x %04x\n", cpu_id, vcpu, nonce, pTarget[0],
-//             pTarget[1], pTarget[2], pTarget[3], pTarget[4], pTarget[5], pTarget[6], pTarget[7]);
-//
-//      printf("%d: rdata[%d:%lld]: %02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x", cpu_id, vcpu,
-//             nonce, c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 0], c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 1],
-//             c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 2], c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 3],
-//             c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 4], c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 5],
-//             c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 6], c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 7],
-//             c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 8], c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 9],
-//             c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 10], c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 11],
-//             c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 12], c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 13],
-//             c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 14], c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 15]);
-//
-//      printf("%02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x\n",
-//             c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 16], c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 17],
-//             c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 18], c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 19],
-//             c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 20], c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 21],
-//             c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 22], c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 23],
-//             c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 24], c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 25],
-//             c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 26], c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 27],
-//             c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 28], c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 29],
-//             c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 30], c_rdata[cpu_id * 32 * MAX_VCPUS + 32 * vcpu + 31]);
+      //      printf("%d: hash[%d:%lld]: %04x = %04x, %04x < %04x\n", cpu_id, vcpu, nonce, state.s0, pTarget[0], state.s1,
+      //             pTarget[1]);
+      //
+      //      printf("%d: data0[%d:%lld]: %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x\n",
+      //             cpu_id, vcpu, nonce, c_data[0], rdata01, rdata02, c_data[3], c_data[4], c_data[5], c_data[6], c_data[7],
+      //             c_data[8], c_data[9], rdata10, rdata11, rdata12, rdata13, rdata14, rdata15);
+      //
+      //      printf("%d: data1[%d:%lld]: %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x\n",
+      //             cpu_id, vcpu, nonce, rdata16, rdata17, rdata18, c_data[19], c_data[20], c_data[21], rdata22, rdata23,
+      //             rdata24, rdata25, rdata26, rdata27, rdata28, rdata29, rdata30, c_data[31]);
+      //
+      //      printf("%d: data2[%d:%lld]: %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x\n",
+      //             cpu_id, vcpu, nonce, c_data[32], c_data[33], c_data[34], c_data[35], c_data[36], c_data[37], c_data[38],
+      //             c_data[39], c_data[40], c_data[41], c_data[42], c_data[43], c_data[44], c_data[45], c_data[46],
+      //             c_data[47]);
+      //
+      //      printf("%d: hash[%d:%lld]: %04x %04x %04x %04x %04x %04x %04x %04x\n", cpu_id, vcpu, nonce, state.s0, state.s1,
+      //             state.s2, state.s3, state.s4, state.s5, state.s6, state.s7);
+      //
+      //      printf("%d: complexity[%d:%lld]: %04x %04x %04x %04x %04x %04x %04x %04x\n", cpu_id, vcpu, nonce, pTarget[0],
+      //             pTarget[1], pTarget[2], pTarget[3], pTarget[4], pTarget[5], pTarget[6], pTarget[7]);
+      //
+      //      printf("%d: rdata[%d:%lld]: %02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x", cpu_id, vcpu,
+      //             nonce, c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 0], c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 1],
+      //             c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 2], c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 3],
+      //             c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 4], c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 5],
+      //             c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 6], c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 7],
+      //             c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 8], c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 9],
+      //             c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 10], c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 11],
+      //             c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 12], c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 13],
+      //             c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 14], c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 15]);
+      //
+      //      printf("%02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x %02x%02x%02x%02x\n",
+      //             c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 16], c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 17],
+      //             c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 18], c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 19],
+      //             c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 20], c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 21],
+      //             c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 22], c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 23],
+      //             c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 24], c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 25],
+      //             c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 26], c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 27],
+      //             c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 28], c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 29],
+      //             c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 30], c_rdata[cpu_id * 32 * gpu_threads + 32 * vcpu + 31]);
 
       NonceVector[0] = nonce;
       VcpuVector[0] = vcpu;
@@ -420,7 +420,7 @@ __host__ void bitcredit_cpu_init(uint32_t gpu_id, uint32_t cpu_id, uint64_t thre
   cudaMalloc(&d_BitVcpu[cpu_id], sizeof(uint64_t));
 }
 
-__host__ bool bitcredit_setBlockTarget(uint32_t gpu_id, uint32_t cpu_id, unsigned char *data, const void *target,
+__host__ bool bitcredit_setBlockTarget(uint32_t gpu_id, uint32_t gpu_threads, uint32_t cpu_id, unsigned char *data, const void *target,
                                        unsigned char *rdata) {
   int len = 123, n = 3;
   uint32_t PaddedMessage[16 * n];  // bring balance to the force, 512*3 bits
@@ -433,7 +433,7 @@ __host__ bool bitcredit_setBlockTarget(uint32_t gpu_id, uint32_t cpu_id, unsigne
   ((uint32_t *)endiandata)[16 * n - 1] = len * 8;  // size to the end
 
   uint32_t endiantarget[32];
-  for (int k = 0; k < 8 * n; k++)
+  for (int k = 0; k < 8; k++)
     be32enc(&endiantarget[k], ((uint32_t *)target)[k]);
 
   //    std::cout << "PaddedMessage[" << 16 * n * sizeof(uint32_t) << "]: ";
@@ -444,14 +444,14 @@ __host__ bool bitcredit_setBlockTarget(uint32_t gpu_id, uint32_t cpu_id, unsigne
   CUDA_CALL_OR_RET_X(cudaMemcpyToSymbol(pTarget, endiantarget, 32, 0, cudaMemcpyHostToDevice), false);
   CUDA_CALL_OR_RET_X(cudaMemcpyToSymbol(c_data, endiandata, 16 * n * sizeof(uint32_t), 0, cudaMemcpyHostToDevice),
                      false);
-  CUDA_CALL_OR_RET_X(cudaMemcpyToSymbol(c_rdata, rdata, 32 * MAX_VCPUS * sizeof(uint8_t),
-                                        (32 * MAX_VCPUS * cpu_id) * sizeof(uint8_t), cudaMemcpyHostToDevice),
+  CUDA_CALL_OR_RET_X(cudaMemcpyToSymbol(c_rdata, rdata, 32 * gpu_threads * sizeof(uint8_t),
+                                        (32 * gpu_threads * cpu_id) * sizeof(uint8_t), cudaMemcpyHostToDevice),
                      false);
 
   return true;
 }
 
-__host__ HashResult bitcredit_cpu_hash(uint32_t gpu_id, uint32_t cpu_id, uint64_t threads, uint64_t startNounce,
+__host__ HashResult bitcredit_cpu_hash(uint32_t gpu_id, uint32_t cpu_id, uint32_t gpu_threads, uint64_t threads, uint64_t startNounce,
                                        uint32_t expired) {
   uint64_t result[MAX_CPUS];
   uint64_t vcpu[MAX_CPUS];
@@ -466,10 +466,10 @@ __host__ HashResult bitcredit_cpu_hash(uint32_t gpu_id, uint32_t cpu_id, uint64_
   CUDA_CALL_OR_RET_X(cudaMemset(d_BitNonce[cpu_id], 0xffffffff, sizeof(uint64_t)), r);
   CUDA_CALL_OR_RET_X(cudaMemset(d_BitVcpu[cpu_id], 0xffffffff, sizeof(uint64_t)), r);
 
-  dim3 grid(threads / threadsperblock / MAX_VCPUS, MAX_VCPUS);
+  dim3 grid(threads / threadsperblock / gpu_threads, gpu_threads);
   dim3 block(threadsperblock);
 
-  bitcredit_gpu_hash<<<grid, block>>>(cpu_id, threads, (startNounce / MAX_VCPUS), expired, d_BitNonce[cpu_id],
+  bitcredit_gpu_hash<<<grid, block>>>(gpu_threads, cpu_id, threads, (startNounce / gpu_threads), expired, d_BitNonce[cpu_id],
                                       d_BitVcpu[cpu_id]);
 
   CUDA_CALL_OR_RET_X(cudaMemcpy(&result[cpu_id], d_BitNonce[cpu_id], sizeof(uint64_t), cudaMemcpyDeviceToHost), r);
