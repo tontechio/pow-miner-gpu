@@ -9,7 +9,7 @@ $ crypto/pow-miner-cuda -vv -g<gpu-id> -G<gpu-threads> -t<timeout-in-sec> <your-
 Here:
 
 - `gpu-id`: GPU device ID
-- `gpu-threads`: the number of virtual CPU cores simultaneously hashed in a GPU kernel
+- `gpu-threads`: 1..1792, the number of virtual CPU cores simultaneously hashed in a GPU kernel
 - `timeout-in-sec`: max amount of seconds that the miner would run before admitting failure
 - `your-wallet-address`: the address of your wallet (possibly not initialized yet), either in the masterchain or in the workchain (note that you need a masterchain wallet to control a validator)
 - `seed` and `complexity` are the most recent values obtained by running get-method get-pow-params
