@@ -44,3 +44,55 @@ Saving 176 bytes of serialized external message into file `mined.boc`
 [ hashes computed: 5754208852 ]
 [ speed: 8.58523e+08 hps ]
 ```
+
+## GPU Mining: Optimal Number of GPU Threads
+
+GPU Miner has the parameter `-G <gpu-threads>`, the number of logical GPU threads that is used for mining. Default value is 8. 
+
+It works the same way as if you were running pow miner on G CPU threads.
+
+The GPU miner starts from #G different random points and then goes through the values one by one in search for the solution.
+
+The search speed is limited by the GPU performance and is divided in proportion to the all starting values.
+
+Playing around with the number of logical GPU threads can significantly increase hashrate (of course it can also decrease it).
+
+However, since the solutions to the problem are evenly distributed over the set of solutions, a large number of starting points increases the probability of finding a solution.
+
+Ideally you should have so many GPU threads that each thread is faster than the CPU thread. And it must be a multiple of 8.
+
+Let's calculate a CPU hashrate on a simple task:
+
+```
+$ crypto/pow-miner -vv -w 1 -t 10 \
+  kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 \
+  229760179690128740373110445116482216837 \
+  539198933343012795893340301740392613472742888450811449622072204984 \
+  100000000000
+[ expected required hashes for success: 214748364800 ]
+[ hashes computed: 32505856 ]
+[ speed: 3.17562e+06 hps ]
+```
+
+And GPU hashrate:
+
+```
+$ crypto/pow-miner-opencl -vv -g 2 -G 1 -t 10 \
+  kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 \
+  229760179690128740373110445116482216837 \
+  539198933343012795893340301740392613472742888450811449622072204984 \
+  100000000000
+[ expected required hashes for success: 214748364800 ]
+[ OpenCL: set kernel source (17937 bytes) ]
+[ OpenCL: platform #0 device #0 Intel(R) Core(TM) i9-9880H CPU @ 2.30GHz ]
+[ OpenCL: platform #0 device #1 Intel(R) UHD Graphics 630 ]
+[ OpenCL: platform #0 device #2 AMD Radeon Pro 5500M Compute Engine ]
+[ OpenCL: create context for platform #0 device #2 AMD Radeon Pro 5500M Compute Engine, max work group size is 256 ]
+[ GPU ID: 2, CPU thread: 0, GPU threads: 1, throughput: 4194304 ]
+[ hashes computed: 3091202048 ]
+[ speed: 3.08938e+08 hps ]
+```
+
+`3.08938e+08 / 3.17562e+06 = 97`
+
+In this case the best value of `-G` will be 64.
