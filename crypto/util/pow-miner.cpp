@@ -66,7 +66,7 @@ int usage() {
             << " [-v][-B][-w<threads>]"
 #if defined MINERCUDA || defined MINEROPENCL
                "[-g<gpu-id>]"
-               "[-T<gpu-threads>]"
+               "[-G<gpu-threads>]"
 #endif
                " [-t<timeout>] <my-address> <pow-seed> <pow-complexity> <iterations> "
                "[<miner-addr> <output-ext-msg-boc>] [-V]\n"
