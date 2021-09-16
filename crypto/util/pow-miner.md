@@ -4,7 +4,7 @@ Inspired by [tpruvot/ccminer](https://github.com/tpruvot/ccminer) project.
 
 This variant was tested and built on Linux (Ubuntu 18.04.5 LTS)
 
-## System Requirements
+#### System Requirements for CUDA POW Miner
 
 To use CUDA on your system, you will need the following installed:
 
@@ -12,35 +12,52 @@ To use CUDA on your system, you will need the following installed:
 * A supported version of Linux with a gcc compiler and toolchain
 * NVIDIA CUDA Toolkit
 
+## OpenCL POW Miner
+
+This variant was tested and built on Linux (Ubuntu 18.04.5 LTS), macOS Big Sur (11.5.2)
+
+#### System Requirements for OpenCL POW Miner
+
+To use OpenCL on your system, you will need the following installed:
+
+* A device that supports OpenCL (AMD)
+* OpenCL headers and libraries included in the OpenCL SDK
+
 ## Building Guide for Linux
 
-1. Install CUDA Toolkit and Driver:
-[https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)
-   
-2. Install latest stable release of CMake:
-   [https://cmake.org/download/](https://cmake.org/download/)
-   
-3. Build CUDA POW Miner:
+1. Install prerequisites
 
-    Install prerequisites:
-    
-    ```shell
+   ```shell
     sudo apt install -y build-essential git make cmake \
         clang libgflags-dev zlib1g-dev libssl-dev \
         libreadline-dev libmicrohttpd-dev pkg-config \
         libgsl-dev python3 python3-dev python3-pip
     sudo pip3 install psutil crc16 requests
     ```
+
+2. Install latest stable release of CMake:
+   [https://cmake.org/download/](https://cmake.org/download/)
    
-    Clone repository:
+
+3. Install requirements (depends on GPU device)
+   
+   a) CUDA Toolkit and Driver: [https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)
+
+   b) OpenCL SDK from your favourite vendor
+
+
+4. Clone repository:
     
     ```shell
     cd /usr/src
     git clone --recursive https://github.com/tontechio/pow-miner-gpu.git
     cd /usr/src/pow-miner-gpu
+    git checkout main
     ```
    
-    Build `pow-miner` and `lite-client`:
+5. Build binaries (depends on GPU device):
+
+   a) CUDA POW Miner (`pow-miner`, `pow-miner-cuda`, `lite-client`):
     
     ```shell
     mkdir /usr/bin/ton
@@ -53,7 +70,17 @@ To use CUDA on your system, you will need the following installed:
     make -j 8 pow-miner pow-miner-cuda lite-client
     ```
 
-All done, now you have three binaries for mining:
+   b) OpenCL POW Miner (`pow-miner`, `pow-miner-opencl`, `lite-client`):
+
+    ```shell
+    mkdir /usr/bin/ton
+    cd /usr/bin/ton
+    export CCACHE_DISABLE=1
+    cmake -DCMAKE_BUILD_TYPE=Release -DMINEROPENCL=true /usr/src/pow-miner-gpu
+    make -j 8 pow-miner pow-miner-opencl lite-client
+    ```
+
+All done, now you have binaries for mining (depends on GPU device):
 
 ### `/usr/bin/ton/crypto/pow-miner`
 
@@ -66,11 +93,21 @@ Outputs a valid <rdata> value for proof-of-work testgiver after computing at mos
 
 ### `/usr/bin/ton/crypto/pow-miner-cuda`
 
-This is a GPU-miner compatible with Nvidia hardware. Can be used in multi-GPU environments (see `-g` option).
-Dry run it to see the list of available GPUs in the system.
+This is a GPU-miner compatible with Nvidia hardware. Can be used in multi-GPU environments (see `-g` option). Dry run it
+to see the list of available GPUs in the system.
 
 ```shell
-usage: crypto/pow-miner-cuda [-v][-B][-w<threads>][-g<gpu-id>] [-t<timeout>] <my-address> <pow-seed> <pow-complexity> <iterations> [<miner-addr> <output-ext-msg-boc>] [-V]
+usage: crypto/pow-miner-cuda [-v][-B][-w<threads>][-g<gpu-id>][-G<gpu-threads>] [-t<timeout>] <my-address> <pow-seed> <pow-complexity> <iterations> [<miner-addr> <output-ext-msg-boc>] [-V]
+Outputs a valid <rdata> value for proof-of-work testgiver after computing at most <iterations> hashes or terminates with non-zero exit code
+```
+
+### `/usr/bin/ton/crypto/pow-miner-opencl`
+
+This is a GPU-miner compatible with AMD hardware. Can be used in multi-GPU environments (see `-g` option). Dry run it
+to see the list of available GPUs in the system.
+
+```shell
+usage: crypto/pow-miner-cuda [-v][-B][-w<threads>][-g<gpu-id>][-G<gpu-threads>] [-t<timeout>] <my-address> <pow-seed> <pow-complexity> <iterations> [<miner-addr> <output-ext-msg-boc>] [-V]
 Outputs a valid <rdata> value for proof-of-work testgiver after computing at most <iterations> hashes or terminates with non-zero exit code
 ```
 

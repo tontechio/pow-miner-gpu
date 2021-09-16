@@ -49,6 +49,7 @@
 
 #if defined MINEROPENCL
 #include "opencl/miner.h"
+#include "opencl/opencl.h"
 #include "opencl/sha256.h"
 #endif
 
@@ -271,7 +272,12 @@ int main(int argc, char* const argv[]) {
 #endif
 
 #if defined MINEROPENCL
-  // todo
+  if (gpu_id < 0) {
+    auto opencl = opencl::OpenCL();
+    opencl.print_devices();
+    std::cerr << "unknown GPU ID" << std::endl;
+    return usage();
+  }
 #endif
 
   options.gpu_id = gpu_id;
