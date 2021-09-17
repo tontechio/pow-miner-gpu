@@ -327,7 +327,12 @@ if(MINEROPENCL)
   add_library(pow-miner-opencl-lib util/Miner.cpp util/MinerOpenCL.cpp util/Miner.h util/opencl/miner.h util/opencl/opencl_helper.h
           util/opencl/opencl.h util/opencl/opencl.cpp util/opencl/sha256.cpp util/opencl/sha256.h)
   target_include_directories(pow-miner-opencl-lib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
-  target_link_libraries(pow-miner-opencl-lib PUBLIC ton_crypto ton_block "-framework OpenCL")
+  if (APPLE)
+    target_link_libraries(pow-miner-opencl-lib PUBLIC ton_crypto ton_block "-framework OpenCL")
+  else()
+    find_package(OpenCL REQUIRED)
+    target_link_libraries(pow-miner-opencl-lib PUBLIC ton_crypto ton_block OpenCL::OpenCL)
+  endif()
 
   add_executable(pow-miner-opencl util/pow-miner.cpp)
   target_compile_definitions(pow-miner-opencl PRIVATE MINEROPENCL=${MINEROPENCL})
