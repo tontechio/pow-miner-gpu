@@ -1,0 +1,37 @@
+name: pow-miner-opencl-release.yml
+
+on:
+  push:
+    tags:
+    - '*'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-18.04
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+
+    - name: Install OPENCL
+      run: sudo apt install -y opencl-headers ocl-icd-opencl-dev
+
+    - name: mkdir
+      run: |
+        mkdir build
+
+    - name: cmake configuration
+      run: |
+        cd build && cmake -DTON_ARCH=x86-64 -DMINEROPENCL=1 -DCMAKE_BUILD_TYPE=Release ..
+
+    - name: cmake build
+      run: |
+        cd build && cmake --build . --target pow-miner-opencl -j
+
+    - name: packing
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "build/crypto/pow-miner-opencl"
+        token: ${{ secrets.GITHUB_TOKEN }}
