@@ -30,9 +30,13 @@ jobs:
       run: |
         cd build && cmake --build . --target pow-miner-opencl -j
 
+    - name: naming convention
+      run: |
+        mv build/crypto/pow-miner-opencl build/crypto/pow-miner-opencl-ubuntu-18.04-x86-64
+
     - name: packing
       uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
-        artifacts: "build/crypto/pow-miner-opencl"
+        artifacts: "build/crypto/pow-miner-opencl-ubuntu-18.04-x86-64"
         token: ${{ secrets.GITHUB_TOKEN }}
