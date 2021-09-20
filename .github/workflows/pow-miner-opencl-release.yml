@@ -33,5 +33,6 @@ jobs:
     - name: packing
       uses: ncipollo/release-action@v1
       with:
+        allowUpdates: true
         artifacts: "build/crypto/pow-miner-opencl"
         token: ${{ secrets.GITHUB_TOKEN }}
