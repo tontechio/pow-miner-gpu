@@ -441,7 +441,7 @@ __host__ bool bitcredit_setBlockTarget(uint32_t gpu_id, uint32_t gpu_threads, ui
   //      printf("%08x ", endiandata[z]);
   //    std::cout << std::endl;
 
-  CUDA_CALL_OR_RET_X(cudaMemcpyToSymbol(pTarget, endiantarget, 32, 0, cudaMemcpyHostToDevice), false);
+  CUDA_CALL_OR_RET_X(cudaMemcpyToSymbol(pTarget, endiantarget, 32 * sizeof(uint32_t), 0, cudaMemcpyHostToDevice), false);
   CUDA_CALL_OR_RET_X(cudaMemcpyToSymbol(c_data, endiandata, 16 * n * sizeof(uint32_t), 0, cudaMemcpyHostToDevice),
                      false);
   CUDA_CALL_OR_RET_X(cudaMemcpyToSymbol(c_rdata, rdata, 32 * gpu_threads * sizeof(uint8_t),
@@ -461,10 +461,10 @@ __host__ HashResult bitcredit_cpu_hash(uint32_t gpu_id, uint32_t cpu_id, uint32_
   HashResult r;
   r.nonce = UINT64_MAX;
 
-  memset(result, 0xffffffff, sizeof(result));
-  memset(vcpu, 0xffffffff, sizeof(vcpu));
-  CUDA_CALL_OR_RET_X(cudaMemset(d_BitNonce[cpu_id], 0xffffffff, sizeof(uint64_t)), r);
-  CUDA_CALL_OR_RET_X(cudaMemset(d_BitVcpu[cpu_id], 0xffffffff, sizeof(uint64_t)), r);
+  memset(result, UINT64_MAX, sizeof(result));
+  memset(vcpu, UINT64_MAX, sizeof(vcpu));
+  CUDA_CALL_OR_RET_X(cudaMemset(d_BitNonce[cpu_id], UINT64_MAX, sizeof(uint64_t)), r);
+  CUDA_CALL_OR_RET_X(cudaMemset(d_BitVcpu[cpu_id], UINT64_MAX, sizeof(uint64_t)), r);
 
   dim3 grid(threads / threadsperblock / gpu_threads, gpu_threads);
   dim3 block(threadsperblock);
