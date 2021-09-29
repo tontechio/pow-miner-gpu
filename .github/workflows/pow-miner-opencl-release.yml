@@ -7,7 +7,13 @@ on:
 
 jobs:
   create-release:
-    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        os:
+          - ubuntu-18.04
+          - ubuntu-20.04
+
+    runs-on: ${{ matrix.os }}
 
     steps:
     - name: Check out repository
@@ -16,7 +22,10 @@ jobs:
         submodules: 'recursive'
 
     - name: Install OPENCL
-      run: sudo apt install -y opencl-headers ocl-icd-opencl-dev
+      run: |
+        sudo apt update -y && \
+        sudo apt upgrade -y && \
+        sudo apt install -y opencl-headers ocl-icd-opencl-dev
 
     - name: mkdir
       run: |
@@ -32,11 +41,12 @@ jobs:
 
     - name: naming convention
       run: |
-        mv build/crypto/pow-miner-opencl build/crypto/pow-miner-opencl-ubuntu-18.04-x86-64
+        chmod +x build/crypto/pow-miner-opencl
+        tar -zcf build/crypto/pow-miner-opencl-${{ matrix.os }}-x86-64.tar.gz build/crypto/pow-miner-opencl
 
     - name: packing
       uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
-        artifacts: "build/crypto/pow-miner-opencl-ubuntu-18.04-x86-64"
+        artifacts: build/crypto/pow-miner-opencl-${{ matrix.os }}-x86-64.tar.gz
         token: ${{ secrets.GITHUB_TOKEN }}
