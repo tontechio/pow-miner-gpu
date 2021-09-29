@@ -432,7 +432,7 @@ __host__ bool bitcredit_setBlockTarget(uint32_t gpu_id, uint32_t gpu_threads, ui
     be32enc(&endiandata[k], ((uint32_t *)PaddedMessage)[k]);
   ((uint32_t *)endiandata)[16 * n - 1] = len * 8;  // size to the end
 
-  uint32_t endiantarget[32];
+  uint32_t endiantarget[8];
   for (int k = 0; k < 8; k++)
     be32enc(&endiantarget[k], ((uint32_t *)target)[k]);
 
@@ -441,7 +441,7 @@ __host__ bool bitcredit_setBlockTarget(uint32_t gpu_id, uint32_t gpu_threads, ui
   //      printf("%08x ", endiandata[z]);
   //    std::cout << std::endl;
 
-  CUDA_CALL_OR_RET_X(cudaMemcpyToSymbol(pTarget, endiantarget, 32 * sizeof(uint32_t), 0, cudaMemcpyHostToDevice), false);
+  CUDA_CALL_OR_RET_X(cudaMemcpyToSymbol(pTarget, endiantarget, 8 * sizeof(uint32_t), 0, cudaMemcpyHostToDevice), false);
   CUDA_CALL_OR_RET_X(cudaMemcpyToSymbol(c_data, endiandata, 16 * n * sizeof(uint32_t), 0, cudaMemcpyHostToDevice),
                      false);
   CUDA_CALL_OR_RET_X(cudaMemcpyToSymbol(c_rdata, rdata, 32 * gpu_threads * sizeof(uint8_t),
