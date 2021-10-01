@@ -9,9 +9,11 @@ jobs:
   create-release:
     strategy:
       matrix:
-        os:
-          - ubuntu-18.04
-          - ubuntu-20.04
+        include:
+          - os: ubuntu-18.04
+            cuda: 10.1
+          - os: ubuntu-20.04
+            cuda: 11.3
 
     runs-on: ${{ matrix.os }}
 
@@ -21,32 +23,48 @@ jobs:
       with:
         submodules: 'recursive'
 
-    - name: Install OPENCL
+    - name: Install prerequesties
       run: |
         sudo apt update -y && \
         sudo apt upgrade -y && \
-        sudo apt install -y opencl-headers ocl-icd-opencl-dev
+        sudo apt install -y gcc-8 g++-8 opencl-headers ocl-icd-opencl-dev
+
+    - name: Install CUDA
+      env:
+        cuda: ${{ matrix.cuda }}
+      run: bash ./scripts/install_cuda_ubuntu.sh
+      shell: bash
 
     - name: mkdir
       run: |
         mkdir build
 
     - name: cmake configuration
+      env:
+        CC: /usr/bin/gcc-8
+        CXX: /usr/bin/g++-8
       run: |
-        cd build && cmake -DTON_ARCH=x86-64 -DMINEROPENCL=1 -DCMAKE_BUILD_TYPE=Release ..
+        cd build && \
+        cmake -DTON_ARCH=x86-64 -DMINERCUDA=1 -DMINEROPENCL=1 -DCMAKE_BUILD_TYPE=Release ..
 
-    - name: cmake build
+    - name: cmake build opencl
       run: |
         cd build && cmake --build . --target pow-miner-opencl -j
+
+    - name: cmake build cuda
+      run: |
+        cd build && cmake --build . --target pow-miner-cuda -j
 
     - name: naming convention
       run: |
         chmod +x build/crypto/pow-miner-opencl
+        chmod +x build/crypto/pow-miner-cuda
         tar -zcf build/crypto/pow-miner-opencl-${{ matrix.os }}-x86-64.tar.gz build/crypto/pow-miner-opencl
+        tar -zcf build/crypto/pow-miner-cuda-${{ matrix.os }}-x86-64.tar.gz build/crypto/pow-miner-cuda
 
     - name: packing
       uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
-        artifacts: build/crypto/pow-miner-opencl-${{ matrix.os }}-x86-64.tar.gz
+        artifacts: build/crypto/pow-miner-*-${{ matrix.os }}-x86-64.tar.gz
         token: ${{ secrets.GITHUB_TOKEN }}
