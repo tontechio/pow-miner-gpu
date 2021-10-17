@@ -11,8 +11,6 @@
 
 #define MAX_SOURCE_SIZE 0x10000000
 
-typedef unsigned int uint;
-
 namespace opencl {
 struct HashResult {
   uint64_t nonce;
