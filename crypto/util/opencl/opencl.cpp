@@ -101,7 +101,7 @@ void OpenCL::load_objects(uint32_t gpu_id, uint32_t cpu_id, unsigned char *data,
     be32enc(&endiandata[k], ((uint32_t *)PaddedMessage)[k]);
   ((uint32_t *)endiandata)[16 * n - 1] = len * 8;  // size to the end
 
-  uint32_t endiantarget[32];
+  uint32_t endiantarget[8];
   for (int k = 0; k < 8; k++)
     be32enc(&endiantarget[k], ((uint32_t *)target)[k]);
 

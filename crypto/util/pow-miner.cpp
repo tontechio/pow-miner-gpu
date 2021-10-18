@@ -150,18 +150,18 @@ int found(td::Slice data) {
   return 0;
 }
 
-void miner(const ton::Miner::Options& options, const int thread_id) {
+void miner(const ton::Miner::Options& options) {
 #if defined MINERCUDA
   // init cuda device for thread
   cudaSetDevice(options.gpu_id);
   cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
   cudaDeviceSetCacheConfig(cudaFuncCachePreferL1);
 
-  auto res = ton::MinerCuda::run(options, thread_id);
+  auto res = ton::MinerCuda::run(options);
 #elif defined MINEROPENCL
-  auto res = ton::MinerOpenCL::run(options, thread_id);
+  auto res = ton::MinerOpenCL::run(options);
 #else
-  auto res = ton::Miner::run(options, thread_id);
+  auto res = ton::Miner::run(options);
 #endif
   if (res) {
     found(res.value());
@@ -189,13 +189,13 @@ class MinerBench : public td::Benchmark {
     options.gpu_id = gpu_id_;
 #if defined MINERCUDA
     options.max_iterations = 0xfffffff;
-    CHECK(!ton::MinerCuda::run(options, 0));  // same thread_id for all runs
+    CHECK(!ton::MinerCuda::run(options));
 #elif defined MINEROPENCL
     options.max_iterations = 0xfffffff;
-    CHECK(!ton::MinerOpenCL::run(options, 0));
+    CHECK(!ton::MinerOpenCL::run(options));
 #else
     options.max_iterations = n;
-    CHECK(!ton::Miner::run(options, 0));
+    CHECK(!ton::Miner::run(options));
 #endif
   }
 
@@ -323,11 +323,11 @@ int main(int argc, char* const argv[]) {
   options.hashes_computed = &hashes_computed;
   // may invoke several miner threads
   if (threads <= 0) {
-    miner(options, 0);
+    miner(options);
   } else {
     std::vector<std::thread> T;
     for (int i = 0; i < threads; i++) {
-      T.emplace_back(miner, options, i);
+      T.emplace_back(miner, options);
     }
     for (auto& thr : T) {
       thr.join();

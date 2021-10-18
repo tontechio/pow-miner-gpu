@@ -27,7 +27,7 @@
 #include "opencl/miner.h"
 
 namespace ton {
-td::optional<std::string> MinerOpenCL::run(const Options& options, const int thread_id) {
+td::optional<std::string> MinerOpenCL::run(const Options& options) {
   HDataEnv H;
   H.init(options.my_address, td::Slice(options.seed.data(), options.seed.size()));
 
@@ -36,6 +36,6 @@ td::optional<std::string> MinerOpenCL::run(const Options& options, const int thr
   td::Random::secure_bytes(rdata, 32 * options.gpu_threads);
 
   auto miner = opencl::SHA256();
-  return miner.run(H, rdata, options, thread_id);
+  return miner.run(H, rdata, options, 0);
 }
 }  // namespace ton

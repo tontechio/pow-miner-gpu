@@ -25,7 +25,7 @@
 #include <openssl/sha.h>
 
 namespace ton {
-td::optional<std::string> Miner::run(const Options &options, const int thread_id) {
+td::optional<std::string> Miner::run(const Options &options) {
   HDataEnv H;
   H.init(options.my_address, td::Slice(options.seed.data(), options.seed.size()));
 

@@ -27,7 +27,7 @@
 #include "cuda/miner.h"
 
 namespace ton {
-td::optional<std::string> MinerCuda::run(const Options& options, const int thread_id) {
+td::optional<std::string> MinerCuda::run(const Options& options) {
   HDataEnv H;
   H.init(options.my_address, td::Slice(options.seed.data(), options.seed.size()));
 
@@ -36,6 +36,6 @@ td::optional<std::string> MinerCuda::run(const Options& options, const int threa
   td::Random::secure_bytes(rdata, 32 * MAX_GPU_THREADS);
 
   auto miner = cuda::SHA256();
-  return miner.run(H, rdata, options, thread_id);
+  return miner.run(H, rdata, options, 0);
 }
 }  // namespace ton
