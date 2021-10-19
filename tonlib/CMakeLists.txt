@@ -71,6 +71,31 @@ endif()
 add_executable(tonlib-cli tonlib/tonlib-cli.cpp)
 target_link_libraries(tonlib-cli tonlib tdactor tdutils terminal pow-miner-lib git)
 
+if(MINERCUDA)
+  enable_language(CUDA)
+
+  find_package(CUDA REQUIRED)
+  include_directories("${CUDA_INCLUDE_DIRS}")
+
+  add_executable(tonlib-cuda-cli tonlib/tonlib-cli.cpp)
+  target_compile_definitions(tonlib-cuda-cli PRIVATE MINERCUDA=${MINERCUDA})
+  target_link_libraries(tonlib-cuda-cli tonlib tdactor tdutils terminal pow-miner-cuda-lib git ${CUDA_LIBRARIES})
+endif()
+
+if(MINEROPENCL)
+    add_executable(tonlib-opencl-cli tonlib/tonlib-cli.cpp)
+    target_compile_definitions(tonlib-opencl-cli PRIVATE MINEROPENCL=${MINEROPENCL})
+
+  if (APPLE)
+    target_link_libraries(tonlib-opencl-cli tonlib tdactor tdutils terminal pow-miner-opencl-lib git "-framework OpenCL")
+  else()
+    find_package(OpenCL REQUIRED)
+    include_directories(${OpenCL_INCLUDE_DIRS})
+    link_directories(${OpenCL_LIBRARY})
+    target_link_libraries(tonlib-opencl-cli tonlib tdactor tdutils terminal pow-miner-opencl-lib git ${OpenCL_LIBRARY})
+  endif()
+endif()
+
 if (NOT CMAKE_CROSSCOMPILING)
   if (TONLIB_ENABLE_JNI)
 	  #FIXME

@@ -60,7 +60,7 @@ To use OpenCL on your system, you will need the following installed:
    
 5. Build binaries (depends on GPU device):
 
-   a) CUDA POW Miner (`pow-miner`, `pow-miner-cuda`, `lite-client`):
+   a) CUDA POW Miner (`pow-miner`, `pow-miner-cuda`, `tonlib-cli`, `tonlib-cuda-cli`, `lite-client`):
     
     ```shell
     mkdir /usr/bin/ton
@@ -70,19 +70,25 @@ To use OpenCL on your system, you will need the following installed:
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64
     export PATH=$PATH:$CUDA_HOME/bin
     cmake -DCMAKE_BUILD_TYPE=Release -DMINERCUDA=true /usr/src/pow-miner-gpu
-    make -j 8 pow-miner pow-miner-cuda lite-client
+    make -j 8 pow-miner pow-miner-cuda tonlib-cli tonlib-cuda-cli lite-client
     ```
 
-   b) OpenCL POW Miner (`pow-miner`, `pow-miner-opencl`, `lite-client`):
+   b) OpenCL POW Miner (`pow-miner`, `pow-miner-opencl`, `tonlib-cli`, `tonlib-opencl-cli`, `lite-client`):
 
     ```shell
     mkdir /usr/bin/ton
     cd /usr/bin/ton
     export CCACHE_DISABLE=1
     cmake -DCMAKE_BUILD_TYPE=Release -DMINEROPENCL=true /usr/src/pow-miner-gpu
-    make -j 8 pow-miner pow-miner-opencl lite-client
+    make -j 8 pow-miner pow-miner-opencl tonlib-cli tonlib-opencl-cli lite-client
     ```
 
+6. Download global config for tonlib-cli's, lite-client:
+
+   ```shell
+   wget https://newton-blockchain.github.io/global.config.json
+   ```
+   
 All done, now you have binaries for mining (depends on GPU device):
 
 ### `/usr/bin/ton/crypto/pow-miner`
@@ -112,6 +118,37 @@ to see the list of available GPUs in the system.
 ```shell
 usage: crypto/pow-miner-cuda [-v][-B][-g<gpu-id>][-G<gpu-threads>] [-t<timeout>] <my-address> <pow-seed> <pow-complexity> <iterations> [<miner-addr> <output-ext-msg-boc>] [-V]
 Outputs a valid <rdata> value for proof-of-work testgiver after computing at most <iterations> hashes or terminates with non-zero exit code
+```
+
+### `/usr/bin/ton/tonlib/tonlib-cli`
+
+This is a standard TONLIB CLI with embedded miner designed for CPU. Can be used in conjunction with GPU-compatible miner on the same system simultaneously.
+
+```shell
+usage: /usr/bin/ton/tonlib/tonlib-cli [-v] -C <lite-server-config> -e 'pminer start <giver_addess> <my_address> [cpu-threads]'
+Starts miner daemon. It uses the specified number of [cpu-threads], lightserver is selected randomly. 
+The process automatically receives tasks from the specified <giver_addess>. During operation the process checks the parameters of the giver every 5 seconds. 
+If they change, the task is restarted. If a solution is found, it sends it to the selected <giver_addess> and <my_address> is rewarded.
+```
+
+### `/usr/bin/ton/tonlib/tonlib-cuda-cli`
+
+This is a TONLIB CLI with embedded GPU-miner compatible with Nvidia hardware. Can be used in multi-GPU environments (see `<gpu-id>` option). Dry run it
+to see the list of available GPUs in the system.
+
+```shell
+§usage: /usr/bin/ton/tonlib/tonlib-cuda-cli [-v] -C <lite-server-config> -e 'pminer start <giver_addess> <my_address> <gpu-id> [gpu-threads]'
+The behavior is the same as the tonlib-cli CPU miner.
+```
+
+### `/usr/bin/ton/tonlib/tonlib-opencl-cli`
+
+This is a TONLIB CLI with embedded GPU-miner compatible with AMD hardware. Can be used in multi-GPU environments (see `<gpu-id>` option). Dry run it
+to see the list of available GPUs in the system.
+
+```shell
+usage: /usr/bin/ton/tonlib/tonlib-opencl-cli [-v] -C <lite-server-config> -e 'pminer start <giver_addess> <my_address> <gpu-id> [gpu-threads]'
+The behavior is the same as the tonlib-cli CPU miner.
 ```
 
 ### `/usr/bin/ton/lite-client/lite-client`

@@ -43,17 +43,17 @@ class Miner {
     td::uint32 gpu_threads = 8;
   };
 
-  static td::optional<std::string> run(const Options& options, const int thread_id);
+  static td::optional<std::string> run(const Options& options);
 };
 
 class MinerCuda : public Miner {
  public:
-  static td::optional<std::string> run(const Options& options, const int thread_id);
+  static td::optional<std::string> run(const Options& options);
 };
 
 class MinerOpenCL : public Miner {
  public:
-  static td::optional<std::string> run(const Options& options, const int thread_id);
+  static td::optional<std::string> run(const Options& options);
 };
 
 #pragma pack(push, 1)

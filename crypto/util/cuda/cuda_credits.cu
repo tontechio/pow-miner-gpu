@@ -471,6 +471,7 @@ __host__ HashResult bitcredit_cpu_hash(uint32_t gpu_id, uint32_t cpu_id, uint32_
 
   bitcredit_gpu_hash<<<grid, block>>>(gpu_threads, cpu_id, threads, (startNounce / gpu_threads), expired, d_BitNonce[cpu_id],
                                       d_BitVcpu[cpu_id]);
+  cudaDeviceSynchronize();
 
   CUDA_CALL_OR_RET_X(cudaMemcpy(&result[cpu_id], d_BitNonce[cpu_id], sizeof(uint64_t), cudaMemcpyDeviceToHost), r);
   CUDA_CALL_OR_RET_X(cudaMemcpy(&vcpu[cpu_id], d_BitVcpu[cpu_id], sizeof(uint64_t), cudaMemcpyDeviceToHost), r);
