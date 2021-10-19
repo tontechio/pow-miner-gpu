@@ -31,7 +31,7 @@ $ crypto/pow-miner-cuda \
 
 The program will run at least 100000000000 iterations in total (distributed to all 16 threads) and either terminate successfully (with zero exit code) and save the required proof of work into file `mined.boc`, or terminate with a non-zero exit code if no proof of work was found. 
 
-## Example
+### Example
 
 ```
 $ crypto/pow-miner-cuda -vv -g 0 -G 16 -t 43200 kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 229760179690128740373110445116482216837 53919893334301279589334030174039261347274288845081144962207220498432 100000000000 kf-kkdY_B7p-77TLn2hUhM6QidWrrsl8FYWCIvBMpZKprBtN mined.boc
@@ -43,6 +43,44 @@ FOUND! GPU ID: 0, CPU thread: 0, VCPU: 4, nonce=289312917, expired=1631801029
 Saving 176 bytes of serialized external message into file `mined.boc`
 [ hashes computed: 5754208852 ]
 [ speed: 8.58523e+08 hps ]
+```
+
+## TONLIB CLI wrapper with embedded GPU miner
+
+The process automatically receives tasks from the specified <giver_addess>. During operation the process checks the parameters of the giver every 5 seconds. 
+If they change, the task is restarted. If a solution is found, it sends it to the selected <giver_addess> and <my_address> is rewarded.
+
+Invoke the tonlib-cuda-cli (tonlib-opencl-cli) utility as follows:
+
+```
+$  tonlib/tonlib-cuda-cli -v 3 -C <lite-server-config> -e 'pminer start <giver_addess> <my_address> <gpu-id> [gpu-threads]'
+```
+
+Here:
+
+- `lite-server-config`: last config from https://newton-blockchain.github.io/global.config.json
+- `gpu-id`: GPU device ID
+- `gpu-threads`: 1..1792, the number of virtual CPU cores simultaneously hashed in a GPU kernel
+- `giver_addess`: the address of the selected giver
+- `my_address`: the address of your wallet (possibly not initialized yet), either in the masterchain or in the workchain (note that you need a masterchain wallet to control a validator)
+
+### Example
+
+```shell
+tonlib/tonlib-cuda-cli -v 3 -C global.config.json -e 'pminer start Ef-FV4QTxLl-7Ct3E6MqOtMt-RGXMxi27g4I645lw6MTWg0f EQDU86V5wyPrLd4nQ0RHPcCLPZq_y1O5wFWyTsMw63vjXTOv 0 32'
+[ 3][t 1][2021-10-19 14:27:57.281760534][TonlibClient.cpp:2121][!Tonlib]	Use init block from USER config: (-1,8000000000000000,15412272):71F1A9213A7C743B50A7F19DD4B4A5F0B69ABE940DCDF506216CC9CFD1586895:1384276A92CA54021B0E54C77CBC097486F1DFB5B81B62D7C1A6EA1B0C591878
+Tonlib is inited
+GPU #0: SM 6.1 NVIDIA GeForce GTX 1080
+Miner #1 created
+synchronization: ???
+synchronization: 0%
+[ 3][t 2][2021-10-19 14:27:57.948185682][LastBlock.cpp:327][!LastBlock]	{"workchain":-1,"shard":-9223372036854775808,"seqno":15433803,"root_hash":"RCM2vts8dIAtZ3BMWbkbcxXcrLapGo7xEhtxvBYtNpw=","file_hash":"j++FfmxyHXy+tYVq07hQ3kR/irKmIEGpVu9Wu18PsX4="}
+synchronization: DONE in 652.8ms
+[ 2][t 1][2021-10-19 14:27:58.044737131][TonlibClient.cpp:682][!GetAccountState]	Unknown code hash: 2s9GOKuPdHJC16F3zmLcwbF87f6YV9l6LQuRrdLuUFo=
+pminer: got new options
+[ expected required hashes for success: 481636794870846 ]
+pminer: start workers
+[ GPU ID: 0, CPU thread: 0, GPU threads: 32, throughput: 33554432 ]
 ```
 
 ## GPU Mining: Optimal Number of GPU Threads

@@ -61,7 +61,18 @@
 #include <cinttypes>
 #include <iostream>
 #include <map>
+#include <stdlib.h>
 #include "git.h"
+
+#if defined MINERCUDA
+#include "crypto/util/cuda/miner.h"
+#include "crypto/util/cuda/cuda.hpp"
+#include "crypto/util/cuda/cuda_helper.h"
+#endif
+
+#if defined MINEROPENCL
+#include "crypto/util/opencl/opencl.h"
+#endif
 
 using tonlib_api::make_object;
 
@@ -136,6 +147,7 @@ class TonlibCli : public td::actor::Actor {
     bool ignore_cache{false};
 
     bool one_shot{false};
+    bool daemon{false};
     std::string cmd;
   };
   TonlibCli(Options options) : options_(std::move(options)) {
@@ -336,7 +348,11 @@ class TonlibCli : public td::actor::Actor {
   }
   void pminer_help() {
     td::TerminalIO::out() << "pminer help\n";
-    td::TerminalIO::out() << "pminer start <giver_addess> <my_address>\n";
+#if defined MINERCUDA || defined MINEROPENCL
+    td::TerminalIO::out() << "pminer start <giver_addess> <my_address> <gpu-id> [gpu-threads]\n";
+#else
+    td::TerminalIO::out() << "pminer start <giver_addess> <my_address> [cpu-threads]\n";
+#endif
     td::TerminalIO::out() << "pminer stop\n";
   }
 
@@ -364,9 +380,10 @@ class TonlibCli : public td::actor::Actor {
       return true;
     };
 
-    td::Promise<td::Unit> cmd_promise = [line = line.clone(), one_shot = options_.one_shot](td::Result<td::Unit> res) {
+    td::Promise<td::Unit> cmd_promise = [line = line.clone(), one_shot = options_.one_shot,
+                                         daemon = options_.daemon](td::Result<td::Unit> res) {
       if (res.is_ok()) {
-        if (one_shot) {
+        if (one_shot && !daemon) {
           LOG(DEBUG) << "OK";
           std::_Exit(0);
         }
@@ -589,6 +606,9 @@ class TonlibCli : public td::actor::Actor {
     struct Options {
       Address giver_address;
       Address my_address;
+      td::int32 gpu_id;
+      td::int32 threads;
+      td::uint32 gpu_threads = 8;
     };
 
     PowMiner(Options options, td::actor::ActorId<tonlib::TonlibClient> client)
@@ -651,11 +671,28 @@ class TonlibCli : public td::actor::Actor {
         need_run_miners_ = false;
         miner_options_copy_ = miner_options_.value();
         miner_options_copy_.token_ = source_.get_cancellation_token();
-        auto n = td::thread::hardware_concurrency();
+        miner_options_copy_.gpu_id = options_.gpu_id;
+        miner_options_copy_.threads = options_.threads;
+        if (options_.gpu_threads > 0) {
+          miner_options_copy_.gpu_threads = options_.gpu_threads;
+        }
+        auto n = options_.threads > 0 ? options_.threads : td::thread::hardware_concurrency();
+#if defined MINERCUDA || defined MINEROPENCL
+        n = 1;
+#endif
         threads_alive_ = n;
         for (td::uint32 i = 0; i < n; i++) {
           threads_.emplace_back([this, actor_id = actor_id(this)] {
+#if defined MINERCUDA
+            cudaSetDevice(miner_options_copy_.gpu_id);
+            cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
+            cudaDeviceSetCacheConfig(cudaFuncCachePreferL1);
+            auto res = ton::MinerCuda::run(miner_options_copy_);
+#elif defined MINEROPENCL
+            auto res = ton::MinerOpenCL::run(miner_options_copy_);
+#else
             auto res = ton::Miner::run(miner_options_copy_);
+#endif
             global_scheduler_->run_in_context_external(
                 [&] { send_closure(actor_id, &PowMiner::got_answer, std::move(res)); });
           });
@@ -760,13 +797,62 @@ class TonlibCli : public td::actor::Actor {
     TRY_RESULT_PROMISE_PREFIX(promise, giver_address, to_account_address(parser.read_word(), false), "giver address");
     TRY_RESULT_PROMISE_PREFIX(promise, my_address, to_account_address(parser.read_word(), false), "my address");
 
+    td::int32 threads = 0, gpu_threads = 0, gpu_id = -1;
+
+#if defined MINERCUDA || defined MINEROPENCL
+    auto gpu_id_s = parser.read_word();
+    if (!gpu_id_s.empty()) {
+      gpu_id = std::atoi(gpu_id_s.data());
+      CHECK(gpu_id >= 0 && gpu_id <= 16);
+    }
+
+    auto gpu_threads_s = parser.read_word();
+    if (!gpu_threads_s.empty()) {
+      gpu_threads = std::atoi(gpu_threads_s.data());
+      CHECK(gpu_threads > 0 && gpu_threads <= 1792);  // MAX_GPU_THREADS
+    }
+#else
+    auto threads_s = parser.read_word();
+    if (!threads_s.empty()) {
+      threads = std::atoi(threads_s.data());
+      CHECK(threads > 0 && threads <= 256);  // MAX_THREADS
+    }
+#endif
+
+#if defined MINERCUDA
+    for (int i = 0; i < MAX_GPUS; i++) {
+      device_map[i] = i;
+      device_name[i] = NULL;
+    }
+    cuda_devicenames();
+    cuda_print_devices();
+    if (gpu_id < 0) {
+      td::TerminalIO::out() << "unknown GPU ID\n";
+      std::exit(2);
+    }
+    std::atexit(cuda_shutdown);
+#endif
+
+#if defined MINEROPENCL
+    if (gpu_id < 0) {
+      auto opencl = opencl::OpenCL();
+      opencl.print_devices();
+      td::TerminalIO::out() << "unknown GPU ID\n";
+      std::exit(2);
+    }
+#endif
+
     auto id = ++pow_miner_id_;
 
     PowMiner::Options options;
     options.giver_address = std::move(giver_address);
     options.my_address = std::move(my_address);
+    options.gpu_id = gpu_id;
+    options.threads = threads;
+    options.gpu_threads = gpu_threads;
+
     pow_miners_.emplace(id, td::actor::create_actor<PowMiner>("PowMiner", std::move(options), client_.get()));
-    td::TerminalIO::out() << "Miner #" << id << " created";
+    td::TerminalIO::out() << "Miner #" << id << " created\n";
     promise.set_value({});
   }
 
@@ -2283,12 +2369,17 @@ class TonlibCli : public td::actor::Actor {
     }
     td::TerminalIO::out() << to_string(obj);
   }
+
+ public:
+  void run_cmd() {
+  }
 };
 
 int main(int argc, char* argv[]) {
   SET_VERBOSITY_LEVEL(verbosity_INFO);
   td::set_default_failure_signal_handler();
 
+  td::actor::ActorOwn<TonlibCli> x;
   td::OptionParser p;
   TonlibCli::Options options;
   p.set_description("cli wrapper around tonlib");
@@ -2302,6 +2393,11 @@ int main(int argc, char* argv[]) {
   p.add_option('M', "in-memory", "store keys only in-memory", [&]() { options.in_memory = true; });
   p.add_option('E', "execute", "execute one command", [&](td::Slice arg) {
     options.one_shot = true;
+    options.cmd = arg.str();
+  });
+  p.add_option('e', "execute-deamon", "execute one command as daemon", [&](td::Slice arg) {
+    options.one_shot = true;
+    options.daemon = true;
     options.cmd = arg.str();
   });
   p.add_checked_option('v', "verbosity", "set verbosity level", [&](td::Slice arg) {
