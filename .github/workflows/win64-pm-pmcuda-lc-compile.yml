@@ -1,5 +1,7 @@
 name: C/C++ CI Windows Server 2019 x64 pow-miner+pow-miner-cuda+lite-client Compile
 
+on: [push,workflow_dispatch]
+
 defaults:
   run:
     shell: cmd
@@ -32,7 +34,9 @@ jobs:
             path: vcpkg     
           
       - name: Setup msbuild.exe
-        uses: microsoft/setup-msbuild@v1.0.2
+        uses: microsoft/setup-msbuild@v1.0.3
+        with:
+            vs-version: '[16.9]'
       
       - uses: Jimver/cuda-toolkit@v0.2.4
         id: cuda-toolkit
