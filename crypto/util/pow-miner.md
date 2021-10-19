@@ -137,7 +137,7 @@ This is a TONLIB CLI with embedded GPU-miner compatible with Nvidia hardware. Ca
 to see the list of available GPUs in the system.
 
 ```shell
-usage: /usr/bin/ton/tonlib/tonlib-cli [-v] -C <lite-server-config> -e 'pminer start <giver_addess> <my_address> <gpu-id> [gpu-threads]'
+§usage: /usr/bin/ton/tonlib/tonlib-cuda-cli [-v] -C <lite-server-config> -e 'pminer start <giver_addess> <my_address> <gpu-id> [gpu-threads]'
 The behavior is the same as the tonlib-cli CPU miner.
 ```
 
@@ -147,7 +147,7 @@ This is a TONLIB CLI with embedded GPU-miner compatible with AMD hardware. Can b
 to see the list of available GPUs in the system.
 
 ```shell
-usage: /usr/bin/ton/tonlib/tonlib-cli [-v] -C <lite-server-config> -e 'pminer start <giver_addess> <my_address> <gpu-id> [gpu-threads]'
+usage: /usr/bin/ton/tonlib/tonlib-opencl-cli [-v] -C <lite-server-config> -e 'pminer start <giver_addess> <my_address> <gpu-id> [gpu-threads]'
 The behavior is the same as the tonlib-cli CPU miner.
 ```
 

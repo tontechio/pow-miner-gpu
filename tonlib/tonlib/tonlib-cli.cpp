@@ -774,7 +774,9 @@ class TonlibCli : public td::actor::Actor {
         return td::Status::OK();
       }
 
-      td::TerminalIO::out() << "pminer: got new options\n";
+      td::TerminalIO::out() << "pminer: got new options from " << options_.giver_address.address->account_address_
+                            << ", seed=" << seed->to_dec_string() << ", complexity=" << complexity->to_dec_string()
+                            << "\n";
       td::BigInt256 bigpower, hrate;
       bigpower.set_pow2(256).mod_div(*complexity, hrate);
       long long hash_rate = hrate.to_long();
@@ -2368,10 +2370,6 @@ class TonlibCli : public td::actor::Actor {
       return;
     }
     td::TerminalIO::out() << to_string(obj);
-  }
-
- public:
-  void run_cmd() {
   }
 };
 
