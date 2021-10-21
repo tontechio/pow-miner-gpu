@@ -60,10 +60,10 @@ jobs:
           bootstrap-vcpkg.bat        
           vcpkg integrate install
           
-      - name: Install vcpkg openssl
+      - name: Install vcpkg openssl pthread
         run: |
           cd vcpkg     
-          vcpkg install openssl:x64-windows
+          vcpkg install openssl:x64-windows pthread:x64-windows
              
       - name: Generate cmake files
         run: |
