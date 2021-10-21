@@ -1,6 +1,9 @@
 name: C/C++ CI Windows Server 2019 x64 pow-miner+pow-miner-cuda+lite-client Compile
 
-on: [push,workflow_dispatch]
+on:
+  push:
+    tags:
+    - '*'
 
 defaults:
   run:
@@ -35,13 +38,11 @@ jobs:
           
       - name: Setup msbuild.exe
         uses: microsoft/setup-msbuild@v1.0.3
-        with:
-            vs-version: '[16.9,16.10]'
-      
+
       - uses: Jimver/cuda-toolkit@v0.2.4
         id: cuda-toolkit
         with:
-            cuda: '11.2.2'
+            cuda: '11.4.0'
 
       - name: Show nvidia cuda toolkit version 
         run: |

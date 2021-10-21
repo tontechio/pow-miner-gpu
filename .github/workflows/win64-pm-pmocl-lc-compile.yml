@@ -1,7 +1,10 @@
 name: C/C++ CI Windows Server 2019 x64 pow-miner+pow-miner-opencl+lite-client Compile
 
-on: [push,workflow_dispatch]
-
+on:
+  push:
+    tags:
+    - '*'
+    
 defaults:
   run:
     shell: cmd
@@ -34,7 +37,7 @@ jobs:
             path: vcpkg     
           
       - name: Setup msbuild.exe
-        uses: microsoft/setup-msbuild@v1.0.2
+        uses: microsoft/setup-msbuild@v1.0.3
         
       - name: Compile zlib Win64
         run: |
