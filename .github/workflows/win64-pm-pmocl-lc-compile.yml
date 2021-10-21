@@ -1,6 +1,6 @@
 name: C/C++ CI Windows Server 2019 x64 pow-miner+pow-miner-opencl+lite-client Compile
 
-on: [push,workflow_dispatch]
+on: [tag]
 
 defaults:
   run:
