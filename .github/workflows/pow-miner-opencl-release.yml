@@ -47,24 +47,55 @@ jobs:
         cd build && \
         cmake -DTON_ARCH=x86-64 -DMINERCUDA=1 -DMINEROPENCL=1 -DCMAKE_BUILD_TYPE=Release ..
 
-    - name: cmake build opencl
+    - name: cmake build pow-miner-opencl
       run: |
-        cd build && cmake --build . --target pow-miner-opencl -j
+        cd build && cmake --build . --target pow-miner-opencl
 
-    - name: cmake build cuda
+    - name: cmake build pow-miner-cuda
       run: |
-        cd build && cmake --build . --target pow-miner-cuda -j
+        cd build && cmake --build . --target pow-miner-cuda
+
+    - name: cmake build pow-miner
+      run: |
+        cd build && cmake --build . --target pow-miner
+
+    - name: cmake build lite-client
+      run: |
+        cd build && cmake --build . --target lite-client
+
+    - name: cmake build tonlib-cli
+      run: |
+        cd build && cmake --build . --target tonlib-cli
+
+    - name: cmake build tonlib-cuda-cli
+      run: |
+        cd build && cmake --build . --target tonlib-cuda-cli
+
+    - name: cmake build tonlib-opencl-cli
+      run: |
+        cd build && cmake --build . --target tonlib-opencl-cli
 
     - name: naming convention
       run: |
         chmod +x build/crypto/pow-miner-opencl
         chmod +x build/crypto/pow-miner-cuda
+        chmod +x build/crypto/pow-miner
+        chmod +x build/lite-client/lite-client
+        chmod +x build/tonlib/tonlib-cli
+        chmod +x build/tonlib/tonlib-cuda-cli
+        chmod +x build/tonlib/tonlib-opencl-cli
+
         tar -zcf build/crypto/pow-miner-opencl-${{ matrix.os }}-x86-64.tar.gz build/crypto/pow-miner-opencl
         tar -zcf build/crypto/pow-miner-cuda-${{ matrix.os }}-x86-64.tar.gz build/crypto/pow-miner-cuda
+        tar -zcf build/crypto/pow-miner-${{ matrix.os }}-x86-64.tar.gz build/crypto/pow-miner
+        tar -zcf build/lite-client/lite-client-${{ matrix.os }}-x86-64.tar.gz build/lite-client/lite-client
+        tar -zcf build/tonlib/tonlib-cli-${{ matrix.os }}-x86-64.tar.gz build/tonlib/tonlib-cli
+        tar -zcf build/tonlib/tonlib-cuda-cli-${{ matrix.os }}-x86-64.tar.gz build/tonlib/tonlib-cuda-cli
+        tar -zcf build/tonlib/tonlib-opencl-cli-${{ matrix.os }}-x86-64.tar.gz build/tonlib/tonlib-opencl-cli
 
     - name: packing
       uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
-        artifacts: build/crypto/pow-miner-*-${{ matrix.os }}-x86-64.tar.gz
+        artifacts: build/crypto/pow-miner-opencl-${{ matrix.os }}-x86-64.tar.gz,build/crypto/pow-miner-cuda-${{ matrix.os }}-x86-64.tar.gz,build/crypto/pow-miner-${{ matrix.os }}-x86-64.tar.gz,build/lite-client/lite-client-${{ matrix.os }}-x86-64.tar.gz,build/tonlib/tonlib-cli-${{ matrix.os }}-x86-64.tar.gz,build/tonlib/tonlib-cuda-cli-${{ matrix.os }}-x86-64.tar.gz
         token: ${{ secrets.GITHUB_TOKEN }}
