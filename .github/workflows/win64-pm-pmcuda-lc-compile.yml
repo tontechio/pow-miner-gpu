@@ -21,9 +21,9 @@ jobs:
 
       - name: Install 7zip
         run: |
-          curl -o 7z1900-x64.exe https://www.7-zip.org/a/7z1900-x64.exe
-          7z1900-x64.exe /S
-          
+          curl -o 7z1900-x64.msi https://www.7-zip.org/a/7z1900-x64.msi
+          msiexec /i 7z1900-x64.msi /quiet /qn /norestart          
+            
       - name: Check out current repository
         uses: actions/checkout@v2
         with:
