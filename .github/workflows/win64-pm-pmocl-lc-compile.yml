@@ -97,11 +97,13 @@ jobs:
           copy /Y build\crypto\Release\pow-miner.exe            deploy_dir\
           copy /Y build\crypto\Release\pow-miner-opencl.exe     deploy_dir\
           copy /Y build\lite-client\Release\lite-client.exe     deploy_dir\
-          
+ 
       - name: Compress collected binaries
-        uses: edgarrc/action-7z@v1
+        uses: papeloto/action-zip@v1
         with:
-          args: 7z a ./deploy_dir/minertools-opencl-windows-x86-64.zip ./deploy_dir/*
+          files: deploy_dir/
+          recursive: false
+          dest: deploy_dir/minertools-opencl-windows-x86-64.zip  
       
       - name: Packing binary files to the GITHUB Release Tag
         uses: ncipollo/release-action@v1
