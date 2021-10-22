@@ -87,10 +87,6 @@ void OpenCL::create_kernel() {
     CL_WRAPPER(clGetProgramBuildInfo(program_, devices_[device_idx_], CL_PROGRAM_BUILD_LOG, blen, &buffer, NULL));
 
     printf("[ OpenCL: ERROR ]\n%s\n", buffer);
-    
-#ifdef _WIN32
-	free(buffer);
-#endif 
 
     exit(4);
   }

@@ -215,10 +215,10 @@ int main(int argc, char* const argv[]) {
         ++verbosity;
         break;
       case 'w':
-#if !defined MINERCUDA && !defined MINEROPENCL
+// #if !defined MINERCUDA && !defined MINEROPENCL
         threads = atoi(optarg);
         CHECK(threads > 0 && threads <= 256); // MAX_THREADS
-#endif
+// #endif
         options.threads = threads;
         break;
 #if defined MINERCUDA || defined MINEROPENCL

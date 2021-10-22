@@ -1,4 +1,4 @@
-name: C/C++ CI Windows Server 2019 x64 pow-miner+pow-miner-cuda+lite-client Compile
+name: win64-pm-pmcuda-lc-compile.yml
 
 on:
   push:
@@ -94,18 +94,24 @@ jobs:
       - name: Show executables
         run: |
           cd build
-          dir pow-miner*.exe /a-D /S /B
-          dir lite-client.exe /a-D /S /B
+          dir *.exe /a-D /S /B
            
-      - name: Find & copy binaries with dependencies
+      - name: Copy compiled binaries with dependencies 
         run: |
-          mkdir artifacts
-          for /d /r %%a in (*) do @if exist %%a\pow-miner.exe (copy /Y %%a\* artifacts\ )
-          for /d /r %%a in (*) do @if exist %%a\pow-miner-cuda.exe (copy /Y %%a\* artifacts\ )
-          for /d /r %%a in (*) do @if exist %%a\lite-client.exe (copy /Y %%a\* artifacts\ )
+          mkdir deploy_dir
           
-      - name: Upload artifacts
-        uses: actions/upload-artifact@master
+          copy /Y build\crypto\Release\libcrypto-1_1-x64.dll    deploy_dir\
+          copy /Y build\crypto\Release\pow-miner.exe            deploy_dir\
+          copy /Y build\crypto\Release\pow-miner-cuda.exe       deploy_dir\
+          copy /Y build\lite-client\Release\lite-client.exe     deploy_dir\
+          
+          cd deploy_dir
+          
+          zip.exe -r minertools-cuda-windows-x86-64.zip .\          
+      
+      - name: Packing binary files to the GITHUB Release Tag
+        uses: ncipollo/release-action@v1
         with:
-          name: win64-pm-pmocl-lc-binaries
-          path: artifacts
+            allowUpdates: true
+            artifacts: deploy_dir\minertools-*
+            token: ${{ secrets.GITHUB_TOKEN }}
