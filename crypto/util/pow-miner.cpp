@@ -36,7 +36,11 @@
 #include <iostream>
 #include <thread>
 #include <cstdlib>
+#ifndef _WIN32
 #include <getopt.h>
+#else
+#include <wingetopt/getopt.h>
+#endif
 #include "git.h"
 #include "Miner.h"
 
