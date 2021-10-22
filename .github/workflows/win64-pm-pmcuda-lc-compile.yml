@@ -18,12 +18,7 @@ jobs:
       - name: Get Current OS version
         run: |
           systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
-
-      - name: Install 7zip
-        run: |
-          curl -o 7z1900-x64.msi https://www.7-zip.org/a/7z1900-x64.msi
-          msiexec /i 7z1900-x64.msi /quiet /qn /norestart          
-            
+  
       - name: Check out current repository
         uses: actions/checkout@v2
         with:
@@ -110,9 +105,10 @@ jobs:
           copy /Y "build\crypto\Release\pow-miner-cuda.exe"       "deploy_dir\"
           copy /Y "build\lite-client\Release\lite-client.exe"     "deploy_dir\"
           
-          cd deploy_dir
-          
-          "%%ProgramFiles%%\7-Zip\7z.exe" a minertools-cuda-windows-x86-64.zip .\*         
+      - name: Compress collected binaries
+        uses: edgarrc/action-7z@v1
+        with:
+          args: 7z a ./deploy_dir/minertools-cuda-windows-x86-64.zip ./deploy_dir/*
       
       - name: Packing binary files to the GITHUB Release Tag
         uses: ncipollo/release-action@v1
