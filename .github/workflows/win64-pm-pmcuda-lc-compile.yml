@@ -108,7 +108,7 @@ jobs:
       - name: Compress collected binaries
         uses: papeloto/action-zip@v1
         with:
-            files: deploy_dir/
+            files: deploy_dir/*
             recursive: false
             dest: deploy_dir/minertools-cuda-windows-x86-64.zip
             
