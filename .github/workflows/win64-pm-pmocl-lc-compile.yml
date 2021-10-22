@@ -19,6 +19,11 @@ jobs:
         run: |
           systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
 
+      - name: Install 7zip
+        run: |
+          curl -o 7z1900-x64.exe https://www.7-zip.org/a/7z1900-x64.exe
+          7z1900-x64.exe /S
+          
       - name: Check out current repository
         uses: actions/checkout@v2
         with:
@@ -100,7 +105,7 @@ jobs:
           
           cd deploy_dir
           
-          zip.exe -r minertools-opencl-windows-x86-64.zip .\          
+          "%%ProgramFiles%%\7-Zip\7z.exe" a minertools-opencl-windows-x86-64.zip .\*         
       
       - name: Packing binary files to the GITHUB Release Tag
         uses: ncipollo/release-action@v1
