@@ -1,13 +1,16 @@
-﻿#include <stdio.h>
+﻿    
+#include <stdio.h>
 #include <memory.h>
 #include <string.h>
-#include <unistd.h>
 #include <map>
 #include <iostream>
-#include <sys/time.h>
 
 #ifndef _WIN32
 #include <unistd.h>
+#include <sys/time.h>=
+#else
+#include <win_usleep.hpp>
+#include <win_gettimeofday.hpp>
 #endif
 
 // include thrust
@@ -188,7 +191,9 @@ void cuda_reset_device(int gpu_id, bool *init) {
       }
     }
     // force exit from algo's scan loops/function
+#ifndef _WIN32    
     restart_threads();
+#endif
     cudaDeviceSynchronize();
     while (cudaStreamQuery(NULL) == cudaErrorNotReady)
       usleep(1000);

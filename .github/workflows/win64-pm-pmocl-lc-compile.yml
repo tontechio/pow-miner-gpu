@@ -77,6 +77,12 @@ jobs:
           cmake --build . --target pow-miner-opencl --config Release
         continue-on-error: true
         
+      - name: Compile tonlib-opencl-cli
+        run: |       
+          cd build
+          cmake --build . --target tonlib-opencl-cli --config Release
+        continue-on-error: true
+        
       - name: Compile lite-client
         run: |       
           cd build
@@ -92,11 +98,12 @@ jobs:
         run: |
           mkdir deploy_dir
           
-          copy /Y build\crypto\Release\libcrypto-1_1-x64.dll    deploy_dir\
-          copy /Y build\crypto\Release\OpenCL.dll               deploy_dir\
-          copy /Y build\crypto\Release\pow-miner.exe            deploy_dir\
-          copy /Y build\crypto\Release\pow-miner-opencl.exe     deploy_dir\
-          copy /Y build\lite-client\Release\lite-client.exe     deploy_dir\
+          copy /Y "build\crypto\Release\libcrypto-1_1-x64.dll"  "deploy_dir\"
+          copy /Y "build\crypto\Release\OpenCL.dll"             "deploy_dir\"
+          copy /Y "build\crypto\Release\pow-miner.exe"          "deploy_dir\"
+          copy /Y "build\crypto\Release\pow-miner-opencl.exe"   "deploy_dir\"
+          copy /Y "build\lite-client\Release\lite-client.exe"   "deploy_dir\"
+          copy /Y "build\tonlib\Release\tonlib-opencl-cli.exe"  "deploy_dir\"
  
       - name: Compress collected binaries
         uses: papeloto/action-zip@v1
