@@ -99,7 +99,11 @@ set(TON_ARCH "native" CACHE STRING "Architecture, will be passed to -march=")
 
 if (TON_USE_ABSEIL)
   message("Add abseil-cpp")
-  add_subdirectory(third-party/abseil-cpp EXCLUDE_FROM_ALL)
+  if (WIN32)
+	add_subdirectory(win_compatability/abseil-cpp EXCLUDE_FROM_ALL)
+  else()
+	add_subdirectory(third-party/abseil-cpp EXCLUDE_FROM_ALL)
+  endif()     
   set(ABSL_FOUND 1)
 endif()
 
