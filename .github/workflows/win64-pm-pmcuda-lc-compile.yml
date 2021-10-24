@@ -110,7 +110,7 @@ jobs:
           copy /Y "build\crypto\Release\pow-miner.exe"            "deploy_dir\"
           copy /Y "build\crypto\Release\pow-miner-cuda.exe"       "deploy_dir\"
           copy /Y "build\lite-client\Release\lite-client.exe"     "deploy_dir\"
-          copy /Y "build\tonlib\Release\tonlib-opencl-cli.exe"    "deploy_dir\"
+          copy /Y "build\tonlib\Release\tonlib-cuda-cli.exe"    "deploy_dir\"
         
       - name: Compress collected binaries
         uses: papeloto/action-zip@v1
