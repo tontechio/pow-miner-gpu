@@ -678,6 +678,11 @@ class AccountState {
       wallet_revision_ = o_revision.value();
       return wallet_type_;
     }
+    // giver wallet
+    if (code_hash == vm::CellHash::from_slice(td::base64_decode("2s9GOKuPdHJC16F3zmLcwbF87f6YV9l6LQuRrdLuUFo=", false))) {
+      wallet_type_ = WalletType::Unknown;
+      return wallet_type_;
+    }
 
     LOG(WARNING) << "Unknown code hash: " << td::base64_encode(code_hash.as_slice());
     wallet_type_ = WalletType::Unknown;

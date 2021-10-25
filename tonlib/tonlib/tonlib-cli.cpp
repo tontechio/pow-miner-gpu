@@ -670,6 +670,8 @@ class TonlibCli : public td::actor::Actor {
         td::TerminalIO::out() << "pminer: start workers\n";
         need_run_miners_ = false;
         miner_options_copy_ = miner_options_.value();
+        // non-bounceable by default
+        miner_options_copy_.my_address.bounceable = false;
         miner_options_copy_.token_ = source_.get_cancellation_token();
         miner_options_copy_.gpu_id = options_.gpu_id;
         miner_options_copy_.threads = options_.threads;
@@ -735,6 +737,10 @@ class TonlibCli : public td::actor::Actor {
     void with_giver_info(td::Result<tonlib_api::object_ptr<tonlib_api::smc_runResult>> r_info) {
       auto status = do_with_giver_info(std::move(r_info));
       LOG_IF(ERROR, status.is_error()) << "pminer: " << status;
+      if (status.is_error()) {
+        // need to restart if liteserver is not ready
+        std::exit(3);
+      }
       next_options_query_at_ = td::Timestamp::in(QUERY_EACH);
       return loop();
     }
