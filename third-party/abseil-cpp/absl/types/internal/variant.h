@@ -1039,12 +1039,16 @@ class VariantStateBase {
  protected:
   using Variant = variant<H, T...>;
 
+#ifndef _WIN32
+
   template <class LazyH = H,
             class ConstructibleH = absl::enable_if_t<
                 std::is_default_constructible<LazyH>::value, LazyH>>
   constexpr VariantStateBase() noexcept(
       std::is_nothrow_default_constructible<ConstructibleH>::value)
       : state_(EmplaceTag<0>()), index_(0) {}
+
+#endif
 
   template <std::size_t I, class... P>
   explicit constexpr VariantStateBase(EmplaceTag<I> tag, P&&... args)
