@@ -739,6 +739,7 @@ class TonlibCli : public td::actor::Actor {
       LOG_IF(ERROR, status.is_error()) << "pminer: " << status;
       if (status.is_error()) {
         // need to restart if liteserver is not ready
+        hangup();
         std::exit(3);
       }
       next_options_query_at_ = td::Timestamp::in(QUERY_EACH);
