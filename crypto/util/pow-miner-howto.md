@@ -83,6 +83,57 @@ pminer: start workers
 [ GPU ID: 0, CPU thread: 0, GPU threads: 32, throughput: 33554432 ]
 ```
 
+## TONLIB CLI logging
+
+To redirect the output to a file, add `&> pminer.log` to the command:
+
+```
+nohup tonlib/tonlib-cuda-cli -v 3 -C global.config.json -e 'pminer start Ef-FV4QTxLl-7Ct3E6MqOtMt-RGXMxi27g4I645lw6MTWg0f kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 0 32' &> pminer.log
+```
+
+## TONLIB CLI automation
+
+Actually, tonlib-*-cli miner does not know how to restart itself.
+If the selected lightserver does not respond, the miner terminates with code 3.
+This allows you to re-run it with another random lightserver from the config.
+
+We suggest running tonlib-*-cli with an automatic restart in one of two ways:
+
+### Systemd unit
+
+Create a file `/etc/systemd/system/miner.service` with the following contents: 
+```
+[Unit]
+Description=NewTON miner
+After=network.target
+
+[Service]
+RestartSec=5
+Restart=always
+WorkingDirectory=/tonminer
+ExecStart=/usr/bin/ton/tonlib/tonlib-cuda-cli -v 3 -C global.conf.json -e 'pminer start Ef-FV4QTxLl-7Ct3E6MqOtMt-RGXMxi27g4I645lw6MTWg0f kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 0 32'
+
+[Install]
+WantedBy=multi-user.target
+Alias=miner.service
+```
+
+Then start the service:
+
+```shell
+systemctl start miner
+```
+
+Use `tail -f /var/log/syslog` to view the service activity.
+
+### Shell
+
+Run the command in an infinite loop:
+
+```shell
+while true; do /usr/bin/ton/tonlib/tonlib-cuda-cli -v 3 -C global.conf.json -e 'pminer start Ef-FV4QTxLl-7Ct3E6MqOtMt-RGXMxi27g4I645lw6MTWg0f kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 0 32'; done
+````
+
 ## GPU Mining: Optimal Number of GPU Threads
 
 GPU Miner has the parameter `-G <gpu-threads>`, the number of logical GPU threads that is used for mining. Default value is 8. 
