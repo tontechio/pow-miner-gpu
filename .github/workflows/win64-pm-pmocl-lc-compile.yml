@@ -1,0 +1,120 @@
+name: win64-pm-pmocl-lc-compile.yml
+
+on:
+  push:
+    tags:
+    - '*'
+    
+defaults:
+  run:
+    shell: cmd
+    
+jobs:
+  build:
+
+    runs-on: windows-2019
+
+    steps:
+      - name: Get Current OS version
+        run: |
+          systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
+
+      - name: Check out current repository
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+          
+      - name: Check out zlib repository
+        uses: actions/checkout@v2
+        with:
+          repository: desktop-app/zlib
+          path: zlib
+          
+      - name: Check out vcpkg repository
+        uses: actions/checkout@v2
+        with: 
+            repository: microsoft/vcpkg
+            path: vcpkg     
+          
+      - name: Setup msbuild.exe
+        uses: microsoft/setup-msbuild@v1.0.3
+        
+      - name: Compile zlib Win64
+        run: |
+          cd zlib\contrib\vstudio\vc14          
+          msbuild zlibstat.vcxproj /p:Configuration=Debug /p:platform=x64        
+          msbuild zlibstat.vcxproj /p:Configuration=ReleaseWithoutAsm /p:platform=x64
+
+      - name: Configure vcpkg
+        run: |
+          cd vcpkg
+          bootstrap-vcpkg.bat        
+          vcpkg integrate install
+          
+      - name: Install vcpkg opencl openssl
+        run: |
+          cd vcpkg
+          vcpkg install opencl:x64-windows     
+          vcpkg install openssl:x64-windows
+             
+      - name: Generate cmake files
+        run: |
+          set root=%cd%
+          echo %root%
+          mkdir build
+          cd build
+          cmake -DCMAKE_TOOLCHAIN_FILE=%root%/vcpkg/scripts/buildsystems/vcpkg.cmake -DMINEROPENCL=true -DZLIB_FOUND=1 -DZLIB_INCLUDE_DIR=%root%\zlib -DZLIB_LIBRARY=%root%\zlib\contrib\vstudio\vc14\x64\ZlibStatReleaseWithoutAsm\zlibstat.lib -DCMAKE_CXX_FLAGS="/DTD_WINDOWS=1 /EHsc /bigobj /W0" -DCMAKE_BUILD_TYPE=Release ..
+          
+      - name: Compile pow-miner
+        run: |       
+          cd build
+          cmake --build . --target pow-miner --config Release
+        continue-on-error: true          
+        
+      - name: Compile pow-miner-opencl
+        run: |       
+          cd build
+          cmake --build . --target pow-miner-opencl --config Release
+        continue-on-error: true
+        
+      - name: Compile tonlib-opencl-cli
+        run: |       
+          cd build
+          cmake --build . --target tonlib-opencl-cli --config Release
+        continue-on-error: true
+        
+      - name: Compile lite-client
+        run: |       
+          cd build
+          cmake --build . --target lite-client --config Release
+        continue-on-error: true
+          
+      - name: Show executables
+        run: |
+          cd build
+          dir *.exe /a-D /S /B
+           
+      - name: Copy compiled binaries with dependencies 
+        run: |
+          mkdir deploy_dir
+          
+          copy /Y "build\crypto\Release\libcrypto-1_1-x64.dll"  "deploy_dir\"
+          copy /Y "build\crypto\Release\OpenCL.dll"             "deploy_dir\"
+          copy /Y "build\crypto\Release\pow-miner.exe"          "deploy_dir\"
+          copy /Y "build\crypto\Release\pow-miner-opencl.exe"   "deploy_dir\"
+          copy /Y "build\lite-client\Release\lite-client.exe"   "deploy_dir\"
+          copy /Y "build\tonlib\Release\tonlib-opencl-cli.exe"  "deploy_dir\"
+ 
+      - name: Compress collected binaries
+        uses: papeloto/action-zip@v1
+        with:
+          files: deploy_dir/
+          recursive: false
+          dest: deploy_dir/minertools-opencl-windows-x86-64.zip  
+      
+      - name: Packing binary files to the GITHUB Release Tag
+        uses: ncipollo/release-action@v1
+        with:
+            allowUpdates: true
+            artifacts: deploy_dir\minertools-*
+            token: ${{ secrets.GITHUB_TOKEN }}

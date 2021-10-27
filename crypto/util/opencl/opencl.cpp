@@ -77,9 +77,21 @@ void OpenCL::create_kernel() {
   if (ret != CL_SUCCESS) {
     size_t blen = 0;
     CL_WRAPPER(clGetProgramBuildInfo(program_, devices_[device_idx_], CL_PROGRAM_BUILD_LOG, 0, NULL, &blen));
+    
+#ifndef _WIN32
     char buffer[blen];
+#else
+    char *buffer = (char *) malloc(blen);
+#endif
+
     CL_WRAPPER(clGetProgramBuildInfo(program_, devices_[device_idx_], CL_PROGRAM_BUILD_LOG, blen, &buffer, NULL));
+
     printf("[ OpenCL: ERROR ]\n%s\n", buffer);
+    
+#ifdef _WIN32
+	free(buffer);
+#endif 
+
     exit(4);
   }
 
@@ -91,7 +103,13 @@ void OpenCL::create_kernel() {
 
 void OpenCL::load_objects(uint32_t gpu_id, uint32_t cpu_id, unsigned char *data, const uint8_t *target,
                           unsigned char *rdata, uint32_t gpu_threads) {
+
+#ifndef _WIN32
   int len = 123, n = 3;
+#else
+  static const int len = 123, n = 3;
+#endif
+
   uint32_t PaddedMessage[16 * n];  // bring balance to the force, 512*3 bits
   memset(PaddedMessage, 0, 16 * n * sizeof(uint32_t));
   memcpy(PaddedMessage, data, len);
