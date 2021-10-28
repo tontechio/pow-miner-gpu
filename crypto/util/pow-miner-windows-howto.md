@@ -11,8 +11,8 @@ If you want more flexibility or control you can also use the `pow-miner-cuda.exe
 
 1. Read basic info about mining on the https://ton.org/mining page. Here you can find giver addresses and some stats.
 2. Install GPU Drivers:
-    I. For CUDA-capable GPU (Nvidia): https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html
-    II. For OpenCL-capable (AMD): http://support.amd.com/en-us/download
+    - For CUDA-capable GPU (Nvidia): https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html
+    - For OpenCL-capable (AMD): http://support.amd.com/en-us/download
 3. Download Wallet app from https://ton.org/wallets and create a wallet for the rewards.
 4. Download last Windows release from https://github.com/tontechio/pow-miner-gpu/releases
 5. Download last global config from https://newton-blockchain.github.io/global.config.json
