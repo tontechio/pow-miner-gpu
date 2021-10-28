@@ -11,6 +11,10 @@
 
 #define MAX_SOURCE_SIZE 0x10000000
 
+#ifdef _WIN32
+typedef unsigned int uint;
+#endif
+
 namespace opencl {
 struct HashResult {
   uint64_t nonce;
