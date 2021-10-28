@@ -15,6 +15,8 @@ GPU pow-miner located at `crypto/util`, check [pow-miner.md](crypto/util/pow-min
 
 TONLIB CLI with embedded GPU-miner located at `tonlib/tonlib`, check [pow-miner-howto.md](crypto/util/pow-miner-howto.md#tonlib-cli-wrapper-with-embedded-gpu-miner) for details.
 
+GPU miner executable files for Windows can be downloaded from https://github.com/tontechio/pow-miner-gpu/releases, check [pow-miner-windows-howto.md](crypto/util/pow-miner-windows-howto.md) for details.
+
 Tested on:
 
 | GPU | Hashrate |
