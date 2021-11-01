@@ -1,4 +1,4 @@
-name: win64-2008-compile.yml
+name: win64-2016-compile.yml
 
 on:
   push:
