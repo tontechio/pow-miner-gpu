@@ -50,7 +50,7 @@ jobs:
 
       - name: Compile zlib Win64
         run: |
-          cd zlib\contrib\vstudio\vc14
+          cd zlib\contrib\vstudio\vc12
           msbuild zlibstat.vcxproj /p:Configuration=Debug /p:platform=x64
           msbuild zlibstat.vcxproj /p:Configuration=ReleaseWithoutAsm /p:platform=x64
 
@@ -71,7 +71,7 @@ jobs:
           echo %root%
           mkdir build
           cd build
-          cmake -DCMAKE_TOOLCHAIN_FILE=%root%/vcpkg/scripts/buildsystems/vcpkg.cmake -DMINERCUDA=true -DMINEROPENCL=true -DZLIB_FOUND=1 -DZLIB_INCLUDE_DIR=%root%\zlib -DZLIB_LIBRARY=%root%\zlib\contrib\vstudio\vc14\x64\ZlibStatReleaseWithoutAsm\zlibstat.lib -DCMAKE_CXX_FLAGS="/DTD_WINDOWS=1 /EHsc /bigobj /W0" -DTON_USE_ABSEIL=OFF -DCMAKE_BUILD_TYPE=Release ..
+          cmake -DCMAKE_TOOLCHAIN_FILE=%root%/vcpkg/scripts/buildsystems/vcpkg.cmake -DMINERCUDA=true -DMINEROPENCL=true -DZLIB_FOUND=1 -DZLIB_INCLUDE_DIR=%root%\zlib -DZLIB_LIBRARY=%root%\zlib\contrib\vstudio\vc12\x64\ZlibStatReleaseWithoutAsm\zlibstat.lib -DCMAKE_CXX_FLAGS="/DTD_WINDOWS=1 /EHsc /bigobj /W0" -DTON_USE_ABSEIL=OFF -DCMAKE_BUILD_TYPE=Release ..
 
       - name: Compile pow-miner
         run: |
