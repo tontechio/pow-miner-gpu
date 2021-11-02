@@ -184,7 +184,7 @@ class MinerBench : public td::Benchmark {
 
     // no solution
     std::fill(options_.complexity.begin(), options_.complexity.end(), 0);
-    options_.max_iterations = UINT64_MAX;
+    options_.max_iterations = INT64_MAX;
   }
 
   std::string get_description() const override {
