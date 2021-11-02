@@ -23,7 +23,7 @@ typedef unsigned char uchar;
 #define MAX_GPUS 16
 #define MAX_CPUS 1
 #ifndef MAX_GPU_THREADS
-#define MAX_GPU_THREADS 1792
+#define MAX_GPU_THREADS 16
 #endif
 extern char *device_name[MAX_GPUS];
 extern short device_map[MAX_GPUS];

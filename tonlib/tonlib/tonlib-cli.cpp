@@ -349,7 +349,7 @@ class TonlibCli : public td::actor::Actor {
   void pminer_help() {
     td::TerminalIO::out() << "pminer help\n";
 #if defined MINERCUDA || defined MINEROPENCL
-    td::TerminalIO::out() << "pminer start <giver_addess> <my_address> <gpu-id> [gpu-threads]\n";
+    td::TerminalIO::out() << "pminer start <giver_addess> <my_address> <gpu-id> [boost-factor]\n";
 #else
     td::TerminalIO::out() << "pminer start <giver_addess> <my_address> [cpu-threads]\n";
 #endif
@@ -608,7 +608,8 @@ class TonlibCli : public td::actor::Actor {
       Address my_address;
       td::int32 gpu_id;
       td::int32 threads;
-      td::uint32 gpu_threads = 8;
+      td::uint32 gpu_threads = 16;
+      td::uint32 factor = 16;
     };
 
     PowMiner(Options options, td::actor::ActorId<tonlib::TonlibClient> client)
@@ -650,7 +651,7 @@ class TonlibCli : public td::actor::Actor {
     }
     void try_stop() {
       if (threads_alive_ == 0) {
-        td::TerminalIO::out() << "pminer: stopped\n";
+        LOG(INFO) << "pminer: stopped";
         stop();
       }
     }
@@ -667,7 +668,7 @@ class TonlibCli : public td::actor::Actor {
       }
 
       if (miner_options_ && threads_.empty() && need_run_miners_) {
-        td::TerminalIO::out() << "pminer: start workers\n";
+        LOG(INFO) << "pminer: start workers";
         need_run_miners_ = false;
         miner_options_copy_ = miner_options_.value();
         // non-bounceable by default
@@ -675,6 +676,8 @@ class TonlibCli : public td::actor::Actor {
         miner_options_copy_.token_ = source_.get_cancellation_token();
         miner_options_copy_.gpu_id = options_.gpu_id;
         miner_options_copy_.threads = options_.threads;
+        miner_options_copy_.factor = options_.factor;
+        miner_options_copy_.start_at = td::Timestamp::now();
         if (options_.gpu_threads > 0) {
           miner_options_copy_.gpu_threads = options_.gpu_threads;
         }
@@ -710,7 +713,7 @@ class TonlibCli : public td::actor::Actor {
         threads_.clear();
       }
       if (answer) {
-        td::TerminalIO::out() << "pminer: got some result - sending query to the giver\n";
+        LOG(INFO) << "pminer: got some result - sending query to the giver";
         vm::CellBuilder cb;
         cb.store_bytes(answer.unwrap());
         send_query(tonlib_api::raw_createAndSendMessage(
@@ -781,13 +784,13 @@ class TonlibCli : public td::actor::Actor {
         return td::Status::OK();
       }
 
-      td::TerminalIO::out() << "pminer: got new options from " << options_.giver_address.address->account_address_
-                            << ", seed=" << seed->to_dec_string() << ", complexity=" << complexity->to_dec_string()
-                            << "\n";
+      LOG(INFO) << "pminer: got new options from " << options_.giver_address.address->account_address_
+                            << ", seed=" << seed->to_dec_string() << ", complexity=" << complexity->to_dec_string();
       td::BigInt256 bigpower, hrate;
       bigpower.set_pow2(256).mod_div(*complexity, hrate);
       long long hash_rate = hrate.to_long();
-      td::TerminalIO::out() << "[ expected required hashes for success: " << hash_rate << " ]\n";
+      LOG(INFO) << "[ expected required hashes for success: " << hash_rate << " ]\n";
+      options.hashes_expected = hash_rate;
       miner_options_ = std::move(options);
       need_run_miners_ = true;
       source_.cancel();
@@ -806,7 +809,7 @@ class TonlibCli : public td::actor::Actor {
     TRY_RESULT_PROMISE_PREFIX(promise, giver_address, to_account_address(parser.read_word(), false), "giver address");
     TRY_RESULT_PROMISE_PREFIX(promise, my_address, to_account_address(parser.read_word(), false), "my address");
 
-    td::int32 threads = 0, gpu_threads = 0, gpu_id = -1;
+    td::int32 threads = 0, factor = 16, gpu_id = -1;
 
 #if defined MINERCUDA || defined MINEROPENCL
     auto gpu_id_s = parser.read_word();
@@ -815,10 +818,10 @@ class TonlibCli : public td::actor::Actor {
       CHECK(gpu_id >= 0 && gpu_id <= 16);
     }
 
-    auto gpu_threads_s = parser.read_word();
-    if (!gpu_threads_s.empty()) {
-      gpu_threads = std::atoi(gpu_threads_s.data());
-      CHECK(gpu_threads > 0 && gpu_threads <= 1792);  // MAX_GPU_THREADS
+    auto factor_s = parser.read_word();
+    if (!factor_s.empty()) {
+      factor = std::atoi(factor_s.data());
+      CHECK(factor >= 1 && factor <= 65536);
     }
 #else
     auto threads_s = parser.read_word();
@@ -858,10 +861,10 @@ class TonlibCli : public td::actor::Actor {
     options.my_address = std::move(my_address);
     options.gpu_id = gpu_id;
     options.threads = threads;
-    options.gpu_threads = gpu_threads;
+    options.factor = factor;
 
     pow_miners_.emplace(id, td::actor::create_actor<PowMiner>("PowMiner", std::move(options), client_.get()));
-    td::TerminalIO::out() << "Miner #" << id << " created\n";
+    LOG(INFO) << "Miner #" << id << " created";
     promise.set_value({});
   }
 

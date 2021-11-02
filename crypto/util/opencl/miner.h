@@ -9,7 +9,7 @@ typedef unsigned char uchar;
 #define MAX_GPUS 16
 #define MAX_CPUS 1
 #ifndef MAX_GPU_THREADS
-#define MAX_GPU_THREADS 1792
+#define MAX_GPU_THREADS 16
 #endif
 
 #if !HAVE_DECL_BE32ENC
