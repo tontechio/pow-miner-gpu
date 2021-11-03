@@ -26,7 +26,7 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
   if (options.max_iterations < throughput) {
     throughput = options.max_iterations;
   }
-  LOG(INFO) << "[ GPU ID: " << gpu_id << ", boost factor: " << options.factor << ", throughput: " << throughput << " ]" << std::endl;
+  LOG(INFO) << "[ GPU ID: " << gpu_id << ", boost factor: " << options.factor << ", throughput: " << throughput << " ]";
 
   // allocate mem
   bitcredit_cpu_init(gpu_id, cpu_id, throughput);
@@ -35,7 +35,7 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
   // std::cout << "data: " << hex_encode(data) << std::endl;
   unsigned char input[123], complexity[32];
   memcpy(input, data.ubegin(), data.size());
-  if (bitcredit_setBlockTarget(gpu_id, options.gpu_threads, cpu_id, input, options.complexity.data(), rdata) == false) {
+  if (!bitcredit_setBlockTarget(gpu_id, options.gpu_threads, cpu_id, input, options.complexity.data(), rdata)) {
     return 0;
   }
 
@@ -55,7 +55,7 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
       return 1;
     }
     i += throughput;
-    if (options.verbosity >= 2 && stat_at.is_in_past())
+    if (options.verbosity >= 2 && stat_at.is_in_past()) {
       ton::Miner::print_stats(options.start_at, i, options.hashes_expected);
       stat_at = stat_at.in(3);
     }
