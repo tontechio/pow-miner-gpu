@@ -51,7 +51,7 @@ jobs:
       - name: Install vcpkg openssl opencl pthread zlib
         run: |
           cd vcpkg
-          vcpkg install openssl:x64-windows opencl:x64-windows pthread:x64-windows zlib:x64-windows 
+          vcpkg install openssl openssl:x64-windows opencl opencl:x64-windows pthread pthread:x64-windows zlib zlib:x64-windows 
 
       - name: Generate cmake files
         run: |
