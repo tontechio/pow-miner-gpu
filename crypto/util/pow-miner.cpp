@@ -213,7 +213,15 @@ class MinerBench : public td::Benchmark {
       }
     }
 
-    LOG(INFO) << "[ *** best boost factor: " << best_factor_ << ", best speed: " << best_speed_ << " hps *** ]";
+    LOG(ERROR) << "";
+    LOG(ERROR) << "*************************************************";
+    LOG(ERROR) << "***";
+    LOG(ERROR) << "***   best boost factor: " << best_factor_;
+    LOG(ERROR) << "***   best speed:        " << best_speed_ << " hps";
+    LOG(ERROR) << "***";
+    LOG(ERROR) << "*************************************************";
+    LOG(ERROR) << "";
+
     std::exit(0);
   }
 
