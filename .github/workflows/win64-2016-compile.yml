@@ -59,7 +59,7 @@ jobs:
           echo %root%
           mkdir build
           cd build
-          cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=%root%/vcpkg/scripts/buildsystems/vcpkg.cmake -DZLIB_FOUND=1 -DZLIB_INCLUDE_DIR=%root%\vcpkg\installed\x64-windows\include -DZLIB_LIBRARY=%root%\vcpkg\installed\x64-windows\lib\zlib.lib -DOPENSSL_FOUND=1 -DOPENSSL_INCLUDE_DIR=%root%\vcpkg\installed\x64-windows\include -DOPENSSL_LIBRARY=%root%\vcpkg\installed\x64-windows\lib\libssl.lib -DCUDA_NVCC_EXECUTABLE="C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v10.2/bin/nvcc.exe" -DCUDA_TOOLKIT_INCLUDE="C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v10.2/include" -DCUDA_TOOLKIT_ROOT_DIR="C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v10.2" -DCUDA_CUDA_LIBRARY="C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v10.2/lib/x64/cuda.lib" -DCUDA_CUDART_LIBRARY="C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v10.2/lib/x64/cudart.lib" -DMINERCUDA=true -DMINEROPENCL=true -DCMAKE_CXX_FLAGS="/DTD_WINDOWS=1 /EHsc /bigobj /W0" -DTON_USE_ABSEIL=OFF -DCMAKE_BUILD_TYPE=Release ..
+          cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=%root%/vcpkg/scripts/buildsystems/vcpkg.cmake -DMINERCUDA=true -DMINEROPENCL=true -DCMAKE_CXX_FLAGS="/DTD_WINDOWS=1 /EHsc /bigobj /W0" -DTON_USE_ABSEIL=OFF -DCMAKE_BUILD_TYPE=Release ..
 
       - name: Compile pow-miner
         run: |
