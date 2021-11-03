@@ -50,6 +50,9 @@ tonlib-cuda-cli.exe -v 3 -C global.conf.json -e "pminer start Ef-FV4QTxLl-7Ct3E6
 goto a
 ```
 
+Ready-to-use batch files can be found here:
+https://github.com/tontechio/pow-miner-win-util
+
 ### As a service
 
 TBD
