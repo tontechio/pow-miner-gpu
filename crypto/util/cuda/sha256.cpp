@@ -24,7 +24,7 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
 
   // mine
   if (device_name[options.gpu_id] == NULL) {
-    std::cout << "not found!" << std::endl;
+    LOG(INFO) << "device not found!";
     exit(4);
   }
   int rc = scanhash_credits(options.gpu_id, cpu_id, H, options, pdata, target, options.max_iterations, rdata);

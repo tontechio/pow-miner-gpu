@@ -96,25 +96,24 @@ jobs:
 
       - name: Copy compiled binaries with dependencies
         run: |
-          mkdir deploy_dir
+          mkdir minertools-opencl-windows-x86-64
 
-          copy /Y "build\crypto\Release\libcrypto-1_1-x64.dll"  "deploy_dir\"
-          copy /Y "build\crypto\Release\OpenCL.dll"             "deploy_dir\"
-          copy /Y "build\crypto\Release\pow-miner.exe"          "deploy_dir\"
-          copy /Y "build\crypto\Release\pow-miner-opencl.exe"   "deploy_dir\"
-          copy /Y "build\lite-client\Release\lite-client.exe"   "deploy_dir\"
-          copy /Y "build\tonlib\Release\tonlib-opencl-cli.exe"  "deploy_dir\"
+          copy /Y "build\crypto\Release\libcrypto-1_1-x64.dll"  "minertools-opencl-windows-x86-64\"
+          copy /Y "build\crypto\Release\OpenCL.dll"             "minertools-opencl-windows-x86-64\"
+          copy /Y "build\crypto\Release\pow-miner-opencl.exe"   "minertools-opencl-windows-x86-64\"
+          copy /Y "build\lite-client\Release\lite-client.exe"   "minertools-opencl-windows-x86-64\"
+          copy /Y "build\tonlib\Release\tonlib-opencl-cli.exe"  "minertools-opencl-windows-x86-64\"
 
       - name: Compress collected binaries
         uses: papeloto/action-zip@v1
         with:
-          files: deploy_dir/
+          files: minertools-opencl-windows-x86-64/
           recursive: false
-          dest: deploy_dir/minertools-opencl-windows-x86-64.zip
+          dest: minertools-opencl-windows-x86-64/minertools-opencl-windows-x86-64.zip
 
       - name: Packing binary files to the GITHUB Release Tag
         uses: ncipollo/release-action@v1
         with:
             allowUpdates: true
-            artifacts: deploy_dir\minertools-*
+            artifacts: minertools-opencl-windows-x86-64\minertools-*
             token: ${{ secrets.GITHUB_TOKEN }}

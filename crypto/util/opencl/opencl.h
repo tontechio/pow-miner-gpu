@@ -32,6 +32,7 @@ class OpenCL {
   void create_kernel();
   void load_objects(uint32_t gpu_id, uint32_t cpu_id, unsigned char *data, const uint8_t *target, unsigned char *rdata, uint32_t gpu_threads);
   HashResult scan_hash(uint cpu_id, uint32_t gpu_threads, td::uint64 threads, td::uint64 start_nonce, uint expired);
+  void release();
 
  private:
   size_t source_size_;

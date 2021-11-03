@@ -106,7 +106,7 @@ This is a GPU-miner compatible with Nvidia hardware. Can be used in multi-GPU en
 to see the list of available GPUs in the system.
 
 ```shell
-usage: crypto/pow-miner-cuda [-v][-B][-g<gpu-id>][-G<gpu-threads>] [-t<timeout>] <my-address> <pow-seed> <pow-complexity> <iterations> [<miner-addr> <output-ext-msg-boc>] [-V]
+usage: crypto/pow-miner-cuda [-v][-B][-g<gpu-id>][-F<boost factor>] [-t<timeout>] <my-address> <pow-seed> <pow-complexity> <iterations> [<miner-addr> <output-ext-msg-boc>] [-V]
 Outputs a valid <rdata> value for proof-of-work testgiver after computing at most <iterations> hashes or terminates with non-zero exit code
 ```
 
@@ -116,7 +116,7 @@ This is a GPU-miner compatible with AMD hardware. Can be used in multi-GPU envir
 to see the list of available GPUs in the system.
 
 ```shell
-usage: crypto/pow-miner-cuda [-v][-B][-g<gpu-id>][-G<gpu-threads>] [-t<timeout>] <my-address> <pow-seed> <pow-complexity> <iterations> [<miner-addr> <output-ext-msg-boc>] [-V]
+usage: crypto/pow-miner-cuda [-v][-B][-g<gpu-id>][-F<boost factor>] [-t<timeout>] <my-address> <pow-seed> <pow-complexity> <iterations> [<miner-addr> <output-ext-msg-boc>] [-V]
 Outputs a valid <rdata> value for proof-of-work testgiver after computing at most <iterations> hashes or terminates with non-zero exit code
 ```
 
@@ -137,7 +137,7 @@ This is a TONLIB CLI with embedded GPU-miner compatible with Nvidia hardware. Ca
 to see the list of available GPUs in the system.
 
 ```shell
-§usage: /usr/bin/ton/tonlib/tonlib-cuda-cli [-v] -C <lite-server-config> -e 'pminer start <giver_addess> <my_address> <gpu-id> [gpu-threads]'
+§usage: /usr/bin/ton/tonlib/tonlib-cuda-cli [-v] -C <lite-server-config> -e 'pminer start <giver_addess> <my_address> <gpu-id> [boost-factor]'
 The behavior is the same as the tonlib-cli CPU miner.
 ```
 
@@ -147,7 +147,7 @@ This is a TONLIB CLI with embedded GPU-miner compatible with AMD hardware. Can b
 to see the list of available GPUs in the system.
 
 ```shell
-usage: /usr/bin/ton/tonlib/tonlib-opencl-cli [-v] -C <lite-server-config> -e 'pminer start <giver_addess> <my_address> <gpu-id> [gpu-threads]'
+usage: /usr/bin/ton/tonlib/tonlib-opencl-cli [-v] -C <lite-server-config> -e 'pminer start <giver_addess> <my_address> <gpu-id> [boost-factor]'
 The behavior is the same as the tonlib-cli CPU miner.
 ```
 
