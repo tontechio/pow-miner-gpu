@@ -678,6 +678,7 @@ class TonlibCli : public td::actor::Actor {
         miner_options_copy_.threads = options_.threads;
         miner_options_copy_.factor = options_.factor;
         miner_options_copy_.start_at = td::Timestamp::now();
+        miner_options_copy_.verbosity = GET_VERBOSITY_LEVEL();
         if (options_.gpu_threads > 0) {
           miner_options_copy_.gpu_threads = options_.gpu_threads;
         }
