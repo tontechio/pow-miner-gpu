@@ -22,7 +22,7 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
   // data
   td::Slice data = H.as_slice();
 
-  td::uint64 throughput = (td::uint64)((1U << 21) * options.factor);// 256*256*64*8*factor/16
+  td::uint64 throughput = (td::uint64)((1U << 20) * options.factor);// 256*256*64*8*factor/32
   if (options.max_iterations < throughput) {
     throughput = options.max_iterations;
   }

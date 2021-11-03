@@ -22,7 +22,7 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
   char guard = head.back();
 
   // throughput
-  td::uint64 throughput = device_intensity(gpu_id, __func__, (td::uint64)((1U << 21) * options.factor));  // 256*256*64*8*factor/16
+  td::uint64 throughput = (td::uint64)((1U << 20) * options.factor);// 256*256*64*8*factor/32
   if (options.max_iterations < throughput) {
     throughput = options.max_iterations;
   }
