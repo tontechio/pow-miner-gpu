@@ -22,7 +22,7 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
   char guard = head.back();
 
   // throughput
-  td::uint64 throughput = (td::uint64)((1U << 20) * options.factor);// 256*256*64*8*factor/32
+  td::uint64 throughput = (td::uint64)((1U << 19) * options.factor);// 256*256*64*8*factor/64
   if (options.max_iterations < throughput) {
     throughput = options.max_iterations;
   }
@@ -57,7 +57,7 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
     i += throughput;
     if (options.verbosity >= 2 && stat_at.is_in_past()) {
       ton::Miner::print_stats(options.start_at, i, options.hashes_expected);
-      stat_at = stat_at.in(3);
+      stat_at = stat_at.in(5);
     }
     if (options.token_) {
       break;

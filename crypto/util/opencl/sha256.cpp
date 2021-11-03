@@ -22,7 +22,7 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
   // data
   td::Slice data = H.as_slice();
 
-  td::uint64 throughput = (td::uint64)((1U << 20) * options.factor);// 256*256*64*8*factor/32
+  td::uint64 throughput = (td::uint64)((1U << 19) * options.factor);// 256*256*64*8*factor/64
   if (options.max_iterations < throughput) {
     throughput = options.max_iterations;
   }
@@ -50,7 +50,7 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
     i += throughput;
     if (options.verbosity >= 2 && stat_at.is_in_past()) {
       ton::Miner::print_stats(options.start_at, i, options.hashes_expected);
-      stat_at = stat_at.in(3);
+      stat_at = stat_at.in(5);
     }
     if (options.token_) {
       break;
