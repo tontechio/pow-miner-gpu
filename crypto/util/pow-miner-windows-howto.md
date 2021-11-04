@@ -40,16 +40,6 @@ We suggest running `tonlib-*-cli` with an automatic restart in one of two ways:
 
 ### Batch Script
 
-An infinite loop in Batch Script refers to the repetition of a command infinitely. The only way to stop an infinitely loop in Windows Batch Script is by either pressing *Ctrl + C* or by closing the program.
-
-Create a batch file with given contents and run it:
-
-```shell
-:a
-tonlib-cuda-cli.exe -v 3 -C global.conf.json -e "pminer start Ef-FV4QTxLl-7Ct3E6MqOtMt-RGXMxi27g4I645lw6MTWg0f kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 0 32"
-goto a
-```
-
 Ready-to-use batch files can be found here:
 https://github.com/tontechio/pow-miner-win-util
 
