@@ -281,7 +281,7 @@ class TonlibCli : public td::actor::Actor {
                      }
                    }
                    load_channnels();
-                   td::TerminalIO::out() << "Tonlib is inited\n";
+                   LOG(PLAIN) << "Tonlib is inited\n";
                    if (options_.one_shot) {
                      td::actor::send_closure(actor_id(this), &TonlibCli::parse_line, td::BufferSlice(options_.cmd));
                    }
@@ -1424,7 +1424,7 @@ class TonlibCli : public td::actor::Actor {
 
   void sync(td::Promise<td::Unit> promise, bool update_last) {
     send_query(make_object<tonlib_api::sync>(), promise.wrap([&, update_last](auto&& block) {
-      td::TerminalIO::out() << "synchronized\n";
+      LOG(PLAIN) << "synchronized\n";
       td::TerminalIO::out() << to_string(block) << "\n";
       if (update_last) {
         current_block_ = std::move(block);
@@ -1653,7 +1653,7 @@ class TonlibCli : public td::actor::Actor {
           auto update = tonlib_api::move_object_as<tonlib_api::updateSyncState>(std::move(result));
           switch (update->sync_state_->get_id()) {
             case tonlib_api::syncStateDone::ID: {
-              td::TerminalIO::out() << "synchronization: DONE in "
+              LOG(PLAIN) << "synchronization: DONE in "
                                     << td::format::as_time(td::Time::now() - sync_started_.at()) << "\n";
               sync_started_ = {};
               break;
@@ -1668,9 +1668,9 @@ class TonlibCli : public td::actor::Actor {
               auto at = progress->current_seqno_;
               auto d = to - from;
               if (d <= 0) {
-                td::TerminalIO::out() << "synchronization: ???\n";
+                LOG(PLAIN) << "synchronization: ???\n";
               } else {
-                td::TerminalIO::out() << "synchronization: " << 100 * (at - from) / d << "%\n";
+                LOG(PLAIN) << "synchronization: " << 100 * (at - from) / d << "%\n";
               }
               break;
             }
