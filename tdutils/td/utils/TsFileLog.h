@@ -25,10 +25,11 @@
 
 namespace td {
 class TsFileLog {
+ public:
   static constexpr int64 DEFAULT_ROTATE_THRESHOLD = 10 * (1 << 20);
 
  public:
   static Result<td::unique_ptr<LogInterface>> create(string path, int64 rotate_threshold = DEFAULT_ROTATE_THRESHOLD,
-                                                     bool redirect_stderr = true);
+                                                     bool redirect_stderr = true, bool merge_thread_logs = false);
 };
 }  // namespace td

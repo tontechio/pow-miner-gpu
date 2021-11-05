@@ -66,6 +66,7 @@ int usage() {
             << " [-v][-B]"
 #if defined MINERCUDA || defined MINEROPENCL
                "[-g<gpu-id>]"
+               "[-p<platform-id>]"
                "[-F<boost-factor>]"
 #else
                "[-w<threads>]"
@@ -124,9 +125,10 @@ double print_stats() {
     passed = 1;
   }
   double speed = static_cast<double>(hashes_computed) / passed;
-  LOG(INFO) << "[ passed: " << passed << "s, hashes computed: " << hashes_computed << " ("
-            << static_cast<double>(hashes_computed) / static_cast<double>(hash_rate) * 100 << "%), speed: " << speed
-            << " hps ]";
+  std::stringstream ss;
+  ss << std::scientific << std::setprecision(1) << speed;
+  LOG(INFO) << "[ passed: " << td::format::as_time(passed) << ", hashes computed: " << hashes_computed << " ("
+     << static_cast<double>(hashes_computed) / static_cast<double>(hash_rate) * 100 << "%), speed: " << ss.str() << " hps ]";
   return speed;
 }
 
@@ -213,11 +215,14 @@ class MinerBench : public td::Benchmark {
       }
     }
 
+    std::stringstream ss;
+    ss << std::scientific << std::setprecision(1) << best_speed_;
+
     LOG(ERROR) << "";
     LOG(ERROR) << "*************************************************";
     LOG(ERROR) << "***";
     LOG(ERROR) << "***   best boost factor: " << best_factor_;
-    LOG(ERROR) << "***   best speed:        " << best_speed_ << " hps";
+    LOG(ERROR) << "***   best speed:        " << ss.str() << " hps";
     LOG(ERROR) << "***";
     LOG(ERROR) << "*************************************************";
     LOG(ERROR) << "";
@@ -236,9 +241,9 @@ int main(int argc, char* const argv[]) {
   ton::Miner::Options options;
 
   progname = argv[0];
-  int i, threads = 1, factor = 16, gpu_id = -1, timeout = 0;
+  int i, threads = 1, factor = 16, gpu_id = -1, platform_id = 0, timeout = 0;
   bool bounce = false, benchmark = false;
-  while ((i = getopt(argc, argv, "bnvw:g:G:F:t:Bh:V")) != -1) {
+  while ((i = getopt(argc, argv, "bnvw:g:p:G:F:t:Bh:V")) != -1) {
     switch (i) {
       case 'v':
         ++verbosity;
@@ -254,6 +259,10 @@ int main(int argc, char* const argv[]) {
       case 'g':
         gpu_id = atoi(optarg);
         CHECK(gpu_id >= 0 && gpu_id <= 16);
+        break;
+      case 'p':
+        platform_id = atoi(optarg);
+        CHECK(platform_id >= 0 && platform_id <= 16);
         break;
       case 'G':
         // deprecated
@@ -315,6 +324,7 @@ int main(int argc, char* const argv[]) {
 #endif
 
   options.gpu_id = gpu_id;
+  options.platform_id = platform_id;
   options.token_ = token.get_cancellation_token();
 
   if (argc != optind + 4 && argc != optind + 6) {

@@ -32,13 +32,14 @@ namespace td {
 namespace detail {
 class TsFileLog : public LogInterface {
  public:
-  Status init(string path, td::int64 rotate_threshold, bool redirect_stderr) {
+  Status init(string path, td::int64 rotate_threshold, bool redirect_stderr, bool merge_thread_logs) {
     path_ = std::move(path);
     rotate_threshold_ = rotate_threshold;
     redirect_stderr_ = redirect_stderr;
     for (int i = 0; i < (int)logs_.size(); i++) {
       logs_[i].id = i;
     }
+    merge_thread_logs_ = merge_thread_logs;
     return init_info(&logs_[0]);
   }
 
@@ -68,6 +69,7 @@ class TsFileLog : public LogInterface {
   bool redirect_stderr_;
   std::string path_;
   std::array<Info, MAX_THREAD_ID> logs_;
+  bool merge_thread_logs_;
 
   LogInterface *get_current_logger() {
     auto *info = get_current_info();
@@ -88,7 +90,7 @@ class TsFileLog : public LogInterface {
   }
 
   string get_path(Info *info) {
-    if (info->id == 0) {
+    if (info->id == 0 || merge_thread_logs_) {
       return path_;
     }
     return PSTRING() << path_ << ".thread" << info->id << ".log";
@@ -104,9 +106,9 @@ class TsFileLog : public LogInterface {
 };
 }  // namespace detail
 
-Result<td::unique_ptr<LogInterface>> TsFileLog::create(string path, td::int64 rotate_threshold, bool redirect_stderr) {
+Result<td::unique_ptr<LogInterface>> TsFileLog::create(string path, td::int64 rotate_threshold, bool redirect_stderr, bool merge_thread_logs) {
   auto res = td::make_unique<detail::TsFileLog>();
-  TRY_STATUS(res->init(path, rotate_threshold, redirect_stderr));
+  TRY_STATUS(res->init(path, rotate_threshold, redirect_stderr, merge_thread_logs));
   return std::move(res);
 }
 }  // namespace td

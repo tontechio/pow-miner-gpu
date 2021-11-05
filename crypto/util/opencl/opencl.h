@@ -50,10 +50,6 @@ class OpenCL {
   cl_command_queue command_queue_;
 
  private:
-  cl_mem pinned_saved_keys_;
-  cl_uchar *saved_plain_;
-  cl_mem pinned_partial_hashes_;
-  cl_uint *partial_hashes_;
   cl_mem buffer_rdata_;
   cl_mem buffer_data_;
   cl_mem buffer_target_;

@@ -53,6 +53,7 @@ void OpenCL::print_devices() {
 
 void OpenCL::create_context(cl_uint platform_idx, cl_uint device_idx) {
   char buf[1024];
+  CL_WRAPPER(clGetDeviceIDs(platforms_[platform_idx], CL_DEVICE_TYPE_ALL, device_count_, devices_, NULL));
   CL_WRAPPER(clGetDeviceInfo(devices_[device_idx], CL_DEVICE_NAME, sizeof(buf), buf, NULL));
   CL_WRAPPER(clGetDeviceInfo(devices_[device_idx], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(max_work_group_size_),
                              &max_work_group_size_, NULL));
@@ -157,6 +158,12 @@ void OpenCL::load_objects(uint32_t gpu_id, uint32_t cpu_id, unsigned char *data,
 }
 
 void OpenCL::release() {
+  CL_WRAPPER(clReleaseCommandQueue(command_queue_));
+  CL_WRAPPER(clReleaseKernel(kernel_));
+  CL_WRAPPER(clReleaseProgram(program_));
+  CL_WRAPPER(clReleaseContext(context_));
+  CL_WRAPPER(clReleaseDevice(devices_[device_idx_]));
+
   CL_WRAPPER(clReleaseMemObject(buffer_result_));
   CL_WRAPPER(clReleaseMemObject(buffer_expired_));
   CL_WRAPPER(clReleaseMemObject(buffer_start_nonce_));
@@ -166,11 +173,10 @@ void OpenCL::release() {
   CL_WRAPPER(clReleaseMemObject(buffer_target_));
   CL_WRAPPER(clReleaseMemObject(buffer_data_));
   CL_WRAPPER(clReleaseMemObject(buffer_rdata_));
-  CL_WRAPPER(clReleaseCommandQueue(command_queue_));
-  CL_WRAPPER(clReleaseKernel(kernel_));
-  CL_WRAPPER(clReleaseProgram(program_));
-  CL_WRAPPER(clReleaseContext(context_));
-  CL_WRAPPER(clReleaseDevice(devices_[device_idx_]));
+
+  free(devices_);
+  free(platforms_);
+  free(source_str_);
 }
 
 HashResult OpenCL::scan_hash(uint cpu_id, uint32_t gpu_threads, td::uint64 threads, td::uint64 start_nonce, uint expired) {

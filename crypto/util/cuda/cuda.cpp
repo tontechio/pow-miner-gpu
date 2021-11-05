@@ -7,7 +7,7 @@
 
 #ifndef _WIN32
 #include <unistd.h>
-#include <sys/time.h>=
+#include <sys/time.h>
 #else
 #include <win_usleep.hpp>
 #include <win_gettimeofday.hpp>

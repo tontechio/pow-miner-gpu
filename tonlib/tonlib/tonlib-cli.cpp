@@ -40,6 +40,7 @@
 #include "td/utils/port/signals.h"
 #include "td/utils/port/path.h"
 #include "td/utils/Random.h"
+#include "td/utils/TsFileLog.h"
 #include "td/utils/as.h"
 
 #include "terminal/terminal.h"
@@ -280,7 +281,7 @@ class TonlibCli : public td::actor::Actor {
                      }
                    }
                    load_channnels();
-                   td::TerminalIO::out() << "Tonlib is inited\n";
+                   LOG(PLAIN) << "Tonlib is inited\n";
                    if (options_.one_shot) {
                      td::actor::send_closure(actor_id(this), &TonlibCli::parse_line, td::BufferSlice(options_.cmd));
                    }
@@ -349,7 +350,7 @@ class TonlibCli : public td::actor::Actor {
   void pminer_help() {
     td::TerminalIO::out() << "pminer help\n";
 #if defined MINERCUDA || defined MINEROPENCL
-    td::TerminalIO::out() << "pminer start <giver_addess> <my_address> <gpu-id> [boost-factor]\n";
+    td::TerminalIO::out() << "pminer start <giver_addess> <my_address> <gpu-id> [boost-factor] [platform-id]\n";
 #else
     td::TerminalIO::out() << "pminer start <giver_addess> <my_address> [cpu-threads]\n";
 #endif
@@ -607,6 +608,7 @@ class TonlibCli : public td::actor::Actor {
       Address giver_address;
       Address my_address;
       td::int32 gpu_id;
+      td::int32 platform_id;
       td::int32 threads;
       td::uint32 gpu_threads = 16;
       td::uint32 factor = 16;
@@ -675,9 +677,11 @@ class TonlibCli : public td::actor::Actor {
         miner_options_copy_.my_address.bounceable = false;
         miner_options_copy_.token_ = source_.get_cancellation_token();
         miner_options_copy_.gpu_id = options_.gpu_id;
+        miner_options_copy_.platform_id = options_.platform_id;
         miner_options_copy_.threads = options_.threads;
         miner_options_copy_.factor = options_.factor;
         miner_options_copy_.start_at = td::Timestamp::now();
+        miner_options_copy_.verbosity = GET_VERBOSITY_LEVEL();
         if (options_.gpu_threads > 0) {
           miner_options_copy_.gpu_threads = options_.gpu_threads;
         }
@@ -712,6 +716,10 @@ class TonlibCli : public td::actor::Actor {
       if (--threads_alive_ == 0) {
         threads_.clear();
       }
+#ifdef MINERCUDA
+      // destroy and cleanup
+      cuda_shutdown();
+#endif
       if (answer) {
         LOG(INFO) << "pminer: got some result - sending query to the giver";
         vm::CellBuilder cb;
@@ -809,7 +817,7 @@ class TonlibCli : public td::actor::Actor {
     TRY_RESULT_PROMISE_PREFIX(promise, giver_address, to_account_address(parser.read_word(), false), "giver address");
     TRY_RESULT_PROMISE_PREFIX(promise, my_address, to_account_address(parser.read_word(), false), "my address");
 
-    td::int32 threads = 0, factor = 16, gpu_id = -1;
+    td::int32 threads = 0, factor = 16, gpu_id = -1, platform_id = 0;
 
 #if defined MINERCUDA || defined MINEROPENCL
     auto gpu_id_s = parser.read_word();
@@ -822,6 +830,12 @@ class TonlibCli : public td::actor::Actor {
     if (!factor_s.empty()) {
       factor = std::atoi(factor_s.data());
       CHECK(factor >= 1 && factor <= 65536);
+    }
+
+    auto platform_id_s = parser.read_word();
+    if (!platform_id_s.empty()) {
+      platform_id = std::atoi(platform_id_s.data());
+      CHECK(platform_id >= 0 && platform_id <= 16);
     }
 #else
     auto threads_s = parser.read_word();
@@ -860,6 +874,7 @@ class TonlibCli : public td::actor::Actor {
     options.giver_address = std::move(giver_address);
     options.my_address = std::move(my_address);
     options.gpu_id = gpu_id;
+    options.platform_id = platform_id;
     options.threads = threads;
     options.factor = factor;
 
@@ -1409,7 +1424,7 @@ class TonlibCli : public td::actor::Actor {
 
   void sync(td::Promise<td::Unit> promise, bool update_last) {
     send_query(make_object<tonlib_api::sync>(), promise.wrap([&, update_last](auto&& block) {
-      td::TerminalIO::out() << "synchronized\n";
+      LOG(PLAIN) << "synchronized\n";
       td::TerminalIO::out() << to_string(block) << "\n";
       if (update_last) {
         current_block_ = std::move(block);
@@ -1638,7 +1653,7 @@ class TonlibCli : public td::actor::Actor {
           auto update = tonlib_api::move_object_as<tonlib_api::updateSyncState>(std::move(result));
           switch (update->sync_state_->get_id()) {
             case tonlib_api::syncStateDone::ID: {
-              td::TerminalIO::out() << "synchronization: DONE in "
+              LOG(PLAIN) << "synchronization: DONE in "
                                     << td::format::as_time(td::Time::now() - sync_started_.at()) << "\n";
               sync_started_ = {};
               break;
@@ -1653,9 +1668,9 @@ class TonlibCli : public td::actor::Actor {
               auto at = progress->current_seqno_;
               auto d = to - from;
               if (d <= 0) {
-                td::TerminalIO::out() << "synchronization: ???\n";
+                LOG(PLAIN) << "synchronization: ???\n";
               } else {
-                td::TerminalIO::out() << "synchronization: " << 100 * (at - from) / d << "%\n";
+                LOG(PLAIN) << "synchronization: " << 100 * (at - from) / d << "%\n";
               }
               break;
             }
@@ -2388,6 +2403,12 @@ int main(int argc, char* argv[]) {
   td::set_default_failure_signal_handler();
 
   td::actor::ActorOwn<TonlibCli> x;
+
+  td::unique_ptr<td::LogInterface> logger_;
+  SCOPE_EXIT {
+      td::log_interface = td::default_log_interface;
+  };
+
   td::OptionParser p;
   TonlibCli::Options options;
   p.set_description("cli wrapper around tonlib");
@@ -2421,7 +2442,7 @@ int main(int argc, char* argv[]) {
                        [&](td::Slice arg) {
                          TRY_RESULT(data, td::read_file_str(arg.str()));
                          options.config = std::move(data);
-                         options.ignore_cache = true;
+                         options.ignore_cache = false;
                          return td::Status::OK();
                        });
   p.add_checked_option('c', "config", "set lite server config", [&](td::Slice arg) {
@@ -2455,6 +2476,10 @@ int main(int argc, char* argv[]) {
       LOG(INFO) << "Use wallet revision = " << revision;
     }
     return td::Status::OK();
+  });
+  p.add_option('l', "logname", "log to file", [&](td::Slice fname) {
+    logger_ = td::TsFileLog::create(fname.str(), td::TsFileLog::DEFAULT_ROTATE_THRESHOLD, true, true).move_as_ok();
+    td::log_interface = logger_.get();
   });
 
   auto S = p.run(argc, argv);

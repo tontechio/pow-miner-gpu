@@ -3,12 +3,13 @@
 Invoke the pow-miner-cuda (pow-miner-opencl) utility as follows:
 
 ```
-$ crypto/pow-miner-cuda -vv -g<gpu-id> -F<boost-factor> -t<timeout-in-sec> <your-wallet-address> <seed> <complexity> <iterations> <pow-giver-address> <boc-filename>
+$ crypto/pow-miner-cuda -vv -g<gpu-id> -p<platform-id> -F<boost-factor> -t<timeout-in-sec> <your-wallet-address> <seed> <complexity> <iterations> <pow-giver-address> <boc-filename>
 ```
 
 Here:
 
 - `gpu-id`: GPU device ID
+- `platform-id`: GPU platform ID (OpenCl only)
 - `boost-factor`: 1..65536, the multiplier for throughput, affects the number of hashes processed per iteration on the GPU
 - `timeout-in-sec`: max amount of seconds that the miner would run before admitting failure
 - `your-wallet-address`: the address of your wallet (possibly not initialized yet), either in the masterchain or in the workchain (note that you need a masterchain wallet to control a validator)
@@ -53,13 +54,14 @@ If they change, the task is restarted. If a solution is found, it sends it to th
 Invoke the tonlib-cuda-cli (tonlib-opencl-cli) utility as follows:
 
 ```
-$  tonlib/tonlib-cuda-cli -v 3 -C <lite-server-config> -e 'pminer start <giver_address> <my_address> <gpu-id> [boost-factor]'
+$  tonlib/tonlib-cuda-cli -v 3 -C <lite-server-config> -e 'pminer start <giver_address> <my_address> <gpu-id> [boost-factor] [platform-id]'
 ```
 
 Here:
 
 - `lite-server-config`: last config from https://newton-blockchain.github.io/global.config.json
 - `gpu-id`: GPU device ID
+- `platform-id`: GPU platform ID (OpenCl only)
 - `boost-factor`: 1..65536, the multiplier for throughput, affects the number of hashes processed per iteration on the GPU
 - `giver_address`: the address of the selected giver
 - `my_address`: the address of your wallet (possibly not initialized yet), either in the masterchain or in the workchain (note that you need a masterchain wallet to control a validator)
@@ -91,10 +93,10 @@ synchronization: DONE in 211.6ms
 
 ## TONLIB CLI logging
 
-To redirect the output to a file, add `&> pminer.log` to the command:
+To redirect the output to a file, add `-l pminer.log` to the command:
 
 ```
-nohup tonlib/tonlib-cuda-cli -v 3 -C global.config.json -e 'pminer start Ef-FV4QTxLl-7Ct3E6MqOtMt-RGXMxi27g4I645lw6MTWg0f kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 0 32' &> pminer.log
+nohup tonlib/tonlib-cuda-cli -v 3 -C global.config.json -e 'pminer start Ef-FV4QTxLl-7Ct3E6MqOtMt-RGXMxi27g4I645lw6MTWg0f kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 0 32' -l pminer.log
 ```
 
 ## TONLIB CLI automation

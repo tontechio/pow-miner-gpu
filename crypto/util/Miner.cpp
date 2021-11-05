@@ -19,6 +19,7 @@
 #include "Miner.h"
 
 #include "td/utils/Random.h"
+#include "td/utils/format.h"
 #include "td/utils/misc.h"
 #include "td/utils/crypto.h"
 #include "td/utils/port/Clocks.h"
@@ -88,7 +89,13 @@ void Miner::print_stats(td::Timestamp start_at, td::uint64 hashes_computed, td::
   if (passed < 1e-9) {
     passed = 1;
   }
-  LOG(INFO) << "[ passed: "<< passed << "s, hashes computed: " << hashes_computed << " (" << static_cast<double>(hashes_computed)/static_cast<double>(hashes_expected)*100 << "%), speed: " << static_cast<double>(hashes_computed) / passed << " hps ]";
+  double speed = static_cast<double>(hashes_computed) / passed;
+  std::stringstream ss;
+  ss << std::scientific << std::setprecision(1) << speed;
+  LOG(INFO) << "[ mining in progress, passed: " << td::format::as_time(passed)
+            << ", hashes computed: " << hashes_computed << " ("
+            << static_cast<double>(hashes_computed) / static_cast<double>(hashes_expected) * 100
+            << "%), speed: " << ss.str() << " hps ]";
 };
 
 td::optional<std::string> build_mine_result(int cpu_id, ton::HDataEnv H, const ton::Miner::Options &options,
