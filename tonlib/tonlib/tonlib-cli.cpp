@@ -713,6 +713,10 @@ class TonlibCli : public td::actor::Actor {
       if (--threads_alive_ == 0) {
         threads_.clear();
       }
+#ifdef MINERCUDA
+      // destroy and cleanup
+      cuda_shutdown();
+#endif
       if (answer) {
         LOG(INFO) << "pminer: got some result - sending query to the giver";
         vm::CellBuilder cb;
@@ -2422,7 +2426,7 @@ int main(int argc, char* argv[]) {
                        [&](td::Slice arg) {
                          TRY_RESULT(data, td::read_file_str(arg.str()));
                          options.config = std::move(data);
-                         options.ignore_cache = true;
+                         options.ignore_cache = false;
                          return td::Status::OK();
                        });
   p.add_checked_option('c', "config", "set lite server config", [&](td::Slice arg) {
