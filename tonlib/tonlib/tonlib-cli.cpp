@@ -40,6 +40,7 @@
 #include "td/utils/port/signals.h"
 #include "td/utils/port/path.h"
 #include "td/utils/Random.h"
+#include "td/utils/TsFileLog.h"
 #include "td/utils/as.h"
 
 #include "terminal/terminal.h"
@@ -2402,6 +2403,12 @@ int main(int argc, char* argv[]) {
   td::set_default_failure_signal_handler();
 
   td::actor::ActorOwn<TonlibCli> x;
+
+  td::unique_ptr<td::LogInterface> logger_;
+  SCOPE_EXIT {
+      td::log_interface = td::default_log_interface;
+  };
+
   td::OptionParser p;
   TonlibCli::Options options;
   p.set_description("cli wrapper around tonlib");
@@ -2469,6 +2476,10 @@ int main(int argc, char* argv[]) {
       LOG(INFO) << "Use wallet revision = " << revision;
     }
     return td::Status::OK();
+  });
+  p.add_option('l', "logname", "log to file", [&](td::Slice fname) {
+    logger_ = td::TsFileLog::create(fname.str(), td::TsFileLog::DEFAULT_ROTATE_THRESHOLD, true, true).move_as_ok();
+    td::log_interface = logger_.get();
   });
 
   auto S = p.run(argc, argv);
