@@ -37,6 +37,7 @@ jobs:
         id: cuda-toolkit
         with:
             method: 'network'
+            sub-packages: '["nvcc", "visual_studio_integration"]'
             cuda: '10.1.243'
 
       - name: Show nvidia cuda toolkit version
