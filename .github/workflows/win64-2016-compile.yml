@@ -36,7 +36,7 @@ jobs:
       - uses: Jimver/cuda-toolkit@v0.2.4
         id: cuda-toolkit
         with:
-            cuda: '10.2.89'
+            cuda: '10.1.243'
 
       - name: Show nvidia cuda toolkit version
         run: |
@@ -130,14 +130,14 @@ jobs:
         with:
             files: deploy_cuda_dir/
             recursive: false
-            dest: artifacts_dir/minertools-cuda-windows-x86-64-winsrv16-cuda-10-2.zip
+            dest: artifacts_dir/minertools-cuda-windows-x86-64-winsrv16-cuda-10-1.zip
             
       - name: Compress collected opencl binaries
         uses: papeloto/action-zip@v1
         with:
             files: deploy_opencl_dir/
             recursive: false
-            dest: artifacts_dir/minertools-opencl-windows-x86-64-winsrv16-cuda-10-2.zip
+            dest: artifacts_dir/minertools-opencl-windows-x86-64-winsrv16-cuda-10-1.zip
 
       - name: Packing binary files to the GITHUB Release Tag
         uses: ncipollo/release-action@v1
