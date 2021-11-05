@@ -48,13 +48,13 @@ GPU #0: SM 6.1 NVIDIA GeForce GTX 1080
 
 ## TONLIB CLI wrapper with embedded GPU miner
 
-The process automatically receives tasks from the specified <giver_addess>. During operation the process checks the parameters of the giver every 5 seconds. 
-If they change, the task is restarted. If a solution is found, it sends it to the selected <giver_addess> and <my_address> is rewarded.
+The process automatically receives tasks from the specified <giver_address>. During operation the process checks the parameters of the giver every 5 seconds. 
+If they change, the task is restarted. If a solution is found, it sends it to the selected <giver_address> and <my_address> is rewarded.
 
 Invoke the tonlib-cuda-cli (tonlib-opencl-cli) utility as follows:
 
 ```
-$  tonlib/tonlib-cuda-cli -v 3 -C <lite-server-config> -e 'pminer start <giver_addess> <my_address> <gpu-id> [boost-factor] [platform-id]'
+$  tonlib/tonlib-cuda-cli -v 3 -C <lite-server-config> -e 'pminer start <giver_address> <my_address> <gpu-id> [boost-factor] [platform-id]'
 ```
 
 Here:
@@ -63,7 +63,7 @@ Here:
 - `gpu-id`: GPU device ID
 - `platform-id`: GPU platform ID (OpenCl only)
 - `boost-factor`: 1..65536, the multiplier for throughput, affects the number of hashes processed per iteration on the GPU
-- `giver_addess`: the address of the selected giver
+- `giver_address`: the address of the selected giver
 - `my_address`: the address of your wallet (possibly not initialized yet), either in the masterchain or in the workchain (note that you need a masterchain wallet to control a validator)
 
 ### Example
