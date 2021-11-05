@@ -93,10 +93,10 @@ synchronization: DONE in 211.6ms
 
 ## TONLIB CLI logging
 
-To redirect the output to a file, add `&> pminer.log` to the command:
+To redirect the output to a file, add `-l pminer.log` to the command:
 
 ```
-nohup tonlib/tonlib-cuda-cli -v 3 -C global.config.json -e 'pminer start Ef-FV4QTxLl-7Ct3E6MqOtMt-RGXMxi27g4I645lw6MTWg0f kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 0 32' &> pminer.log
+nohup tonlib/tonlib-cuda-cli -v 3 -C global.config.json -e 'pminer start Ef-FV4QTxLl-7Ct3E6MqOtMt-RGXMxi27g4I645lw6MTWg0f kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 0 32' -l pminer.log
 ```
 
 ## TONLIB CLI automation
