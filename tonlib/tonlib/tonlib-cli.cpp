@@ -832,8 +832,8 @@ class TonlibCli : public td::actor::Actor {
     }
 
     auto platform_id_s = parser.read_word();
-    if (!platform_s.empty()) {
-      platform_id = std::atoi(platform_s.data());
+    if (!platform_id_s.empty()) {
+      platform_id = std::atoi(platform_id_s.data());
       CHECK(platform_id >= 0 && platform_id <= 16);
     }
 #else
