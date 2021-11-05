@@ -19,7 +19,7 @@ If you want more flexibility or control you can also use the `pow-miner-cuda.exe
 6. Invoke the `tonlib-cuda-cli.exe` (`tonlib-opencl-cli.exe`) utility as follows:
 
 ```
-> tonlib-cuda-cli.exe -v 3 -C <global-config> -e "pminer start <giver_addess> <my_address> <gpu-id> [boost-factor]"
+> tonlib-cuda-cli.exe -v 3 -C <global-config> -e "pminer start <giver_addess> <my_address> <gpu-id> [boost-factor] [platform-id]"
 ```
 
 ## TONLIB CLI logging

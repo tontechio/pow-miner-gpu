@@ -16,7 +16,7 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
   //opencl.load_source("sha256.cl");
   opencl.set_source(sha256_cl, sha256_cl_len);
   opencl.print_devices();
-  opencl.create_context(0, options.gpu_id);
+  opencl.create_context(options.platform_id, options.gpu_id);
   opencl.create_kernel();
 
   // data

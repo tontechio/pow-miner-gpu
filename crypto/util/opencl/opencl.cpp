@@ -53,6 +53,7 @@ void OpenCL::print_devices() {
 
 void OpenCL::create_context(cl_uint platform_idx, cl_uint device_idx) {
   char buf[1024];
+  CL_WRAPPER(clGetDeviceIDs(platforms_[platform_idx], CL_DEVICE_TYPE_ALL, device_count_, devices_, NULL));
   CL_WRAPPER(clGetDeviceInfo(devices_[device_idx], CL_DEVICE_NAME, sizeof(buf), buf, NULL));
   CL_WRAPPER(clGetDeviceInfo(devices_[device_idx], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(max_work_group_size_),
                              &max_work_group_size_, NULL));

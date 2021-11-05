@@ -42,6 +42,7 @@ class Miner {
     td::Timestamp start_at;
     int verbosity;
     td::int32 gpu_id;
+    td::int32 platform_id;
     td::int32 threads;
     td::uint32 gpu_threads = 16;
     td::uint64 factor = 16;
