@@ -88,7 +88,7 @@ void Miner::print_stats(td::Timestamp start_at, td::uint64 hashes_computed, td::
   if (passed < 1e-9) {
     passed = 1;
   }
-  LOG(INFO) << "[ passed: "<< passed << "s, hashes computed: " << hashes_computed << " (" << static_cast<double>(hashes_computed)/static_cast<double>(hashes_expected)*100 << "%), speed: " << static_cast<double>(hashes_computed) / passed << " hps ]";
+  LOG(INFO) << "[ mining in progress, passed: "<< passed << "s, hashes computed: " << hashes_computed << " (" << static_cast<double>(hashes_computed)/static_cast<double>(hashes_expected)*100 << "%), speed: " << static_cast<double>(hashes_computed) / passed << " hps ]";
 };
 
 td::optional<std::string> build_mine_result(int cpu_id, ton::HDataEnv H, const ton::Miner::Options &options,
