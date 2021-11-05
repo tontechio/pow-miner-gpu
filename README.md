@@ -17,6 +17,11 @@ TONLIB CLI with embedded GPU-miner located at `tonlib/tonlib`, check [pow-miner-
 
 GPU miner executable files for Windows can be downloaded from https://github.com/tontechio/pow-miner-gpu/releases, check [pow-miner-windows-howto.md](crypto/util/pow-miner-windows-howto.md) for details.
 
+HW Supported:
+- Nvidia: nVidia GT640+ or newer, Quadro series with Kepler chip or newer (FX not supported)
+- Radeon HD78xx series and newer, AMD GPU GCN 1.0+
+- HD4000 or newer
+
 Tested on:
 
 | GPU | Hashrate |
