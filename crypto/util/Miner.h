@@ -37,13 +37,20 @@ class Miner {
     td::optional<td::Timestamp> expire_at;
     td::int64 max_iterations = std::numeric_limits<td::int64>::max();
     std::atomic<td::uint64>* hashes_computed{nullptr};
+    td::uint64 hashes_expected = 1;
     td::CancellationToken token_;
+    td::Timestamp start_at;
+    int verbosity;
     td::int32 gpu_id;
+    td::int32 platform_id;
     td::int32 threads;
-    td::uint32 gpu_threads = 8;
+    td::uint32 gpu_threads = 16;
+    td::uint64 factor = 16;
   };
 
   static td::optional<std::string> run(const Options& options);
+
+  static void print_stats(td::Timestamp start_at, td::uint64 hashes_computed, td::uint64 hashes_expected);
 };
 
 class MinerCuda : public Miner {

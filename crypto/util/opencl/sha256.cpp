@@ -16,20 +16,19 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
   //opencl.load_source("sha256.cl");
   opencl.set_source(sha256_cl, sha256_cl_len);
   opencl.print_devices();
-  opencl.create_context(0, options.gpu_id);
+  opencl.create_context(options.platform_id, options.gpu_id);
   opencl.create_kernel();
 
   // data
   td::Slice data = H.as_slice();
 
-  td::uint64 throughput = ((td::uint64)options.gpu_threads) * 256 * 256 * 64;
+  td::uint64 throughput = (td::uint64)((1U << 19) * options.factor);// 256*256*64*8*factor/64
   if (options.max_iterations < throughput) {
     throughput = options.max_iterations;
   }
-  std::cout << "[ GPU ID: " << options.gpu_id << ", CPU thread: " << cpu_id << ", GPU threads: " << options.gpu_threads
-            << ", throughput: " << throughput << " ]" << std::endl;
+  LOG(INFO) << "[ GPU ID: " << options.gpu_id << ", boost factor: " << options.factor << ", throughput: " << throughput << " ]";
 
-  // set data
+      // set data
   //std::cout << "data: " << hex_encode(data) << std::endl;
   unsigned char input[123], complexity[32];
   memcpy(input, data.ubegin(), data.size());
@@ -37,14 +36,21 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
 
   uint32_t expired;
   td::int64 i = 0;
-  for (; i < options.max_iterations; i += throughput) {
+  td::Timestamp stat_at = td::Timestamp::now();
+  for (; i < options.max_iterations;) {
     expired = (uint32_t)td::Clocks::system() + 900;
     HashResult foundNonce = opencl.scan_hash(cpu_id, options.gpu_threads, throughput, i, expired);
     if (foundNonce.nonce != UINT64_MAX) {
       if (options.hashes_computed) {
         *options.hashes_computed += i + foundNonce.nonce * foundNonce.vcpu;
       }
+      opencl.release();
       return ton::build_mine_result(cpu_id, H, options, rdata, foundNonce.nonce, foundNonce.vcpu, expired);
+    }
+    i += throughput;
+    if (options.verbosity >= 2 && stat_at.is_in_past()) {
+      ton::Miner::print_stats(options.start_at, i, options.hashes_expected);
+      stat_at = stat_at.in(5);
     }
     if (options.token_) {
       break;
@@ -57,6 +63,7 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
     *options.hashes_computed += i;
   }
 
+  opencl.release();
   return {};
 }
 

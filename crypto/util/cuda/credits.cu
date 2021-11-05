@@ -22,12 +22,11 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
   char guard = head.back();
 
   // throughput
-  td::uint64 throughput = device_intensity(gpu_id, __func__, 1U << 25);  // 256*256*64*8
+  td::uint64 throughput = (td::uint64)((1U << 19) * options.factor);// 256*256*64*8*factor/64
   if (options.max_iterations < throughput) {
     throughput = options.max_iterations;
   }
-  std::cout << "[ GPU ID: " << gpu_id << ", CPU thread: " << cpu_id << ", GPU threads: " << options.gpu_threads
-            << ", throughput: " << throughput << " ]" << std::endl;
+  LOG(INFO) << "[ GPU ID: " << gpu_id << ", boost factor: " << options.factor << ", throughput: " << throughput << " ]";
 
   // allocate mem
   bitcredit_cpu_init(gpu_id, cpu_id, throughput);
@@ -36,13 +35,14 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
   // std::cout << "data: " << hex_encode(data) << std::endl;
   unsigned char input[123], complexity[32];
   memcpy(input, data.ubegin(), data.size());
-  if (bitcredit_setBlockTarget(gpu_id, options.gpu_threads, cpu_id, input, options.complexity.data(), rdata) == false) {
+  if (!bitcredit_setBlockTarget(gpu_id, options.gpu_threads, cpu_id, input, options.complexity.data(), rdata)) {
     return 0;
   }
 
   uint32_t expired;
   td::int64 i = 0;
-  for (; i < options.max_iterations; i += throughput) {
+  td::Timestamp stat_at = td::Timestamp::now();
+  for (; i < options.max_iterations;) {
     expired = (uint32_t)td::Clocks::system() + 900;
     HashResult foundNonce = bitcredit_cpu_hash(gpu_id, cpu_id, options.gpu_threads, throughput, i, expired);
     if (foundNonce.nonce != UINT64_MAX) {
@@ -53,6 +53,11 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
         *options.hashes_computed += i + foundNonce.nonce * foundNonce.vcpu;
       }
       return 1;
+    }
+    i += throughput;
+    if (options.verbosity >= 2 && stat_at.is_in_past()) {
+      ton::Miner::print_stats(options.start_at, i, options.hashes_expected);
+      stat_at = stat_at.in(5);
     }
     if (options.token_) {
       break;

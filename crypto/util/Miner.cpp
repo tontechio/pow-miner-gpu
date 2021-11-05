@@ -19,6 +19,7 @@
 #include "Miner.h"
 
 #include "td/utils/Random.h"
+#include "td/utils/format.h"
 #include "td/utils/misc.h"
 #include "td/utils/crypto.h"
 #include "td/utils/port/Clocks.h"
@@ -83,10 +84,23 @@ td::optional<std::string> Miner::run(const Options &options) {
   return {};
 }
 
+void Miner::print_stats(td::Timestamp start_at, td::uint64 hashes_computed, td::uint64 hashes_expected) {
+  auto passed = td::Timestamp::now().at() - start_at.at();
+  if (passed < 1e-9) {
+    passed = 1;
+  }
+  double speed = static_cast<double>(hashes_computed) / passed;
+  std::stringstream ss;
+  ss << std::scientific << std::setprecision(1) << speed;
+  LOG(INFO) << "[ mining in progress, passed: " << td::format::as_time(passed)
+            << ", hashes computed: " << hashes_computed << " ("
+            << static_cast<double>(hashes_computed) / static_cast<double>(hashes_expected) * 100
+            << "%), speed: " << ss.str() << " hps ]";
+};
+
 td::optional<std::string> build_mine_result(int cpu_id, ton::HDataEnv H, const ton::Miner::Options &options,
                                             unsigned char *rdata, uint64_t nonce, uint64_t vcpu, uint32_t expired) {
-  std::cout << "FOUND! GPU ID: " << options.gpu_id << ", CPU thread: " << cpu_id << ", GPU thread: " << vcpu
-            << ", nonce=" << nonce << ", expired=" << expired << std::endl;
+  LOG(INFO) << "FOUND! GPU ID: " << options.gpu_id << ", nonce=" << nonce << ", expired=" << expired;
 
   //    std::cout << cpu_id << ": "<< "rdata[" << vcpu << "]: ";
   //    for (int i = 0; i < 32; i++) {
