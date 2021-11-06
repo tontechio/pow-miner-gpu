@@ -150,6 +150,7 @@ class TonlibCli : public td::actor::Actor {
     bool one_shot{false};
     bool daemon{false};
     std::string cmd;
+    std::string logfile;
   };
   TonlibCli(Options options) : options_(std::move(options)) {
   }
@@ -896,6 +897,9 @@ class TonlibCli : public td::actor::Actor {
     }
 
     if (cmd == "start") {
+      if (options_.logfile.length() > 0) {
+        td::TerminalIO::out() << "Miner started, all output to <" << options_.logfile << ">\n";
+      }
       return pminer_start(parser, std::move(promise));
     }
     if (cmd == "stop") {
@@ -2478,6 +2482,7 @@ int main(int argc, char* argv[]) {
     return td::Status::OK();
   });
   p.add_option('l', "logname", "log to file", [&](td::Slice fname) {
+    options.logfile = fname.str();
     logger_ = td::TsFileLog::create(fname.str(), td::TsFileLog::DEFAULT_ROTATE_THRESHOLD, true, true).move_as_ok();
     td::log_interface = logger_.get();
   });
