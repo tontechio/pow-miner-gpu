@@ -26,7 +26,7 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
   if (options.max_iterations < throughput) {
     throughput = options.max_iterations;
   }
-  LOG(INFO) << "[ GPU ID: " << options.gpu_id << ", boost factor: " << options.factor << ", throughput: " << throughput << " ]";
+  LOG(INFO) << "[ START MINER, GPU ID: " << options.gpu_id << ", boost factor: " << options.factor << ", throughput: " << throughput << " ]";
 
       // set data
   //std::cout << "data: " << hex_encode(data) << std::endl;

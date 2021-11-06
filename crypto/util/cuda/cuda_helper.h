@@ -158,13 +158,14 @@ __device__ __host__ __forceinline__ void xchg(uint32_t &x, uint32_t &y) {
 /*********************************************************************/
 // Macros to catch CUDA errors in CUDA runtime calls
 
-#define CUDA_SAFE_CALL(call)                                                                                          \
-  do {                                                                                                                \
-    cudaError_t err = call;                                                                                           \
-    if (cudaSuccess != err) {                                                                                         \
-      fprintf(stderr, "Cuda error in func '%s' at line %i : %s.\n", __FUNCTION__, __LINE__, cudaGetErrorString(err)); \
-      exit(EXIT_FAILURE);                                                                                             \
-    }                                                                                                                 \
+#define CUDA_SAFE_CALL(call)                                                                    \
+  do {                                                                                          \
+    cudaError_t err = call;                                                                     \
+    if (cudaSuccess != err) {                                                                   \
+      LOG(ERROR) << "Cuda error in func '" << __FUNCTION__ << "' at line " << __LINE__ << " : " \
+                 << cudaGetErrorString(err) << ".";                                             \
+      exit(EXIT_FAILURE);                                                                       \
+    }                                                                                           \
   } while (0)
 
 #define CUDA_CALL_OR_RET(call)                              \

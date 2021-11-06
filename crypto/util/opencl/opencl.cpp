@@ -16,20 +16,20 @@ void OpenCL::load_source(const char *filename) {
 
   fp = fopen(filename, "r");
   if (!fp) {
-    fprintf(stderr, "[ OpenCL: failed to load kernel source '%s' ]\n", filename);
+    LOG(ERROR) << "[ OpenCL: failed to load kernel source '" <<  filename << "' ]";
     exit(1);
   }
   source_str_ = (char *)malloc(MAX_SOURCE_SIZE);
   source_size_ = fread(source_str_, 1, MAX_SOURCE_SIZE, fp);
   fclose(fp);
-  printf("[ OpenCL: loaded kernel source '%s' (%lu bytes) ]\n", filename, source_size_);
+  LOG(PLAIN) << "[ OpenCL: loaded kernel source '" << filename << "' (" << source_size_ << " bytes) ]";
 }
 
 void OpenCL::set_source(unsigned char *source, unsigned int length) {
   source_str_ = (char *)malloc(MAX_SOURCE_SIZE);
   memcpy(source_str_, source, length);
   source_size_ = length;
-  printf("[ OpenCL: set kernel source (%lu bytes) ]\n", source_size_);
+  LOG(PLAIN) << "[ OpenCL: set kernel source (" << source_size_ << " bytes) ]";
 }
 
 void OpenCL::print_devices() {
@@ -46,7 +46,7 @@ void OpenCL::print_devices() {
     CL_WRAPPER(clGetDeviceIDs(platforms_[p], CL_DEVICE_TYPE_ALL, device_count_, devices_, NULL));
     for (uint i = 0; i < device_count_; i++) {
       CL_WRAPPER(clGetDeviceInfo(devices_[i], CL_DEVICE_NAME, sizeof(buf), buf, NULL));
-      printf("[ OpenCL: platform #%d device #%d %s ]\n", p, i, buf);
+      LOG(PLAIN) << "[ OpenCL: platform #" << p << " device #" << i << " " << buf << " ]";
     }
   }
 }
@@ -58,8 +58,8 @@ void OpenCL::create_context(cl_uint platform_idx, cl_uint device_idx) {
   CL_WRAPPER(clGetDeviceInfo(devices_[device_idx], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(max_work_group_size_),
                              &max_work_group_size_, NULL));
 
-  printf("[ OpenCL: create context for platform #%d device #%d %s, max work group size is %lu ]\n", platform_idx,
-         device_idx, buf, max_work_group_size_);
+  LOG(PLAIN) << "[ OpenCL: create context for platform #" << platform_idx << " device #" << device_idx << " " << buf
+            << ", max work group size is " << max_work_group_size_ << " ]";
 
   cl_int ret;
   context_ = clCreateContext(NULL, 1, &devices_[device_idx], NULL, NULL, &ret);
@@ -83,7 +83,7 @@ void OpenCL::create_kernel() {
 
     CL_WRAPPER(clGetProgramBuildInfo(program_, devices_[device_idx_], CL_PROGRAM_BUILD_LOG, blen, &buffer, NULL));
 
-    printf("[ OpenCL: ERROR ]\n%s\n", buffer);
+    LOG(ERROR) << "[ OpenCL: ERROR ]\n" << buffer << "\n";
     free(buffer);
     exit(4);
   }

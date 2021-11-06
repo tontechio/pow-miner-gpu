@@ -26,7 +26,7 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
   if (options.max_iterations < throughput) {
     throughput = options.max_iterations;
   }
-  LOG(INFO) << "[ GPU ID: " << gpu_id << ", boost factor: " << options.factor << ", throughput: " << throughput << " ]";
+  LOG(INFO) << "[ START MINER, GPU ID: " << gpu_id << ", boost factor: " << options.factor << ", throughput: " << throughput << " ]";
 
   // allocate mem
   bitcredit_cpu_init(gpu_id, cpu_id, throughput);

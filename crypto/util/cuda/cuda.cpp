@@ -78,7 +78,7 @@ void cuda_print_devices() {
     cudaDeviceProp props;
     cudaGetDeviceProperties(&props, m);
     if (!opt_n_threads || n < opt_n_threads)
-      fprintf(stderr, "GPU #%d: SM %d.%d %s\n", m, props.major, props.minor, props.name);
+      LOG(ERROR) << "[ GPU #" << m << ": SM " << props.major << "." << props.minor << " " << props.name << " ]";
   }
 }
 
