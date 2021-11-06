@@ -50,7 +50,7 @@ class Miner {
 
   static td::optional<std::string> run(const Options& options);
 
-  static void print_stats(td::Timestamp start_at, td::uint64 hashes_computed, td::uint64 hashes_expected);
+  static void print_stats(td::Timestamp start_at, td::uint64 hashes_computed);
 };
 
 class MinerCuda : public Miner {

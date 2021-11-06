@@ -56,7 +56,7 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
     }
     i += throughput;
     if (options.verbosity >= 2 && stat_at.is_in_past()) {
-      ton::Miner::print_stats(options.start_at, i, options.hashes_expected);
+      ton::Miner::print_stats(options.start_at, i);
       stat_at = stat_at.in(5);
     }
     if (options.token_) {
