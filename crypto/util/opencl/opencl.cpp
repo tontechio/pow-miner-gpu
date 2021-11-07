@@ -33,16 +33,26 @@ void OpenCL::set_source(unsigned char *source, unsigned int length) {
 }
 
 void OpenCL::print_devices() {
+  cl_int cl_err = CL_SUCCESS;
+  
   // platform
   CL_WRAPPER(clGetPlatformIDs(0, NULL, &platform_count_));
   platforms_ = (cl_platform_id *)malloc(platform_count_ * sizeof(cl_platform_id));
   CL_WRAPPER(clGetPlatformIDs(platform_count_, platforms_, NULL));
 
+  // platforms
+  printf("[ OpenCL: platforms count = %d ]\n", platform_count_);
+	
   // devices
   char buf[1024];
   for (uint p = 0; p < platform_count_; p++) {
-    CL_WRAPPER(clGetDeviceIDs(platforms_[p], CL_DEVICE_TYPE_ALL, 0, NULL, &device_count_));
-    devices_ = (cl_device_id *)malloc(device_count_ * sizeof(cl_device_id));
+    // CL_WRAPPER(clGetDeviceIDs(platforms_[p], CL_DEVICE_TYPE_ALL, 0, NULL, &device_count_));
+    cl_err = clGetDeviceIDs(platforms_[p], CL_DEVICE_TYPE_ALL, 0, NULL, &device_count_);
+	if(cl_err != CL_SUCCESS) {
+		platform_count_ = p;
+		break;
+	}
+	devices_ = (cl_device_id *)malloc(device_count_ * sizeof(cl_device_id));
     CL_WRAPPER(clGetDeviceIDs(platforms_[p], CL_DEVICE_TYPE_ALL, device_count_, devices_, NULL));
     for (uint i = 0; i < device_count_; i++) {
       CL_WRAPPER(clGetDeviceInfo(devices_[i], CL_DEVICE_NAME, sizeof(buf), buf, NULL));
