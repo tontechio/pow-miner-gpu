@@ -64,7 +64,14 @@ void OpenCL::print_devices() {
 void OpenCL::create_context(cl_uint platform_idx, cl_uint device_idx) {
   char buf[1024];
   
-  printf("[OpenCL::create_context: platform_idx = %d, device_idx = %d]\n", platform_idx, device_idx);
+  printf("[ OpenCL::create_context: platform_idx = %d, device_idx = %d ]\n", platform_idx, device_idx);
+  
+  CL_WRAPPER(clGetDeviceIDs(platforms_[platform_idx], CL_DEVICE_TYPE_ALL, 0, NULL, &device_count_));
+  
+  if(devices_ != NULL)	
+	  free(devices_);
+  
+  devices_ = (cl_device_id *)malloc(device_count_ * sizeof(cl_device_id));
   
   CL_WRAPPER(clGetDeviceIDs(platforms_[platform_idx], CL_DEVICE_TYPE_ALL, device_count_, devices_, NULL));
   CL_WRAPPER(clGetDeviceInfo(devices_[device_idx], CL_DEVICE_NAME, sizeof(buf), buf, NULL));
