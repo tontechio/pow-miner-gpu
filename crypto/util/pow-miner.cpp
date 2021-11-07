@@ -127,8 +127,7 @@ double print_stats() {
   double speed = static_cast<double>(hashes_computed) / passed;
   std::stringstream ss;
   ss << std::scientific << std::setprecision(1) << speed;
-  LOG(INFO) << "[ passed: " << td::format::as_time(passed) << ", hashes computed: " << hashes_computed << " ("
-     << static_cast<double>(hashes_computed) / static_cast<double>(hash_rate) * 100 << "%), speed: " << ss.str() << " hps ]";
+  LOG(INFO) << "[ passed: " << td::format::as_time(passed) << ", hashes computed: " << hashes_computed << ", speed: " << ss.str() << " hps ]";
   return speed;
 }
 

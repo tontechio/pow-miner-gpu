@@ -26,7 +26,7 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
   if (options.max_iterations < throughput) {
     throughput = options.max_iterations;
   }
-  LOG(INFO) << "[ GPU ID: " << options.gpu_id << ", boost factor: " << options.factor << ", throughput: " << throughput << " ]";
+  LOG(INFO) << "[ START MINER, GPU ID: " << options.gpu_id << ", boost factor: " << options.factor << ", throughput: " << throughput << " ]";
 
       // set data
   //std::cout << "data: " << hex_encode(data) << std::endl;
@@ -49,7 +49,7 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
     }
     i += throughput;
     if (options.verbosity >= 2 && stat_at.is_in_past()) {
-      ton::Miner::print_stats(options.start_at, i, options.hashes_expected);
+      ton::Miner::print_stats(options.start_at, i);
       stat_at = stat_at.in(5);
     }
     if (options.token_) {

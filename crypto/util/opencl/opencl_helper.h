@@ -15,28 +15,27 @@
 #include <CL/cl.h>
 #endif
 
-#define CL_WRAPPER(FUNC) \
-    { \
-        cl_int err = FUNC; \
-        if (err != CL_SUCCESS) { \
-            fprintf(stderr, "Error %d executing %s on %s:%d (%s)\n", \
-                err, #FUNC, __FILE__, __LINE__, cl_error_to_str(err)); \
-            abort(); \
-        }; \
-    }
+#define CL_WRAPPER(FUNC)                                                                                       \
+  {                                                                                                            \
+    cl_int err = FUNC;                                                                                         \
+    if (err != CL_SUCCESS) {                                                                                   \
+      LOG(ERROR) << "Error " << err << " executing " << #FUNC << " on " << __FILE__ << ":" << __LINE__ << " (" \
+                 << cl_error_to_str(err) << ")";                                                               \
+      abort();                                                                                                 \
+    };                                                                                                         \
+  }
 
 /* The following macro assumes the assignment will store the error code to err */
 int err;  // error code returned from api calls
-#define CL_ASSIGN(ASSIGNMENT) \
-    { \
-        ASSIGNMENT; \
-        if (err != CL_SUCCESS) { \
-            fprintf(stderr, "Error %d executing %s on %s:%d (%s)\n", \
-                err, #ASSIGNMENT, __FILE__, __LINE__, cl_error_to_str(err)); \
-            abort(); \
-        }; \
-    }
-
+#define CL_ASSIGN(ASSIGNMENT)                                                                                        \
+  {                                                                                                                  \
+    ASSIGNMENT;                                                                                                      \
+    if (err != CL_SUCCESS) {                                                                                         \
+      LOG(ERROR) << "Error " << err << " executing " << #ASSIGNMENT << " on " << __FILE__ << ":" << __LINE__ << " (" \
+                 << cl_error_to_str(err) << ")";                                                                     \
+      abort();                                                                                                       \
+    };                                                                                                               \
+  }
 
 const char *cl_error_to_str(cl_int e)
 {

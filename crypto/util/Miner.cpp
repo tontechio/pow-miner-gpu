@@ -84,7 +84,7 @@ td::optional<std::string> Miner::run(const Options &options) {
   return {};
 }
 
-void Miner::print_stats(td::Timestamp start_at, td::uint64 hashes_computed, td::uint64 hashes_expected) {
+void Miner::print_stats(td::Timestamp start_at, td::uint64 hashes_computed) {
   auto passed = td::Timestamp::now().at() - start_at.at();
   if (passed < 1e-9) {
     passed = 1;
@@ -93,9 +93,7 @@ void Miner::print_stats(td::Timestamp start_at, td::uint64 hashes_computed, td::
   std::stringstream ss;
   ss << std::scientific << std::setprecision(1) << speed;
   LOG(INFO) << "[ mining in progress, passed: " << td::format::as_time(passed)
-            << ", hashes computed: " << hashes_computed << " ("
-            << static_cast<double>(hashes_computed) / static_cast<double>(hashes_expected) * 100
-            << "%), speed: " << ss.str() << " hps ]";
+            << ", hashes computed: " << hashes_computed << ", speed: " << ss.str() << " hps ]";
 };
 
 td::optional<std::string> build_mine_result(int cpu_id, ton::HDataEnv H, const ton::Miner::Options &options,
