@@ -1,0 +1,149 @@
+name: win64-2016-cuda-old-compile.yml
+
+on:
+  push:
+    tags:
+    - '*'
+
+defaults:
+  run:
+    shell: cmd
+
+jobs:
+  build:
+
+    runs-on: windows-2016
+
+    steps:
+      - name: Get Current OS version
+        run: |
+          systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
+
+      - name: Check out current repository
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+
+      - name: Check out vcpkg repository
+        uses: actions/checkout@v2
+        with:
+            repository: microsoft/vcpkg
+            path: vcpkg
+
+      - name: Setup msbuild.exe
+        uses: microsoft/setup-msbuild@v1.0.3
+
+      - uses: Jimver/cuda-toolkit@v0.2.4
+        id: cuda-toolkit
+        with:
+            method: 'network'
+            sub-packages: '["nvcc", "visual_studio_integration"]'
+            cuda: '10.1.243'
+
+      - name: Show nvidia cuda toolkit version
+        run: |
+          nvcc -V
+
+      - name: Configure vcpkg
+        run: |
+          cd vcpkg
+          bootstrap-vcpkg.bat
+          vcpkg integrate install
+
+      - name: Install vcpkg openssl opencl pthread zlib
+        run: |
+          cd vcpkg
+          vcpkg install openssl openssl:x64-windows opencl opencl:x64-windows pthread pthread:x64-windows zlib zlib:x64-windows 
+
+      - name: Generate cmake files
+        run: |
+          set root=%cd%
+          echo %root%
+          mkdir build
+          cd build
+          cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=%root%/vcpkg/scripts/buildsystems/vcpkg.cmake -DMINERCUDA=true -DMINEROPENCL=true -DCMAKE_CXX_FLAGS="/DTD_WINDOWS=1 /EHsc /bigobj /W0" -DTON_USE_ABSEIL=OFF -DCMAKE_BUILD_TYPE=Release ..
+
+      - name: Compile pow-miner
+        run: |
+          cd build
+          cmake --build . --target pow-miner --config Release
+        continue-on-error: true
+
+      - name: Compile pow-miner-cuda
+        run: |
+          cd build
+          cmake --build . --target pow-miner-cuda --config Release
+        continue-on-error: true
+
+      - name: Compile tonlib-cuda-cli
+        run: |
+          cd build
+          cmake --build . --target tonlib-cuda-cli --config Release
+        continue-on-error: true
+        
+      - name: Compile pow-miner-opencl
+        run: |
+          cd build
+          cmake --build . --target pow-miner-opencl --config Release
+        continue-on-error: true
+
+      - name: Compile tonlib-opencl-cli
+        run: |
+          cd build
+          cmake --build . --target tonlib-opencl-cli --config Release
+        continue-on-error: true
+
+      - name: Compile lite-client
+        run: |
+          cd build
+          cmake --build . --target lite-client --config Release
+        continue-on-error: true
+
+      - name: Show executables
+        run: |
+          cd build
+          dir *.exe /a-D /S /B
+
+      - name: Copy compiled binaries with dependencies
+        run: |
+          
+          mkdir artifacts_dir
+          
+          mkdir deploy_cuda_dir
+          mkdir deploy_opencl_dir
+
+          copy /Y "build\crypto\Release\libcrypto-1_1-x64.dll"    "deploy_opencl_dir\"
+          copy /Y "build\crypto\Release\libcrypto-1_1-x64.dll"    "deploy_cuda_dir\"
+          
+          copy /Y "build\crypto\Release\pow-miner.exe"            "deploy_opencl_dir\"
+          copy /Y "build\crypto\Release\pow-miner.exe"            "deploy_cuda_dir\"
+          
+          copy /Y "build\crypto\Release\pow-miner-opencl.exe"     "deploy_opencl_dir\"
+          copy /Y "build\tonlib\Release\tonlib-opencl-cli.exe"    "deploy_opencl_dir\"
+        
+          copy /Y "build\crypto\Release\pow-miner-cuda.exe"       "deploy_cuda_dir\"
+          copy /Y "build\tonlib\Release\tonlib-cuda-cli.exe"      "deploy_cuda_dir\"
+          
+          copy /Y "build\lite-client\Release\lite-client.exe"     "deploy_opencl_dir\"
+          copy /Y "build\lite-client\Release\lite-client.exe"     "deploy_cuda_dir\"
+
+      - name: Compress collected cuda binaries
+        uses: papeloto/action-zip@v1
+        with:
+            files: deploy_cuda_dir/
+            recursive: false
+            dest: artifacts_dir/minertools-cuda-windows-x86-64-winsrv16-cuda-10-1.zip
+            
+      - name: Compress collected opencl binaries
+        uses: papeloto/action-zip@v1
+        with:
+            files: deploy_opencl_dir/
+            recursive: false
+            dest: artifacts_dir/minertools-opencl-windows-x86-64-winsrv16-cuda-10-1.zip
+
+      - name: Packing binary files to the GITHUB Release Tag
+        uses: ncipollo/release-action@v1
+        with:
+            allowUpdates: true
+            artifacts: artifacts_dir\minertools-*
+            token: ${{ secrets.GITHUB_TOKEN }}

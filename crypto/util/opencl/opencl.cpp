@@ -33,6 +33,9 @@ void OpenCL::set_source(unsigned char *source, unsigned int length) {
 }
 
 void OpenCL::print_devices() {
+  
+  cl_int cl_err = CL_SUCCESS;
+  
   // platform
   CL_WRAPPER(clGetPlatformIDs(0, NULL, &platform_count_));
   platforms_ = (cl_platform_id *)malloc(platform_count_ * sizeof(cl_platform_id));
@@ -41,18 +44,33 @@ void OpenCL::print_devices() {
   // devices
   char buf[1024];
   for (uint p = 0; p < platform_count_; p++) {
-    CL_WRAPPER(clGetDeviceIDs(platforms_[p], CL_DEVICE_TYPE_ALL, 0, NULL, &device_count_));
-    devices_ = (cl_device_id *)malloc(device_count_ * sizeof(cl_device_id));
+    
+    cl_err = clGetDeviceIDs(platforms_[p], CL_DEVICE_TYPE_ALL, 0, NULL, &device_count_);
+	if(cl_err != CL_SUCCESS) {
+	  LOG(PLAIN) << "[ OpenCL: platform #" << p << " ERROR on calling \"clGetDeviceIDs(...)\", error code = " << cl_err << " ]";
+	  continue;
+	}
+	
+	devices_ = (cl_device_id *)malloc(device_count_ * sizeof(cl_device_id));
     CL_WRAPPER(clGetDeviceIDs(platforms_[p], CL_DEVICE_TYPE_ALL, device_count_, devices_, NULL));
     for (uint i = 0; i < device_count_; i++) {
       CL_WRAPPER(clGetDeviceInfo(devices_[i], CL_DEVICE_NAME, sizeof(buf), buf, NULL));
       LOG(PLAIN) << "[ OpenCL: platform #" << p << " device #" << i << " " << buf << " ]";
     }
   }
+    
 }
 
 void OpenCL::create_context(cl_uint platform_idx, cl_uint device_idx) {
   char buf[1024];
+  
+  if(devices_ != NULL) 
+	free(devices_);
+  
+  CL_WRAPPER(clGetDeviceIDs(platforms_[platform_idx], CL_DEVICE_TYPE_ALL, 0, NULL, &device_count_));
+  
+  devices_ = (cl_device_id *)malloc(device_count_ * sizeof(cl_device_id));
+  
   CL_WRAPPER(clGetDeviceIDs(platforms_[platform_idx], CL_DEVICE_TYPE_ALL, device_count_, devices_, NULL));
   CL_WRAPPER(clGetDeviceInfo(devices_[device_idx], CL_DEVICE_NAME, sizeof(buf), buf, NULL));
   CL_WRAPPER(clGetDeviceInfo(devices_[device_idx], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(max_work_group_size_),
