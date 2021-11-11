@@ -24,6 +24,10 @@ If you want more flexibility or control you can also use the `pow-miner-cuda.exe
 
 ## TONLIB CLI logging
 
+Windows 10 supports ANSI colors
+since [v1511](https://www.reddit.com/r/Windows10/comments/44czox/windows_10_v1511_adds_support_for_ansi_escape/). For
+earlier versions of Windows installing [ANSICON](https://github.com/adoxa/ansicon) will enable ANSI colors in cmd.exe.
+
 To redirect the output to a file, add `-l pminer.log` to the command:
 
 ```
