@@ -282,7 +282,7 @@ class TonlibCli : public td::actor::Actor {
                      }
                    }
                    load_channnels();
-                   LOG(PLAIN) << "Tonlib is inited\n";
+                   LOG(WARNING) << "Tonlib is inited";
                    if (options_.one_shot) {
                      td::actor::send_closure(actor_id(this), &TonlibCli::parse_line, td::BufferSlice(options_.cmd));
                    }
@@ -790,6 +790,8 @@ class TonlibCli : public td::actor::Actor {
       options.token_ = source_.get_cancellation_token();
 
       if (miner_options_ && miner_options_.value().seed == options.seed) {
+        auto s = seed->to_dec_string();
+        LOG(INFO) << "mining seed " << s.substr(0, 4) << "..." << s.substr(s.length() - 4, 4);
         return td::Status::OK();
       }
 
@@ -897,6 +899,14 @@ class TonlibCli : public td::actor::Actor {
     }
 
     if (cmd == "start") {
+      auto P = td::PromiseCreator::lambda([&](td::Result<td::Unit> R) mutable {
+        if (R.is_error()) {
+          LOG(ERROR) << R.move_as_error();
+          std::exit(3);
+        }
+      });
+      td::actor::send_closure(td::actor::actor_id(this), &TonlibCli::check_liteserver_synced, 20, std::move(P));
+
       if (options_.logfile.length() > 0) {
         td::TerminalIO::out() << "Miner started, all output to <" << options_.logfile << ">\n";
       }
@@ -1657,8 +1667,8 @@ class TonlibCli : public td::actor::Actor {
           auto update = tonlib_api::move_object_as<tonlib_api::updateSyncState>(std::move(result));
           switch (update->sync_state_->get_id()) {
             case tonlib_api::syncStateDone::ID: {
-              LOG(PLAIN) << "synchronization: DONE in "
-                                    << td::format::as_time(td::Time::now() - sync_started_.at()) << "\n";
+              LOG(DEBUG) << "synchronization: DONE in "
+                                    << td::format::as_time(td::Time::now() - sync_started_.at());
               sync_started_ = {};
               break;
             }
@@ -1672,9 +1682,9 @@ class TonlibCli : public td::actor::Actor {
               auto at = progress->current_seqno_;
               auto d = to - from;
               if (d <= 0) {
-                LOG(PLAIN) << "synchronization: ???\n";
+                LOG(DEBUG) << "synchronization: ???";
               } else {
-                LOG(PLAIN) << "synchronization: " << 100 * (at - from) / d << "%\n";
+                LOG(DEBUG) << "synchronization: " << 100 * (at - from) / d << "%";
               }
               break;
             }
@@ -1757,6 +1767,24 @@ class TonlibCli : public td::actor::Actor {
                  }
                  LOG(ERROR) << to_string(r_parsed_addr.ok());
                });
+  }
+
+  void check_liteserver_synced(double delta, td::Promise<td::Unit> promise) {
+    send_query(
+        make_object<tonlib_api::liteServer_getInfo>(), [delta, promise = std::move(promise)](auto&& r_res) mutable {
+          if (r_res.is_error()) {
+            promise.set_error(r_res.move_as_error());
+            return;
+          }
+          auto info = r_res.move_as_ok();
+          double time_diff = abs(td::Timestamp::now().at_unix() - static_cast<double>(info->now_));
+          LOG(INFO) << "Time diff with liteserver: " << td::format::as_time(time_diff);
+          if (time_diff > delta) {
+            promise.set_error(td::Status::Error("liteserver out of sync with local machine"));
+          } else {
+            promise.set_value(td::Unit());
+          }
+        });
   }
 
   void set_bounceable(td::Slice addr, bool bounceable) {
