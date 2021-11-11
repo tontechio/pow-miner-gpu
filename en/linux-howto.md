@@ -27,7 +27,7 @@ Follow instructions to obtain your address.
 
 - download and install latest [CUDA toolkit](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)
 
-### OpenCL (AMD)
+### OpenCL (AMD) drivers
 
 - download and install OpenCL SDK
 
