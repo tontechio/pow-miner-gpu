@@ -4,12 +4,12 @@
 
 ### Personal wallet
 
-If you already have a wallet and TON address just skip it.
+If you already have a wallet and TON address just skip this step.
 
 Download and install any official wallet from [ton.org/wallets](https://ton.org/wallets).
 Follow instructions to obtain your address.
 
-**Don't use any bot or exchange address for mining**
+**NB: Don't use any bot or exchange address for mining**
 
 ### Nvidia
 
@@ -27,22 +27,11 @@ Follow instructions to obtain your address.
 
 ## Installation
 
-1. Go to miner repository [latest release](https://github.com/tontechio/pow-miner-gpu/releases/latest)
-1. Download build for your operating system and GPU make
+1. Download [latest build](https://github.com/tontechio/pow-miner-gpu/releases/latest) for your operating system and GPU make
 1. Let's suppose it is `minertools-cuda-ubuntu-20.04-x86-64.tar.gz`
 1. `sudo mkdir -p /opt/ton-miner; sudo chown $USER /opt/ton-miner`
 1. (change `PATH/TO` to the actual local path) `tar xzf PATH/TO/minertools-cuda-ubuntu-20.04-x86-64.tar.gz /opt/ton-miner/`
 1. Download TON network config `cd /opt/ton-miner && curl -L -O https://newton-blockchain.github.io/global.config.json`
-
-
-              1. Run performance test for first/single GPU ('cuda' in example, changle to 'opencl' for AMD):
-                ```shell
-                $ /opt/ton-miner/pow-miner-cuda -vv -B -g 0 \
-                  -t 10 kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 \
-                  229760179690128740373110445116482216837 \
-                  5391989333430127958933403017403926134727428884508114496220722049840 \
-                  10000000000
-                ```
 
 ## Usage
 
@@ -55,7 +44,7 @@ This utility:
 
 When job has been done quicker than others and delivered quicker than others then giver-contract will send 100 toncoin to your personal wallet address.
 
-Each success job indicated by `FOUND!` message in output (or log if enabled)
+Each success job indicated by `FOUND!` message in the output (or log if enabled)
 
 ```
 $  /opt/ton-miner/tonlib-cuda-cli \
@@ -86,6 +75,7 @@ Cuda (Nvidia) gpus `#0` and `#1` stands for gpu-id `0` and gpu-id `1`:
 
 ```shell
 $ /opt/ton-miner/pow-miner-cuda
+...
 [ GPU #0: SM 6.1 NVIDIA GeForce GTX 1080 Ti ]
 [ GPU #1: SM 6.1 NVIDIA GeForce GTX 1080 Ti ]
 ...
@@ -95,6 +85,7 @@ OpenCL (AMD):
 
 ```shell
 $ /opt/ton-miner/pow-miner-opencl
+...
 [ OpenCL: platform #0 device #0 Intel(R) Core(TM) i9-9880H CPU @ 2.30GHz ]
 [ OpenCL: platform #0 device #1 Intel(R) UHD Graphics 630 ]
 [ OpenCL: platform #0 device #2 AMD Radeon Pro 5500M Compute Engine ]
@@ -117,19 +108,19 @@ $ /opt/ton-miner/pow-miner-cuda -vv -g<gpu-id> -p<platform-id> -B -F 16 -t 10 kQ
 
 ...
 
-*************************************************
+[ 1][t 0][2021-11-03 08:30:17.990976813][pow-miner.cpp:218]        *************************************************
 [ 1][t 0][2021-11-03 08:30:17.990976813][pow-miner.cpp:218]        ***
 [ 1][t 0][2021-11-03 08:30:17.990976840][pow-miner.cpp:219]        ***   best boost factor: 32
 [ 1][t 0][2021-11-03 08:30:17.990976815][pow-miner.cpp:220]        ***   best speed:        8.9e+08 hps
 [ 1][t 0][2021-11-03 08:30:17.990976816][pow-miner.cpp:221]        ***
 [ 1][t 0][2021-11-03 08:30:17.990976820][pow-miner.cpp:222]        *************************************************
 ...
+```
 
 To get more accurate results run it several times or increase `-t` value to heat up the GPU properly.
 Don't worry if you'll get inconsistent results, just peak up most frequent and lower value.
 Use found boost factor value for `-F` tonlib option.
 
-```
 
 ### System service
 
