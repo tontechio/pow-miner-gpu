@@ -1,3 +1,8 @@
+<style type="text/css" rel="stylesheet">
+body {
+  font:14px/22px Helvetica, Arial, sans-serif;
+}
+</style>
 # Welcome to TON Miner GPU
 
 ### [Русская версия](ru/index.md)
