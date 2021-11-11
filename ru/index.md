@@ -1,8 +1,8 @@
-# Welcome to TON Miner GPU
+# TON Miner GPU
 
-### [Русская версия](ru/index.md)
+### [English version](./../index.md)
 
-TON Miner supports Linux, Windows using Nvidia and AMD GPU.
+TON Miner поддерживает Linux, Windows и карты Nvidia, AMD.
 
 CPU (Intel, AMD) support available also, but requires custom build from sources, it was excluded from pre-build releases due to low efficiency.
 
