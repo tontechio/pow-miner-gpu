@@ -1,6 +1,18 @@
 # Using miner on Linux
 
-## Prerequistics
+- [Requirements](#requirements)
+  - [Personal wallet](#personal-wallet)
+  - [Nvidia drivers](#nvidia-drivers)
+  - [OpenCL (AMD) drivers](#opencl-amd-drivers)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [tonlib-cuda-cli (tonlib-opencl-cli)](#tonlib-cuda-cli-tonlib-opencl-cli)
+- [Configuration](#configuration)
+  - [Get list of GPU](#get-list-of-gpu)
+  - [Performance tuning](#performance-tuning)
+  - [System service](#system-service)
+
+## Requirements
 
 ### Personal wallet
 
@@ -11,7 +23,7 @@ Follow instructions to obtain your address.
 
 **NB: Don't use any bot or exchange address for mining**
 
-### Nvidia
+### Nvidia drivers
 
 - download and install latest [CUDA toolkit](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)
 
