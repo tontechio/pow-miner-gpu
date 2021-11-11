@@ -6,6 +6,12 @@ TON Miner supports Nvidia and AMD GPU.
 
 CPU (Intel, AMD) support available also, but requires custom build from sources, it was excluded from pre-build releases due to low efficiency.
 
+- [Latest release](#latest-release)
+- [Documentation and manuals](#documentation-and-manuals)
+- [Supported and tested GPUs](#supported-and-tested-gpus)
+- [Contribution](#contribution)
+- [Resources](#resources)
+
 ## Latest release
 
 All releases located here:
@@ -55,3 +61,11 @@ Pull-requests are welcome:
 
 Site content / translations are welcomed as pull-requests here:
 [https://github.com/tontechio/pow-miner-gpu/tree/gh-pages](https://github.com/tontechio/pow-miner-gpu/tree/gh-pages)
+
+## Resources
+
+- Telegram channel (RU): [https://t.me/Toncoin_mining_rus](https://t.me/Toncoin_mining_rus)
+- Telegram chat (RU): [https://t.me/tonmine](https://t.me/tonmine)
+- TON official: [https://ton.org/](https://ton.org/)
+- TON Wallets: [https://ton.org/wallets](https://ton.org/wallets)
+- TON Trades and exchanges: [https://ton.org/coin](https://ton.org/coin)
