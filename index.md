@@ -2,12 +2,13 @@
 
 [Русская версия](ru/index.md)
 
-TON Miner supports Nvidia and AMD GPU.
+TON Miner supports Linux, Windows using Nvidia and AMD GPU.
 
 CPU (Intel, AMD) support available also, but requires custom build from sources, it was excluded from pre-build releases due to low efficiency.
 
 - [Latest release](#latest-release)
 - [Documentation and manuals](#documentation-and-manuals)
+- [Supported OS and drivers](#supported-os-and-drivers)
 - [Supported and tested GPUs](#supported-and-tested-gpus)
 - [Contribution](#contribution)
 - [Resources](#resources)
@@ -27,6 +28,15 @@ Windows utilities:
 [Windows / AMD GPU]
 [Windows / NVIDIA GPU]
 
+## Supported OS and drivers
+
+- NVIDIA CUDA 11.3+
+- NVIDIA Driver 471.11+
+- Ubuntu 18.04
+- Ubuntu 20.04
+- Windows 10
+- Windows 11
+
 ## Supported and tested GPUs
 
 | GPU | Hashrate |
@@ -34,20 +44,20 @@ Windows utilities:
 NVIDIA GTX1060 | 3.8e+08
 NVIDIA GTX1070 | 5.2e+08
 NVIDIA GTX1070 Ti | 7.1e+08
-NVIDIA GTX1080 | 8.58523e+08
-NVIDIA GTX1080 Ti | 9.21737e+08
-NVIDIA GTX1660 Ti | 7.16364e+08
-NVIDIA GTX1660 Super | 6.41743e+08
-NVIDIA RTX2060 Super | 8.67233e+08
-NVIDIA RTX2070 |
-NVIDIA RTX2080 Super | 1.34181e+09
-NVIDIA RTX3060 | 8.45722e+08
-NVIDIA RTX3060 Ti | 1.238870e+09
-NVIDIA RTX3070 | 1.45591e+09
-NVIDIA RTX3070 Ti | 1.594258e+09
-NVIDIA RTX3080 | 2.018200e+09
-NVIDIA RTX3090 | 2.385980e+09 
-NVIDIA Tesla T4 |
+NVIDIA GTX1080 | 8.6e+08
+NVIDIA GTX1080 Ti | 9.2e+08
+NVIDIA GTX1660 Ti | 7.2e+08
+NVIDIA GTX1660 Super | 6.4e+08
+NVIDIA RTX2060 Super | 8.7e+08
+NVIDIA RTX2070 | tbd
+NVIDIA RTX2080 Super | 1.3e+09
+NVIDIA RTX3060 | 8.5e+08
+NVIDIA RTX3060 Ti | 1.2e+09
+NVIDIA RTX3070 | 1.5e+09
+NVIDIA RTX3070 Ti | 1.6e+09
+NVIDIA RTX3080 | 2.1e+09
+NVIDIA RTX3090 | 2.4e+09 
+NVIDIA Tesla T4 | not recommended
 AMD Radeon 580 | 4.2e+08
 AMD Radeon 6600 | 6.6e+08
 
@@ -65,7 +75,9 @@ Site content / translations are welcomed as pull-requests here:
 ## Resources
 
 - Telegram channel (RU): [https://t.me/Toncoin_mining_rus](https://t.me/Toncoin_mining_rus)
-- Telegram chat (RU): [https://t.me/tonmine](https://t.me/tonmine)
+- Telegram chat (EN/RU): [https://t.me/tonmine](https://t.me/tonmine)
 - TON official: [https://ton.org/](https://ton.org/)
 - TON Wallets: [https://ton.org/wallets](https://ton.org/wallets)
 - TON Trades and exchanges: [https://ton.org/coin](https://ton.org/coin)
+
+*Dr. Elias and the Team*
