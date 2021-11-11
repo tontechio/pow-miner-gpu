@@ -40,6 +40,7 @@ void OpenCL::print_devices() {
 
   // devices
   char buf[1024];
+  num_devices_ = 0;
   for (uint p = 0; p < platform_count_; p++) {
     CL_WRAPPER(clGetDeviceIDs(platforms_[p], CL_DEVICE_TYPE_ALL, 0, NULL, &device_count_));
     devices_ = (cl_device_id *)malloc(device_count_ * sizeof(cl_device_id));
@@ -47,8 +48,13 @@ void OpenCL::print_devices() {
     for (uint i = 0; i < device_count_; i++) {
       CL_WRAPPER(clGetDeviceInfo(devices_[i], CL_DEVICE_NAME, sizeof(buf), buf, NULL));
       LOG(PLAIN) << "[ OpenCL: platform #" << p << " device #" << i << " " << buf << " ]";
+      num_devices_++;
     }
   }
+}
+
+int OpenCL::get_num_devices() {
+  return num_devices_;
 }
 
 void OpenCL::create_context(cl_uint platform_idx, cl_uint device_idx) {

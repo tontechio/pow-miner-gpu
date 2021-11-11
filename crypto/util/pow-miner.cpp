@@ -300,6 +300,10 @@ int main(int argc, char* const argv[]) {
     }
   }
 #if defined MINERCUDA
+  if (cuda_num_devices() == 0) {
+    std::cerr << "No CUDA-capable devices is detected!" << std::endl;
+    exit(1);
+  }
   for (i = 0; i < MAX_GPUS; i++) {
     device_map[i] = i;
     device_name[i] = NULL;
@@ -314,9 +318,13 @@ int main(int argc, char* const argv[]) {
 #endif
 
 #if defined MINEROPENCL
+  auto opencl = opencl::OpenCL();
+  opencl.print_devices();
+  if (opencl.get_num_devices() == 0) {
+    std::cerr << "No OpenCL-capable devices is detected!" << std::endl;
+    exit(1);
+  }
   if (gpu_id < 0) {
-    auto opencl = opencl::OpenCL();
-    opencl.print_devices();
     std::cerr << "unknown GPU ID" << std::endl;
     return usage();
   }
