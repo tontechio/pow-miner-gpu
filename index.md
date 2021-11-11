@@ -1,28 +1,27 @@
-## "Soft" Pull Request rules
+# Welcome to TON Miner GPU
 
-* Thou shall not merge your own PRs, at least one person should review the PR and merge it (4-eyes rule)
-* Thou shall make sure that workflows are cleanly completed for your PR before considering merge
+[Русская версия](ru/index.md)
 
-## Workflows responsibility
-If a CI workflow fails not because of your changes but workflow issues, try to fix it yourself or contact one of the persons listed below via Telegram messenger:
+TON Miner supports Nvidia and AMD GPU.
 
-* **C/C++ CI (ccpp-linux.yml)**: TBD
-* **C/C++ CI Win64 Compile (ccpp-win64.yml)**: TBD
+CPU (Intel, AMD) support available also, but requires custom build from sources, it was excluded from pre-build releases due to low efficiency.
 
-## GPU POW miner
+## Latest release
 
-GPU pow-miner located at `crypto/util`, check [pow-miner.md](crypto/util/pow-miner.md) and [pow-miner-howto.md](crypto/util/pow-miner-howto.md) for details.
+All releases located here:
+[https://github.com/tontechio/pow-miner-gpu/releases](https://github.com/tontechio/pow-miner-gpu/releases)
 
-TONLIB CLI with embedded GPU-miner located at `tonlib/tonlib`, check [pow-miner-howto.md](crypto/util/pow-miner-howto.md#tonlib-cli-wrapper-with-embedded-gpu-miner) for details.
+Windows utilities:
+[https://github.com/tontechio/pow-miner-win-util](https://github.com/tontechio/pow-miner-win-util)
 
-GPU miner executable files for Windows can be downloaded from https://github.com/tontechio/pow-miner-gpu/releases, check [pow-miner-windows-howto.md](crypto/util/pow-miner-windows-howto.md) for details.
+## Documentation and manuals
 
-HW Supported:
-- Nvidia: nVidia GT640+ or newer, Quadro series with Kepler chip or newer (FX not supported)
-- Radeon HD78xx series and newer, AMD GPU GCN 1.0+
-- HD4000 or newer
+[Linux / AMD GPU]
+[Linux / NVIDIA GPU]
+[Windows / AMD GPU]
+[Windows / NVIDIA GPU]
 
-Tested on:
+## Supported and tested GPUs
 
 | GPU | Hashrate |
 |-----|:---------|
@@ -45,3 +44,14 @@ NVIDIA RTX3090 | 2.385980e+09
 NVIDIA Tesla T4 |
 AMD Radeon 580 | 4.2e+08
 AMD Radeon 6600 | 6.6e+08
+
+## Contribution
+
+Please report issues here:
+[https://github.com/tontechio/pow-miner-gpu/issues](https://github.com/tontechio/pow-miner-gpu/issues)
+
+Pull-requests are welcome:
+[https://github.com/tontechio/pow-miner-gpu](https://github.com/tontechio/pow-miner-gpu)
+
+Site content / translations are welcomed as pull-requests here:
+[https://github.com/tontechio/pow-miner-gpu/tree/gh-pages](https://github.com/tontechio/pow-miner-gpu/tree/gh-pages)
