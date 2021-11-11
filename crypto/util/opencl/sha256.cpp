@@ -40,7 +40,7 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
   for (; i < options.max_iterations;) {
     expired = (uint32_t)td::Clocks::system() + 900;
     HashResult foundNonce = opencl.scan_hash(cpu_id, options.gpu_threads, throughput, i, expired);
-    if (foundNonce.nonce != UINT64_MAX) {
+    if (foundNonce.nonce != UINT64_MAX && foundNonce.vcpu != UINT64_MAX) {
       if (options.hashes_computed) {
         *options.hashes_computed += i + foundNonce.nonce * foundNonce.vcpu;
       }
