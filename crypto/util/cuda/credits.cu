@@ -36,7 +36,7 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
   unsigned char input[123], complexity[32];
   memcpy(input, data.ubegin(), data.size());
   if (!bitcredit_setBlockTarget(gpu_id, options.gpu_threads, cpu_id, input, options.complexity.data(), rdata)) {
-    return 0;
+    abort();
   }
 
   uint32_t expired;
