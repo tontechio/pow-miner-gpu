@@ -23,21 +23,27 @@ Windows utilities:
 
 ## Documentation and manuals
 
-[Linux / AMD GPU]
-[Linux / NVIDIA GPU]
-[Windows / AMD GPU]
-[Windows / NVIDIA GPU]
+- [Installation on Linux](en/linux-howto.md)
+- [Installation on Windows](en/windows-howto.md)
+- Installation on HiveOS (soon)
 
 ## Supported OS and drivers
 
 - NVIDIA CUDA 11.3+
 - NVIDIA Driver 471.11+
+- AMD GPU GCN 1.0+
 - Ubuntu 18.04
 - Ubuntu 20.04
 - Windows 10
 - Windows 11
 
 ## Supported and tested GPUs
+
+HW Supported:
+
+- Nvidia: nVidia GT640+ or newer, Quadro series with Kepler chip or newer (FX not supported)
+- Radeon HD78xx series and newer, AMD GPU GCN 1.0+
+- HD4000 or newer
 
 | GPU | Hashrate |
 |-----|:---------|
@@ -80,4 +86,4 @@ Site content / translations are welcomed as pull-requests here:
 - TON Wallets: [https://ton.org/wallets](https://ton.org/wallets)
 - TON Trades and exchanges: [https://ton.org/coin](https://ton.org/coin)
 
-*Dr. Elias and the Team*
+*Dr. Elias, Dr. Andreas, Dr. Alexis and The Team*
