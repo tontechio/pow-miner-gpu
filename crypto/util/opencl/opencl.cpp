@@ -22,14 +22,18 @@ void OpenCL::load_source(const char *filename) {
   source_str_ = (char *)malloc(MAX_SOURCE_SIZE);
   source_size_ = fread(source_str_, 1, MAX_SOURCE_SIZE, fp);
   fclose(fp);
-  LOG(PLAIN) << "[ OpenCL: loaded kernel source '" << filename << "' (" << source_size_ << " bytes) ]";
+  if (GET_VERBOSITY_LEVEL() >= VERBOSITY_NAME(INFO)) {
+    LOG(PLAIN) << "[ OpenCL: loaded kernel source '" << filename << "' (" << source_size_ << " bytes) ]";
+  }
 }
 
 void OpenCL::set_source(unsigned char *source, unsigned int length) {
   source_str_ = (char *)malloc(MAX_SOURCE_SIZE);
   memcpy(source_str_, source, length);
   source_size_ = length;
-  LOG(PLAIN) << "[ OpenCL: set kernel source (" << source_size_ << " bytes) ]";
+  if (GET_VERBOSITY_LEVEL() >= VERBOSITY_NAME(INFO)) {
+    LOG(PLAIN) << "[ OpenCL: set kernel source (" << source_size_ << " bytes) ]";
+  }
 }
 
 void OpenCL::print_devices() {
@@ -47,7 +51,9 @@ void OpenCL::print_devices() {
     CL_WRAPPER(clGetDeviceIDs(platforms_[p], CL_DEVICE_TYPE_ALL, device_count_, devices_, NULL));
     for (uint i = 0; i < device_count_; i++) {
       CL_WRAPPER(clGetDeviceInfo(devices_[i], CL_DEVICE_NAME, sizeof(buf), buf, NULL));
-      LOG(PLAIN) << "[ OpenCL: platform #" << p << " device #" << i << " " << buf << " ]";
+      if (GET_VERBOSITY_LEVEL() >= VERBOSITY_NAME(INFO)) {
+        LOG(PLAIN) << "[ OpenCL: platform #" << p << " device #" << i << " " << buf << " ]";
+      }
       num_devices_++;
     }
   }
@@ -72,8 +78,10 @@ void OpenCL::create_context(cl_uint platform_idx, cl_uint device_idx) {
   CL_WRAPPER(clGetDeviceInfo(devices_[device_idx], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(max_work_group_size_),
                              &max_work_group_size_, NULL));
 
-  LOG(PLAIN) << "[ OpenCL: create context for platform #" << platform_idx << " device #" << device_idx << " " << buf
-            << ", max work group size is " << max_work_group_size_ << " ]";
+  if (GET_VERBOSITY_LEVEL() >= VERBOSITY_NAME(INFO)) {
+    LOG(PLAIN) << "[ OpenCL: create context for platform #" << platform_idx << " device #" << device_idx << " " << buf
+               << ", max work group size is " << max_work_group_size_ << " ]";
+  }
 
   cl_int ret;
   context_ = clCreateContext(NULL, 1, &devices_[device_idx], NULL, NULL, &ret);

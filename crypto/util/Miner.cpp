@@ -101,9 +101,11 @@ void Miner::print_stats(td::Timestamp start_at, td::uint64 hashes_computed, td::
   double instant_speed = static_cast<double>(instant_hashes_computed) / instant_passed;
   ss2 << std::setprecision(3) << instant_speed / 1e+6;
 
-  LOG(INFO) << td::Slice(TC_GREEN_ON_GREEN) << "[ mining in progress, passed: " << td::format::as_time(passed)
-            << ", hashes computed: " << hashes_computed << ", instant speed: " << ss2.str() << " Mhash/s, average speed: " << td::Slice(TC_PURPLE_ON_GREEN)
-            << ss.str() << " Mhash/s" << td::Slice(TC_GREEN_ON_GREEN) << " ]" << TC_EMPTY;
+  LOG(INFO) << td::Slice(TC_GREEN_ON_GREEN) << "[ mining in progress]"
+            << "[ passed: " << td::format::as_time(passed) << ", hashes computed: " << hashes_computed
+            << ", instant speed: " << td::Slice(TC_RED_ON_GREEN) << ss2.str() << " Mhash/s "
+            << td::Slice(TC_GREEN_ON_GREEN) << ", average speed: " << td::Slice(TC_PURPLE_ON_GREEN) << ss.str()
+            << " Mhash/s" << td::Slice(TC_GREEN_ON_GREEN) << " ]" << TC_EMPTY;
 };
 
 td::optional<std::string> build_mine_result(int cpu_id, ton::HDataEnv H, const ton::Miner::Options &options,
