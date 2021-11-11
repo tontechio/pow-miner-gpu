@@ -57,6 +57,14 @@ int OpenCL::get_num_devices() {
   return num_devices_;
 }
 
+int OpenCL::get_temperature() {
+  cl_int temperature = 0;
+#ifdef cl_altera_device_temperature
+  CL_WRAPPER(clGetDeviceInfo(device, CL_DEVICE_CORE_TEMPERATURE_ALTERA, sizeof(cl_int), &temperature, NULL));
+#endif
+  return temperature;
+}
+
 void OpenCL::create_context(cl_uint platform_idx, cl_uint device_idx) {
   char buf[1024];
   CL_WRAPPER(clGetDeviceIDs(platforms_[platform_idx], CL_DEVICE_TYPE_ALL, device_count_, devices_, NULL));

@@ -722,7 +722,7 @@ class TonlibCli : public td::actor::Actor {
       cuda_shutdown();
 #endif
       if (answer) {
-        LOG(INFO) << "pminer: got some result - sending query to the giver";
+        LOG(WARNING) << "pminer: got some result - sending query to the giver";
         vm::CellBuilder cb;
         cb.store_bytes(answer.unwrap());
         send_query(tonlib_api::raw_createAndSendMessage(
@@ -793,7 +793,7 @@ class TonlibCli : public td::actor::Actor {
         return td::Status::OK();
       }
 
-      LOG(INFO) << "pminer: got new options from " << options_.giver_address.address->account_address_
+      LOG(WARNING) << "pminer: got new options from " << options_.giver_address.address->account_address_
                             << ", seed=" << seed->to_dec_string() << ", complexity=" << complexity->to_dec_string();
       td::BigInt256 bigpower, hrate;
       bigpower.set_pow2(256).mod_div(*complexity, hrate);
@@ -824,19 +824,19 @@ class TonlibCli : public td::actor::Actor {
     auto gpu_id_s = parser.read_word();
     if (!gpu_id_s.empty()) {
       gpu_id = std::atoi(gpu_id_s.data());
-      CHECK(gpu_id >= 0 && gpu_id <= 16);
+      CHECK(gpu_id >= 0 && gpu_id <= 15);
     }
 
     auto factor_s = parser.read_word();
     if (!factor_s.empty()) {
       factor = std::atoi(factor_s.data());
-      CHECK(factor >= 1 && factor <= 65536);
+      CHECK(factor >= 1 && factor <= (1 << MAX_BOOST_POW));
     }
 
     auto platform_id_s = parser.read_word();
     if (!platform_id_s.empty()) {
       platform_id = std::atoi(platform_id_s.data());
-      CHECK(platform_id >= 0 && platform_id <= 16);
+      CHECK(platform_id >= 0 && platform_id <= 15);
     }
 #else
     auto threads_s = parser.read_word();

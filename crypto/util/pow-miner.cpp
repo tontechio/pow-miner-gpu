@@ -126,8 +126,9 @@ double print_stats() {
   }
   double speed = static_cast<double>(hashes_computed) / passed;
   std::stringstream ss;
-  ss << std::scientific << std::setprecision(1) << speed;
-  LOG(INFO) << "[ passed: " << td::format::as_time(passed) << ", hashes computed: " << hashes_computed << ", speed: " << ss.str() << " hps ]";
+  ss << std::setprecision(3) << speed / 1e+6;
+  LOG(INFO) << "[ passed: " << td::format::as_time(passed) << ", hashes computed: " << hashes_computed
+            << ", average speed: " << ss.str() << " Mhash/s ]";
   return speed;
 }
 
@@ -193,7 +194,7 @@ class MinerBench : public td::Benchmark {
   }
 
   void run(int n) override {
-    for (int i = 0; i <= 14; i++) {
+    for (int i = 0; i <= MAX_BOOST_POW; i++) {
       start_at = td::Timestamp::now();
       hashes_computed.store(0);
       options_.factor = 1 << i;
@@ -208,23 +209,24 @@ class MinerBench : public td::Benchmark {
 #endif
 
       double speed = print_stats();
-      if (speed > best_speed_) {
+      // delta 1%
+      if (speed - best_speed_ > best_speed_ * 0.01) {
         best_speed_ = speed;
         best_factor_ = options_.factor;
       }
     }
 
     std::stringstream ss;
-    ss << std::scientific << std::setprecision(1) << best_speed_;
+    ss << std::setprecision(3) << best_speed_ / 1e+6;
 
-    LOG(ERROR) << "";
-    LOG(ERROR) << "*************************************************";
-    LOG(ERROR) << "***";
-    LOG(ERROR) << "***   best boost factor: " << best_factor_;
-    LOG(ERROR) << "***   best speed:        " << ss.str() << " hps";
-    LOG(ERROR) << "***";
-    LOG(ERROR) << "*************************************************";
-    LOG(ERROR) << "";
+    LOG(INFO) << td::Slice(TC_RED) << "" << TC_EMPTY;
+    LOG(INFO) << td::Slice(TC_RED) << "*************************************************" << TC_EMPTY;
+    LOG(INFO) << td::Slice(TC_RED) << "***" << TC_EMPTY;
+    LOG(INFO) << td::Slice(TC_RED) << "***   best boost factor: " << best_factor_ << TC_EMPTY;
+    LOG(INFO) << td::Slice(TC_RED) << "***   best speed:        " << ss.str() << " Mhash/s" << TC_EMPTY;
+    LOG(INFO) << td::Slice(TC_RED) << "***" << TC_EMPTY;
+    LOG(INFO) << td::Slice(TC_RED) << "*************************************************" << TC_EMPTY;
+    LOG(INFO) << td::Slice(TC_RED) << "" << TC_EMPTY;
 
     std::exit(0);
   }
@@ -257,18 +259,18 @@ int main(int argc, char* const argv[]) {
 #if defined MINERCUDA || defined MINEROPENCL
       case 'g':
         gpu_id = atoi(optarg);
-        CHECK(gpu_id >= 0 && gpu_id <= 16);
+        CHECK(gpu_id >= 0 && gpu_id <= 15);
         break;
       case 'p':
         platform_id = atoi(optarg);
-        CHECK(platform_id >= 0 && platform_id <= 16);
+        CHECK(platform_id >= 0 && platform_id <= 15);
         break;
       case 'G':
         // deprecated
         break;
       case 'F':
         factor = atoi(optarg);
-        CHECK(factor >= 1 && factor <= 65536);
+        CHECK(factor >= 1 && factor <= (1 << MAX_BOOST_POW));
         options.factor = factor;
         break;
 #endif
@@ -366,6 +368,12 @@ int main(int argc, char* const argv[]) {
     LOG(INFO) << "[ expected required hashes for success: " << hash_rate << " ]";
   }
   if (benchmark) {
+#if defined MINERCUDA
+    // init cuda device for thread
+    cudaSetDevice(options.gpu_id);
+    cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
+    cudaDeviceSetCacheConfig(cudaFuncCachePreferL1);
+#endif
     td::bench(MinerBench(options, timeout));
   }
 

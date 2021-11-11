@@ -35,8 +35,8 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
   opencl.load_objects(options.gpu_id, cpu_id, input, options.complexity.data(), rdata, options.gpu_threads);
 
   uint32_t expired;
-  td::int64 i = 0;
-  td::Timestamp stat_at = td::Timestamp::now();
+  td::int64 i = 0, hashes_computed = 0;
+  td::Timestamp stat_at = td::Timestamp::now(), instant_stat_at = td::Timestamp::now();
   for (; i < options.max_iterations;) {
     expired = (uint32_t)td::Clocks::system() + 900;
     HashResult foundNonce = opencl.scan_hash(cpu_id, options.gpu_threads, throughput, i, expired);
@@ -48,9 +48,12 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
       return ton::build_mine_result(cpu_id, H, options, rdata, foundNonce.nonce, foundNonce.vcpu, expired);
     }
     i += throughput;
+    hashes_computed += throughput;
     if (options.verbosity >= 2 && stat_at.is_in_past()) {
-      ton::Miner::print_stats(options.start_at, i);
+      ton::Miner::print_stats(options.start_at, i, instant_stat_at, hashes_computed);
       stat_at = stat_at.in(5);
+      instant_stat_at = td::Timestamp::now();
+      hashes_computed = 0;
     }
     if (options.token_) {
       break;
