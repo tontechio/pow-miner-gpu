@@ -1,22 +1,8 @@
 # Using miner on Linux
 
-- [Requirements](#requirements)
-  - [Personal wallet](#personal-wallet)
-  - [Nvidia drivers](#nvidia-drivers)
-  - [OpenCL (AMD) drivers](#opencl-amd-drivers)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [tonlib-cuda-cli (tonlib-opencl-cli)](#tonlib-cuda-cli-tonlib-opencl-cli)
-- [Configuration](#configuration)
-  - [Get list of GPU](#get-list-of-gpu)
-  - [Performance tuning](#performance-tuning)
-  - [System service](#system-service)
-
 ## Requirements
 
 ### Personal wallet
-
-If you already have a wallet and TON address just skip this step.
 
 Download and install any official wallet from [ton.org/wallets](https://ton.org/wallets).
 Follow instructions to obtain your address.
