@@ -1,4 +1,4 @@
-# TON Miner GPU
+# TON Miner GPU на русском
 
 ### [English version](./../index.md)
 
