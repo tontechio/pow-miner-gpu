@@ -73,7 +73,7 @@ Run `/opt/ton-miner/pow-miner-cuda` (or `pow-miner-opencl` for AMD) to get list 
 
 Cuda (Nvidia) gpus `#0` and `#1` stands for gpu-id `0` and gpu-id `1`:
 
-```shell
+```
 $ /opt/ton-miner/pow-miner-cuda
 ...
 [ GPU #0: SM 6.1 NVIDIA GeForce GTX 1080 Ti ]
@@ -83,7 +83,7 @@ $ /opt/ton-miner/pow-miner-cuda
 
 OpenCL (AMD):
 
-```shell
+```
 $ /opt/ton-miner/pow-miner-opencl
 ...
 [ OpenCL: platform #0 device #0 Intel(R) Core(TM) i9-9880H CPU @ 2.30GHz ]
@@ -108,16 +108,17 @@ $ /opt/ton-miner/pow-miner-cuda -vv -g<gpu-id> -p<platform-id> -B -F 16 -t 10 kQ
 
 ...
 
-[ 1][t 0][2021-11-03 08:30:17.990976813][pow-miner.cpp:218]        *************************************************
-[ 1][t 0][2021-11-03 08:30:17.990976813][pow-miner.cpp:218]        ***
-[ 1][t 0][2021-11-03 08:30:17.990976840][pow-miner.cpp:219]        ***   best boost factor: 32
-[ 1][t 0][2021-11-03 08:30:17.990976815][pow-miner.cpp:220]        ***   best speed:        8.9e+08 hps
-[ 1][t 0][2021-11-03 08:30:17.990976816][pow-miner.cpp:221]        ***
-[ 1][t 0][2021-11-03 08:30:17.990976820][pow-miner.cpp:222]        *************************************************
+*************************************************
+***
+***   best boost factor: 32
+***   best speed:        8.9e+08 hps
+***
+*************************************************
+
 ...
 ```
 
-To get more accurate results run it several times or increase `-t` value to heat up the GPU properly.
+To get more accurate results run it few times or increase `-t` value to heat up the GPU properly.
 Don't worry if you'll get inconsistent results, just peak up most frequent and lower value.
 Use found boost factor value for `-F` tonlib option.
 
