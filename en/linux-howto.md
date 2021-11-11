@@ -104,7 +104,13 @@ Run performance test - replace `<gpu-id>` and `<platform-id>` to address require
 This test takes time, so you can adjust run time limit for each using `-t seconds` option.
 
 ```shell
-$ /opt/ton-miner/pow-miner-cuda -vv -g<gpu-id> -p<platform-id> -B -F 16 -t 10 kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 229760179690128740373110445116482216837 5391989333430127958933403017403926134727428884508114496220722049840 10000000000000000000
+$ /opt/ton-miner/pow-miner-cuda -vv \
+  -g<gpu-id> \
+  -p<platform-id> \
+  -B -F 16 -t 10 kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 \
+  229760179690128740373110445116482216837 \
+  5391989333430127958933403017403926134727428884508114496220722049840 \
+  10000000000000000000
 
 ...
 
