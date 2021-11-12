@@ -92,14 +92,14 @@ void Miner::print_stats(td::Timestamp start_at, td::uint64 hashes_computed, td::
   }
   double speed = static_cast<double>(hashes_computed) / passed;
   std::stringstream ss, ss2;
-  ss << std::setprecision(3) << speed / 1e+6;
+  ss << std::fixed << std::setprecision(3) << speed / 1e+6;
 
   auto instant_passed = td::Timestamp::now().at() - instant_start_at.at();
   if (instant_passed < 1e-9) {
     instant_passed = 1;
   }
   double instant_speed = static_cast<double>(instant_hashes_computed) / instant_passed;
-  ss2 << std::setprecision(3) << instant_speed / 1e+6;
+  ss2 << std::fixed << std::setprecision(3) << instant_speed / 1e+6;
 
   LOG(INFO) << "[ mining in progress, passed: " << td::format::as_time(passed)
             << ", hashes computed: " << hashes_computed << ", instant speed: " << ss2.str()
