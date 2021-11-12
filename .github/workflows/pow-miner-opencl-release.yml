@@ -63,14 +63,19 @@ jobs:
       run: |
         cd build && cmake --build . --target tonlib-opencl-cli -j2
 
+    - name: cmake build lite-client
+      run: |
+        cd build && cmake --build . --target lite-client
+
     - name: naming convention
       run: |
+        rm -r ./lite-client && chmod +x build/lite-client/lite-client && cp build/lite-client/lite-client .
         chmod +x build/crypto/pow-miner-opencl && cp build/crypto/pow-miner-opencl .
         chmod +x build/crypto/pow-miner-cuda && cp build/crypto/pow-miner-cuda .
         chmod +x build/tonlib/tonlib-opencl-cli && cp build/tonlib/tonlib-opencl-cli .
         chmod +x build/tonlib/tonlib-cuda-cli && cp build/tonlib/tonlib-cuda-cli .
-        tar -zcf build/crypto/minertools-opencl-${{ matrix.os }}-x86-64.tar.gz pow-miner-opencl tonlib-opencl-cli
-        tar -zcf build/crypto/minertools-cuda-${{ matrix.os }}-x86-64.tar.gz pow-miner-cuda tonlib-cuda-cli
+        tar -zcf build/crypto/minertools-opencl-${{ matrix.os }}-x86-64.tar.gz pow-miner-opencl tonlib-opencl-cli lite-client
+        tar -zcf build/crypto/minertools-cuda-${{ matrix.os }}-x86-64.tar.gz pow-miner-cuda tonlib-cuda-cli lite-client
 
     - name: packing
       uses: ncipollo/release-action@v1
