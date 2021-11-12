@@ -9,23 +9,23 @@ body {
 
 TON Miner поддерживает Linux, Windows и карты Nvidia, AMD.
 
-CPU (Intel, AMD) support available also, but requires custom build from sources, it was excluded from pre-build releases due to low efficiency.
+CPU-Процессоры (Intel, AMD) также поддерживаются, но требует кастомной сборки из исходников (она была исключена из предварительных сборок из-за низкой эффективности).
 
-## Latest release
+## Последние обновления
 
-All releases located here:
+Все обновления располагаются здесь:
 [https://github.com/tontechio/pow-miner-gpu/releases](https://github.com/tontechio/pow-miner-gpu/releases)
 
-Windows utilities:
+Windows утилиты (помогают с тестом и запуском):
 [https://github.com/tontechio/pow-miner-win-util](https://github.com/tontechio/pow-miner-win-util)
 
-## Documentation and manuals
+## Документация и гайды
 
-- [Installation on Linux](en/linux-howto.md)
-- [Installation on Windows](en/windows-howto.md)
-- Installation on HiveOS (soon)
+- [Установка на Linux](en/linux-howto.md)
+- [Установка на Windows](en/windows-howto.md)
+- Установка на HiveOS (скоро)
 
-## Supported OS and drivers
+## Поддерживаемые системы и драйвера:
 
 - NVIDIA CUDA 11.3+
 - NVIDIA Driver 471.11+
@@ -35,13 +35,13 @@ Windows utilities:
 - Windows 10
 - Windows 11
 
-## Supported and tested GPUs
+## Поддерживаеются и протестированны следующие GPU:
 
-HW Supported:
+HW поддерживаются:
 
-- Nvidia: nVidia GT640+ or newer, Quadro series with Kepler chip or newer (FX not supported)
-- Radeon HD78xx series and newer, AMD GPU GCN 1.0+
-- HD4000 or newer
+- Nvidia: nVidia GT640+ или новее, Quadro series вместе с Kepler chip или новее (FX не поддерживаются)
+- Radeon HD78xx series или новее, AMD GPU GCN 1.0+
+- HD4000 или новее
 
 | GPU | Hashrate |
 |-----|:---------|
@@ -61,27 +61,27 @@ NVIDIA RTX3070 | 1.5e+09
 NVIDIA RTX3070 Ti | 1.6e+09
 NVIDIA RTX3080 | 2.1e+09
 NVIDIA RTX3090 | 2.4e+09 
-NVIDIA Tesla T4 | not recommended
+NVIDIA Tesla T4 | не рекомендуется к использованию
 AMD Radeon 580 | 4.2e+08
 AMD Radeon 6600 | 6.6e+08
 
-## Contribution
+## Помощь от сообщества
 
-Please report issues here:
+Пишите о проблемах здесь:
 [https://github.com/tontechio/pow-miner-gpu/issues](https://github.com/tontechio/pow-miner-gpu/issues)
 
-Pull-requests are welcome:
+Pull-requests приветствуются:
 [https://github.com/tontechio/pow-miner-gpu](https://github.com/tontechio/pow-miner-gpu)
 
-Site content / translations are welcomed as pull-requests here:
+Контент сайта / требуется перевод:
 [https://github.com/tontechio/pow-miner-gpu/tree/gh-pages](https://github.com/tontechio/pow-miner-gpu/tree/gh-pages)
 
-## Resources
+## Полезные ссылки
 
-- Telegram channel (RU): [https://t.me/Toncoin_mining_rus](https://t.me/Toncoin_mining_rus)
-- Telegram chat (EN/RU): [https://t.me/tonmine](https://t.me/tonmine)
-- TON official: [https://ton.org/](https://ton.org/)
-- TON Wallets: [https://ton.org/wallets](https://ton.org/wallets)
-- TON Trades and exchanges: [https://ton.org/coin](https://ton.org/coin)
+- Telegram канал (RU): [https://t.me/Toncoin_mining_rus](https://t.me/Toncoin_mining_rus)
+- Telegram чат (EN/RU): [https://t.me/tonmine](https://t.me/tonmine)
+- TON официальный сайт: [https://ton.org/](https://ton.org/)
+- TON Кошельки: [https://ton.org/wallets](https://ton.org/wallets)
+- TON трейд и обмен: [https://ton.org/coin](https://ton.org/coin)
 
 *Dr. Elias, Dr. Andreas, Dr. Alexis and The Team*
