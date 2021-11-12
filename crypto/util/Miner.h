@@ -27,12 +27,10 @@
 #include <array>
 #include <iomanip>
 
-#if defined MINERCUDA
-#define MAX_BOOST_POW 14
-#endif
-
 #if defined MINEROPENCL
 #define MAX_BOOST_POW 10
+#else
+#define MAX_BOOST_POW 14
 #endif
 
 #define TC_PURPLE "\x1b[1;35m"
