@@ -33,13 +33,6 @@
 #define MAX_BOOST_POW 14
 #endif
 
-#define TC_PURPLE "\x1b[1;35m"
-#define TC_GREEN_ON_GREEN "\x1b[1;32;42m"
-#define TC_WHITE_ON_GREEN "\x1b[1;37;42m"
-#define TC_RED_ON_GREEN "\x1b[1;31;42m"
-#define TC_PURPLE_ON_GREEN "\x1b[1;35;42m"
-#define TC_RED_ON_RED "\x1b[1;31;41m"
-
 namespace ton {
 class Miner {
  public:

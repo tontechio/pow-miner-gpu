@@ -1778,9 +1778,9 @@ class TonlibCli : public td::actor::Actor {
           }
           auto info = r_res.move_as_ok();
           double time_diff = abs(td::Timestamp::now().at_unix() - static_cast<double>(info->now_));
-          LOG(INFO) << "Time diff with liteserver: " << td::format::as_time(time_diff);
           if (time_diff > delta) {
-            promise.set_error(td::Status::Error("liteserver out of sync with local machine"));
+            LOG(INFO) << "Time diff with liteserver: " << td::format::as_time(time_diff);
+            promise.set_error(td::Status::Error("Your system time is out of sync"));
           } else {
             promise.set_value(td::Unit());
           }
