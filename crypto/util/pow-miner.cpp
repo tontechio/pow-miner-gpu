@@ -219,14 +219,14 @@ class MinerBench : public td::Benchmark {
     std::stringstream ss;
     ss << std::setprecision(3) << best_speed_ / 1e+6;
 
-    LOG(INFO) << td::Slice(TC_RED) << "" << TC_EMPTY;
-    LOG(INFO) << td::Slice(TC_RED) << "*************************************************" << TC_EMPTY;
-    LOG(INFO) << td::Slice(TC_RED) << "***" << TC_EMPTY;
-    LOG(INFO) << td::Slice(TC_RED) << "***   best boost factor: " << best_factor_ << TC_EMPTY;
-    LOG(INFO) << td::Slice(TC_RED) << "***   best speed:        " << ss.str() << " Mhash/s" << TC_EMPTY;
-    LOG(INFO) << td::Slice(TC_RED) << "***" << TC_EMPTY;
-    LOG(INFO) << td::Slice(TC_RED) << "*************************************************" << TC_EMPTY;
-    LOG(INFO) << td::Slice(TC_RED) << "" << TC_EMPTY;
+    LOG(ERROR) << "";
+    LOG(ERROR) << "*************************************************";
+    LOG(ERROR) << "***";
+    LOG(ERROR) << "***   best boost factor: " << best_factor_;
+    LOG(ERROR) << "***   best speed:        " << ss.str() << " Mhash/s";
+    LOG(ERROR) << "***";
+    LOG(ERROR) << "*************************************************";
+    LOG(ERROR) << "";
 
     std::exit(0);
   }
