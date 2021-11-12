@@ -10,7 +10,9 @@ To use CUDA on your system, you will need the following installed:
 
 * CUDA-capable GPU (Nvidia)
 * A supported version of Linux with a gcc compiler and toolchain
-* NVIDIA CUDA Toolkit
+* NVIDIA CUDA Toolkit:
+   - CUDA-Runtime-Libraries 
+   - Driver components-Display Driver
 
 ## OpenCL POW Miner
 
@@ -41,7 +43,7 @@ To use OpenCL on your system, you will need the following installed:
 
 3. Install requirements (depends on GPU device)
    
-   a) CUDA Toolkit and Driver: [https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)
+   a) CUDA-Runtime-Libraries and Driver components-Display Driver: [https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)
 
    b) OpenCL SDK from your favourite vendor. If you don't know which one you need, start from here: [https://github.com/KhronosGroup/OpenCL-SDK](https://github.com/KhronosGroup/OpenCL-SDK) or install it from repository:
 

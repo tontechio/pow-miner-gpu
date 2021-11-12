@@ -77,8 +77,12 @@ void cuda_print_devices() {
     int m = device_map[n];
     cudaDeviceProp props;
     cudaGetDeviceProperties(&props, m);
-    if (!opt_n_threads || n < opt_n_threads)
-      LOG(ERROR) << "[ GPU #" << m << ": SM " << props.major << "." << props.minor << " " << props.name << " ]";
+    if (GET_VERBOSITY_LEVEL() < VERBOSITY_NAME(INFO)) {
+      return;
+    }
+    if (!opt_n_threads || n < opt_n_threads) {
+      LOG(PLAIN) << "[ GPU #" << m << ": SM " << props.major << "." << props.minor << " " << props.name << " ]";
+    }
   }
 }
 

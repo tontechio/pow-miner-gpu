@@ -84,21 +84,34 @@ td::optional<std::string> Miner::run(const Options &options) {
   return {};
 }
 
-void Miner::print_stats(td::Timestamp start_at, td::uint64 hashes_computed) {
+void Miner::print_stats(td::Timestamp start_at, td::uint64 hashes_computed, td::Timestamp instant_start_at,
+                        td::uint64 instant_hashes_computed) {
   auto passed = td::Timestamp::now().at() - start_at.at();
   if (passed < 1e-9) {
     passed = 1;
   }
   double speed = static_cast<double>(hashes_computed) / passed;
-  std::stringstream ss;
-  ss << std::scientific << std::setprecision(1) << speed;
-  LOG(INFO) << "[ mining in progress, passed: " << td::format::as_time(passed)
-            << ", hashes computed: " << hashes_computed << ", speed: " << ss.str() << " hps ]";
+  std::stringstream ss, ss2;
+  ss << std::setprecision(3) << speed / 1e+6;
+
+  auto instant_passed = td::Timestamp::now().at() - instant_start_at.at();
+  if (instant_passed < 1e-9) {
+    instant_passed = 1;
+  }
+  double instant_speed = static_cast<double>(instant_hashes_computed) / instant_passed;
+  ss2 << std::setprecision(3) << instant_speed / 1e+6;
+
+  LOG(INFO) << td::Slice(TC_GREEN_ON_GREEN) << "[ mining in progress]"
+            << "[ passed: " << td::format::as_time(passed) << ", hashes computed: " << hashes_computed
+            << ", instant speed: " << td::Slice(TC_RED_ON_GREEN) << ss2.str() << " Mhash/s "
+            << td::Slice(TC_GREEN_ON_GREEN) << ", average speed: " << td::Slice(TC_PURPLE_ON_GREEN) << ss.str()
+            << " Mhash/s" << td::Slice(TC_GREEN_ON_GREEN) << " ]" << TC_EMPTY;
 };
 
 td::optional<std::string> build_mine_result(int cpu_id, ton::HDataEnv H, const ton::Miner::Options &options,
                                             unsigned char *rdata, uint64_t nonce, uint64_t vcpu, uint32_t expired) {
-  LOG(INFO) << "FOUND! GPU ID: " << options.gpu_id << ", nonce=" << nonce << ", expired=" << expired;
+  LOG(WARNING) << td::Slice(TC_RED_ON_RED) << "FOUND! GPU ID: " << options.gpu_id << ", nonce=" << nonce
+               << ", expired=" << expired << TC_EMPTY;
 
   //    std::cout << cpu_id << ": "<< "rdata[" << vcpu << "]: ";
   //    for (int i = 0; i < 32; i++) {
