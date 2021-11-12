@@ -463,6 +463,7 @@ __host__ HashResult bitcredit_cpu_hash(uint32_t gpu_id, uint32_t cpu_id, uint32_
 
   HashResult r;
   r.nonce = UINT64_MAX;
+  r.vcpu = UINT64_MAX;
 
   memset(result, UINT64_MAX, sizeof(result));
   memset(vcpu, UINT64_MAX, sizeof(vcpu));

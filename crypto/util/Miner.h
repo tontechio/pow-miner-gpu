@@ -27,6 +27,12 @@
 #include <array>
 #include <iomanip>
 
+#if defined MINEROPENCL
+#define MAX_BOOST_POW 10
+#else
+#define MAX_BOOST_POW 14
+#endif
+
 namespace ton {
 class Miner {
  public:
@@ -50,7 +56,8 @@ class Miner {
 
   static td::optional<std::string> run(const Options& options);
 
-  static void print_stats(td::Timestamp start_at, td::uint64 hashes_computed);
+  static void print_stats(td::Timestamp start_at, td::uint64 hashes_computed, td::Timestamp instant_start_at,
+                          td::uint64 instant_hashes_computed);
 };
 
 class MinerCuda : public Miner {

@@ -26,7 +26,7 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
   if (options.max_iterations < throughput) {
     throughput = options.max_iterations;
   }
-  LOG(INFO) << "[ START MINER, GPU ID: " << gpu_id << ", boost factor: " << options.factor << ", throughput: " << throughput << " ]";
+  LOG(WARNING) << "[ START MINER, GPU ID: " << gpu_id << ", boost factor: " << options.factor << ", throughput: " << throughput << " ]";
 
   // allocate mem
   bitcredit_cpu_init(gpu_id, cpu_id, throughput);
@@ -36,16 +36,16 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
   unsigned char input[123], complexity[32];
   memcpy(input, data.ubegin(), data.size());
   if (!bitcredit_setBlockTarget(gpu_id, options.gpu_threads, cpu_id, input, options.complexity.data(), rdata)) {
-    return 0;
+    abort();
   }
 
   uint32_t expired;
-  td::int64 i = 0;
-  td::Timestamp stat_at = td::Timestamp::now();
+  td::int64 i = 0, hashes_computed = 0;
+  td::Timestamp stat_at = td::Timestamp::now(), instant_stat_at = td::Timestamp::now();
   for (; i < options.max_iterations;) {
     expired = (uint32_t)td::Clocks::system() + 900;
     HashResult foundNonce = bitcredit_cpu_hash(gpu_id, cpu_id, options.gpu_threads, throughput, i, expired);
-    if (foundNonce.nonce != UINT64_MAX) {
+    if (foundNonce.nonce != UINT64_MAX && foundNonce.vcpu != UINT64_MAX) {
       pdata[0] = foundNonce.nonce;
       pdata[1] = foundNonce.vcpu;
       pdata[2] = expired;
@@ -55,9 +55,12 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
       return 1;
     }
     i += throughput;
+    hashes_computed += throughput;
     if (options.verbosity >= 2 && stat_at.is_in_past()) {
-      ton::Miner::print_stats(options.start_at, i);
+      ton::Miner::print_stats(options.start_at, i, instant_stat_at, hashes_computed);
       stat_at = stat_at.in(5);
+      instant_stat_at = td::Timestamp::now();
+      hashes_computed = 0;
     }
     if (options.token_) {
       break;
