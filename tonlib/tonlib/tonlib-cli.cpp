@@ -905,7 +905,7 @@ class TonlibCli : public td::actor::Actor {
           std::exit(3);
         }
       });
-      td::actor::send_closure(td::actor::actor_id(this), &TonlibCli::check_liteserver_synced, 20, std::move(P));
+      td::actor::send_closure(td::actor::actor_id(this), &TonlibCli::check_liteserver_synced, 60, std::move(P));
 
       if (options_.logfile.length() > 0) {
         td::TerminalIO::out() << "Miner started, all output to <" << options_.logfile << ">\n";
