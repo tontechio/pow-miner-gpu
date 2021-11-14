@@ -12,7 +12,7 @@ Inspired by [tpruvot/ccminer](https://github.com/tpruvot/ccminer) project.
 
 This variant was tested and built on Linux (Ubuntu 18.04.5 LTS)
 
-### System Requirements for CUDA POW Miner
+#### System Requirements for CUDA POW Miner
 
 To use CUDA on your system, you will need the following installed:
 
@@ -24,7 +24,7 @@ To use CUDA on your system, you will need the following installed:
 
 This variant was tested and built on Linux (Ubuntu 18.04.5 LTS), macOS Big Sur (11.5.2)
 
-### System Requirements for OpenCL POW Miner
+#### System Requirements for OpenCL POW Miner
 
 To use OpenCL on your system, you will need the following installed:
 
@@ -181,4 +181,6 @@ Test Lite Client for TON Blockchain. Options:
 ```
 
 
-#### [Back](./../index.md)
+
+
+#### [Back](./../index_ru.md)

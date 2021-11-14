@@ -3,7 +3,7 @@ body {
   font:14px/22px Helvetica, Arial, sans-serif;
 }
 </style>
-# Using miner on Linux
+# Linux installation
 
 ## Requirements
 
@@ -30,45 +30,33 @@ Follow instructions to obtain your address.
 
 ## Installation
 
-1. Download [latest build](https://github.com/tontechio/pow-miner-gpu/releases/latest) for your operating system and GPU make
+1. [Download](https://github.com/tontechio/pow-miner-gpu/releases/latest) latest build for your operating system and GPU make
 1. Let's suppose it is `minertools-cuda-ubuntu-20.04-x86-64.tar.gz`
-1. `sudo mkdir -p /opt/ton-miner; sudo chown $USER /opt/ton-miner`
-1. (change `PATH/TO` to the actual local path) `tar xzf PATH/TO/minertools-cuda-ubuntu-20.04-x86-64.tar.gz /opt/ton-miner/`
+1. Create miner directory: `sudo mkdir -p /opt/ton-miner; sudo chown $USER /opt/ton-miner`
+1. Extract downloaded file (change `PATH/TO` to the actual local path) `tar xzf PATH/TO/minertools-cuda-ubuntu-20.04-x86-64.tar.gz /opt/ton-miner/`
 1. Download TON network config `cd /opt/ton-miner && curl -L -O https://newton-blockchain.github.io/global.config.json`
 
-## Usage
-
-### tonlib-cuda-cli (tonlib-opencl-cli)
-
-This utility:
-- get actual job from giver-contract
-- run mining job
-- send job result to giver-contract
-
-When job has been done quicker than others and delivered quicker than others then giver-contract will send 100 toncoin to your personal wallet address.
-
-Each success job indicated by `FOUND!` message in the output (or log if enabled)
-
-```
-$  /opt/ton-miner/tonlib-cuda-cli \
-  -v <log-level> \
-  -C <lite-server-config> \
-  -e 'pminer start <giver_address> <my_address> <gpu-id> [boost-factor] [platform-id]' \
-  [-l <logfile>]
-```
-
-Options and parameters:
-
-- `-v`: log/output verbosity; use `2` for less messages or `3` for more
-- `-C`: lite-servers network config file name, previously downloaded `global.config.json` (it's recommended to re-download it once a week at least)
-- `<gpu-id>`: GPU device ID
-- `[platform-id]`: optional GPU platform ID (OpenCl only), `0` by default; needed for some systems with more than one OpenCL's "platform" present in the system
-- `[boost-factor]`: optional, `32` by default, accept values 1..65536; the multiplier for throughput, affects the number of hashes processed per iteration on the GPU
-- `<giver_address>`: the address of the desired giver to mine
-- `<my_address>`: the address of your wallet (possibly not initialized yet)
-- `-l`: log flie name; all output goes to log file if it's specified
 
 ## Configuration
+
+### "Giver" contracts
+
+TON mining is a giving a reward for a job from "giver" smartcontract. It's not about "mining blocks" i.e. network activity support. It's a way to spread coins between users and borrow base capital for future validating directly or via *nominator* contract.
+
+There are 10 giver contracts addresses (more info [here](https://ton.org/mining)):
+
+```
+1.  kf-FV4QTxLl-7Ct3E6MqOtMt-RGXMxi27g4I645lw6MTWraV
+2.  kf8JfFUEJhhpRW80_jqD7zzQteH6EBHOzxiOhygRhBdt4z2N
+3.  kf8kO6K6Qh6YM4ddjRYYlvVAK7IgyW8Zet-4ZvNrVsmQ4EOF
+4.  kf9iWhwk9GwAXjtwKG-vN7rmXT3hLIT23RBY6KhVaynRrIK7
+5.  kf_NSzfDJI1A3rOM0GQm7xsoUXHTgmdhN5-OrGD8uwL2JMvQ
+6.  kf8gf1PQy4u2kURl-Gz4LbS29eaN4sVdrVQkPO-JL80VhOe6
+7.  kf-P_TOdwcCh0AXHhBpICDMxStxHenWdLCDLNH5QcNpwMHJ8
+8.  kf-kkdY_B7p-77TLn2hUhM6QidWrrsl8FYWCIvBMpZKprBtN
+9.  kf91o4NNTryJ-Cw3sDGt9OTiafmETdVFUMvylQdFPoOxIsLm
+10. kf8SYc83pm5JkGt0p3TQRkuiM58O9Cr3waUtR9OoFq716lN-
+```
 
 ### Get list of GPU
 
@@ -129,8 +117,6 @@ $ /opt/ton-miner/pow-miner-cuda -vv \
 
 To get more accurate results run it few times or increase `-t` value to heat up the GPU properly.
 Don't worry if you'll get inconsistent results, just peak up most frequent and lower value.
-Use found boost factor value for `-F` tonlib option.
-
 
 ### System service
 

@@ -5,27 +5,39 @@ body {
 </style>
 # TON Miner GPU на русском
 
-### [English version](./../index.md)
+### [English version](./index.md)
 
 TON Miner поддерживает Linux, Windows и карты Nvidia, AMD.
 
 CPU-Процессоры (Intel, AMD) также поддерживаются, но требует кастомной сборки из исходников (она была исключена из предварительных сборок из-за низкой эффективности).
 
+**ВАЖНО: процессоры Intel не подходят для майнинга ТОН**
+
 ## Последние обновления
 
-Все обновления располагаются здесь:
+Все обновления публикуются здесь:
 [https://github.com/tontechio/pow-miner-gpu/releases](https://github.com/tontechio/pow-miner-gpu/releases)
 
-Windows утилиты (помогают с тестом и запуском):
+Windows-утилиты:
 [https://github.com/tontechio/pow-miner-win-util](https://github.com/tontechio/pow-miner-win-util)
 
-## Документация и гайды
+## Установка
 
-- [Установка на Linux](en/linux-howto.md)
-- [Установка на Windows](en/windows-howto.md)
-- Установка на HiveOS (скоро)
+- [Linux](ru/linux-howto.md)
+- [Windows 10/11](ru/windows-howto.md)
+- HiveOS (soon)
 
-## Поддерживаемые системы и драйвера:
+## FAQ
+
+- [Windows](ru/windows-faq.md)
+
+## Документация
+
+- [tonlib-cli, tonlib-cuda-cli, tonlib-opencl-cli](ru/tool-tonlib.md)
+- [pow-miner, pow-miner-cuda, pow-miner-opencl](ru/tool-pow-miner.md)
+- [lite-client](ru/tool-lite-client.md)
+
+## Поддерживаемые ОС и драйверы
 
 - NVIDIA CUDA 11.3+
 - NVIDIA Driver 471.11+
@@ -37,11 +49,12 @@ Windows утилиты (помогают с тестом и запуском):
 
 ## Поддерживаеются и протестированны следующие GPU:
 
-HW поддерживаются:
+Поддерживаемое оборудование:
 
-- Nvidia: nVidia GT640+ или новее, Quadro series вместе с Kepler chip или новее (FX не поддерживаются)
-- Radeon HD78xx series или новее, AMD GPU GCN 1.0+
-- HD4000 или новее
+- Nvidia: nVidia GTX 1060 или новее, Tesla series
+- Radeon RX 570 series или новее, AMD GPU GCN 1.0+
+
+**ВАЖНО: работа GPU вне списка не гарантируется и не поддерживается**
 
 | GPU | Hashrate |
 |-----|:---------|
@@ -61,7 +74,7 @@ NVIDIA RTX3070 | 1.5e+09
 NVIDIA RTX3070 Ti | 1.6e+09
 NVIDIA RTX3080 | 2.1e+09
 NVIDIA RTX3090 | 2.4e+09 
-NVIDIA Tesla T4 | не рекомендуется к использованию
+NVIDIA Tesla T4 | 9.3e+08
 AMD Radeon 580 | 4.2e+08
 AMD Radeon 6600 | 6.6e+08
 
@@ -70,7 +83,7 @@ AMD Radeon 6600 | 6.6e+08
 Пишите о проблемах здесь:
 [https://github.com/tontechio/pow-miner-gpu/issues](https://github.com/tontechio/pow-miner-gpu/issues)
 
-Pull-requests приветствуются:
+Пулреквесты приветствуются:
 [https://github.com/tontechio/pow-miner-gpu](https://github.com/tontechio/pow-miner-gpu)
 
 Контент сайта / требуется перевод:

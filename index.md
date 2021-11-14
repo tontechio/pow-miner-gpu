@@ -5,11 +5,13 @@ body {
 </style>
 # Welcome to TON Miner GPU
 
-### [Русская версия](ru/index.md)
+### [Русская версия](index_ru.md)
 
 TON Miner supports Linux, Windows using Nvidia and AMD GPU.
 
 CPU (Intel, AMD) support available also, but requires custom build from sources, it was excluded from pre-build releases due to low efficiency.
+
+**NB: Intel CPU isn't good for ТОН mining**
 
 ## Latest release
 
@@ -19,11 +21,21 @@ All releases located here:
 Windows utilities:
 [https://github.com/tontechio/pow-miner-win-util](https://github.com/tontechio/pow-miner-win-util)
 
-## Documentation and manuals
+## Installation
 
-- [Installation on Linux](en/linux-howto.md)
-- [Installation on Windows](en/windows-howto.md)
-- Installation on HiveOS (soon)
+- [Linux](en/linux-howto.md)
+- [Windows 10/11](en/windows-howto.md)
+- HiveOS (soon)
+
+## FAQ
+
+- [Windows](en/windows-faq.md)
+
+## Manuals
+
+- [tonlib](en/tool-tonlib.md)
+- [lite-client](en/tool-lite-client.md)
+- [pow-miner](en/tool-pow-miner.md)
 
 ## Supported OS and drivers
 
@@ -39,9 +51,10 @@ Windows utilities:
 
 HW Supported:
 
-- Nvidia: nVidia GT640+ or newer, Quadro series with Kepler chip or newer (FX not supported)
-- Radeon HD78xx series and newer, AMD GPU GCN 1.0+
-- HD4000 or newer
+- Nvidia: nVidia GTX 1060 or newer, Tesla series
+- Radeon RX 570 and newer, AMD GPU GCN 1.0+
+
+**NB: other GPU not tested and not supported**
 
 | GPU | Hashrate |
 |-----|:---------|
@@ -61,7 +74,7 @@ NVIDIA RTX3070 | 1.5e+09
 NVIDIA RTX3070 Ti | 1.6e+09
 NVIDIA RTX3080 | 2.1e+09
 NVIDIA RTX3090 | 2.4e+09 
-NVIDIA Tesla T4 | not recommended
+NVIDIA Tesla T4 | 9.3e+08
 AMD Radeon 580 | 4.2e+08
 AMD Radeon 6600 | 6.6e+08
 
