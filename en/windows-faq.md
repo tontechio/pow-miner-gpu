@@ -13,4 +13,4 @@ Every giver have it's job complexity which changes over the time. So, you can ch
 It's ok to get random or simpliest giver to start, but general advice is to change givers from time to time.
 
 
-#### [Back](./index.md)
+#### [Back](./../index.md)
