@@ -63,7 +63,6 @@ body {
 
 Выполните `/opt/ton-miner/pow-miner-cuda` (или `pow-miner-opencl` для AMD) чтобы получить список доступных майнеру GPU и их идентификаторов.
 
-Cuda (Nvidia) gpus `#0` and `#1` stands for gpu-id `0` and gpu-id `1`:
 Драйвер Cuda (Nvidia) маркирует ГПУ как `#0` and `#1`, что означает, что в параметрах GPU_ID значения `0` и `1` будут использовать соответствующую карту:
 
 ```
