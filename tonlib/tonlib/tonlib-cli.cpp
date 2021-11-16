@@ -832,7 +832,7 @@ class TonlibCli : public td::actor::Actor {
     auto factor_s = parser.read_word();
     if (!factor_s.empty()) {
       factor = std::atoi(factor_s.data());
-      CHECK(factor >= 1 && factor <= (1 << MAX_BOOST_POW));
+      CHECK(factor >= 1 && factor <= 16384);
     }
 
     auto platform_id_s = parser.read_word();

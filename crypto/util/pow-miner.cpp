@@ -270,7 +270,7 @@ int main(int argc, char* const argv[]) {
         break;
       case 'F':
         factor = atoi(optarg);
-        CHECK(factor >= 1 && factor <= (1 << MAX_BOOST_POW));
+        CHECK(factor >= 1 && factor <= 16384);
         options.factor = factor;
         break;
 #endif
