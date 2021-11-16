@@ -75,6 +75,7 @@ if(MINERCUDA)
   enable_language(CUDA)
 
   find_package(CUDA REQUIRED)
+  SET(CUDA_NVCC_FLAGS “-arch=sm_11”)
   include_directories("${CUDA_INCLUDE_DIRS}")
 
   add_executable(tonlib-cuda-cli tonlib/tonlib-cli.cpp)
