@@ -311,6 +311,7 @@ if(MINERCUDA)
   enable_language(CUDA)
 
   find_package(CUDA REQUIRED)
+  SET(CUDA_NVCC_FLAGS “-arch=sm_11”)
   include_directories("${CUDA_INCLUDE_DIRS}")
 
   add_library(pow-miner-cuda-lib util/Miner.cpp util/MinerCuda.cpp util/Miner.h util/cuda/miner.h util/cuda/sha256.cpp util/cuda/sha256.h

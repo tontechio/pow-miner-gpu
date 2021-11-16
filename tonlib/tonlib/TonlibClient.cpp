@@ -1371,8 +1371,8 @@ void TonlibClient::init_ext_client() {
   } else {
     auto lite_clients_size = config_.lite_clients.size();
     CHECK(lite_clients_size != 0);
-    auto lite_client_id = td::Random::fast(0, td::narrow_cast<int>(lite_clients_size) - 1);
-    auto& lite_client = config_.lite_clients[lite_client_id];
+    lite_client_id_ = td::Random::fast(0, td::narrow_cast<int>(lite_clients_size) - 1);
+    auto& lite_client = config_.lite_clients[lite_client_id_];
     class Callback : public ExtClientLazy::Callback {
      public:
       explicit Callback(td::actor::ActorShared<> parent) : parent_(std::move(parent)) {

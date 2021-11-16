@@ -713,6 +713,7 @@ class TonlibCli : public td::actor::Actor {
     }
 
     void got_answer(td::optional<std::string> answer) {
+      need_run_miners_ = true;
       source_.cancel();
       if (--threads_alive_ == 0) {
         threads_.clear();
@@ -748,8 +749,10 @@ class TonlibCli : public td::actor::Actor {
 
     void with_giver_info(td::Result<tonlib_api::object_ptr<tonlib_api::smc_runResult>> r_info) {
       auto status = do_with_giver_info(std::move(r_info));
-      LOG_IF(ERROR, status.is_error()) << "pminer: " << status;
       if (status.is_error()) {
+        auto lite_client = client_.get_actor_unsafe().get_lite_client();
+        CHECK(lite_client);
+        LOG(ERROR) << "pminer: " << status << " (#" << lite_client->address.get_ipv4() << ")";
         // need to restart if liteserver is not ready
         hangup();
         std::exit(3);
@@ -832,7 +835,7 @@ class TonlibCli : public td::actor::Actor {
     auto factor_s = parser.read_word();
     if (!factor_s.empty()) {
       factor = std::atoi(factor_s.data());
-      CHECK(factor >= 1 && factor <= (1 << MAX_BOOST_POW));
+      CHECK(factor >= 1 && factor <= 16384);
     }
 
     auto platform_id_s = parser.read_word();
