@@ -713,6 +713,7 @@ class TonlibCli : public td::actor::Actor {
     }
 
     void got_answer(td::optional<std::string> answer) {
+      need_run_miners_ = true;
       source_.cancel();
       if (--threads_alive_ == 0) {
         threads_.clear();
