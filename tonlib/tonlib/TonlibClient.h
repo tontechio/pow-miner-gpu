@@ -87,6 +87,11 @@ class TonlibClient : public td::actor::Actor {
     }
   }
 
+ public:
+  tonlib::Config::LiteClient* get_lite_client() {
+    return lite_client_id_ >= 0 ? &config_.lite_clients[lite_client_id_] : nullptr;
+  };
+
  private:
   enum class State { Uninited, Running, Closed } state_ = State::Uninited;
   td::unique_ptr<TonlibCallback> callback_;
@@ -98,6 +103,7 @@ class TonlibClient : public td::actor::Actor {
   std::string rwallet_init_public_key_;
   std::string last_state_key_;
   bool use_callbacks_for_network_{false};
+  int lite_client_id_ = -1;
 
   // KeyStorage
   std::shared_ptr<KeyValue> kv_;

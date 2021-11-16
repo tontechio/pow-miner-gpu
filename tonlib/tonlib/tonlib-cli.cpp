@@ -749,8 +749,10 @@ class TonlibCli : public td::actor::Actor {
 
     void with_giver_info(td::Result<tonlib_api::object_ptr<tonlib_api::smc_runResult>> r_info) {
       auto status = do_with_giver_info(std::move(r_info));
-      LOG_IF(ERROR, status.is_error()) << "pminer: " << status;
       if (status.is_error()) {
+        auto lite_client = client_.get_actor_unsafe().get_lite_client();
+        CHECK(lite_client);
+        LOG(ERROR) << "pminer: " << status << " (#" << lite_client->address.get_ipv4() << ")";
         // need to restart if liteserver is not ready
         hangup();
         std::exit(3);
