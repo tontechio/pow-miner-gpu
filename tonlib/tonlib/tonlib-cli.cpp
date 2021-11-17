@@ -923,7 +923,9 @@ class TonlibCli : public td::actor::Actor {
     if (cmd == "start") {
       auto P = td::PromiseCreator::lambda([&](td::Result<td::Unit> R) mutable {
         if (R.is_error()) {
-          LOG(ERROR) << R.move_as_error();
+          auto lite_client = client_.get_actor_unsafe().get_lite_client();
+          CHECK(lite_client);
+          LOG(ERROR) << R.move_as_error() << " (#" << lite_client->address.get_ipv4() << ")";
           std::exit(3);
         }
       });
