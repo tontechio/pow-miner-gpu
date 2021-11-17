@@ -2538,7 +2538,7 @@ int main(int argc, char* argv[]) {
     logger_ = td::TsFileLog::create(fname.str(), td::TsFileLog::DEFAULT_ROTATE_THRESHOLD, true, true).move_as_ok();
     td::log_interface = logger_.get();
   });
-  p.add_option('s', "stat", "save mining statistics to file", [&](td::Slice fname) {
+  p.add_option('s', "statname", "save mining statistics to file", [&](td::Slice fname) {
     options.statfile = fname.str();
   });
 

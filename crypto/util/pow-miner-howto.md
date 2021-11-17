@@ -99,6 +99,12 @@ To redirect the output to a file, add `-l pminer.log` to the command:
 nohup tonlib/tonlib-cuda-cli -v 3 -C global.config.json -e 'pminer start Ef-FV4QTxLl-7Ct3E6MqOtMt-RGXMxi27g4I645lw6MTWg0f kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 0 32' -l pminer.log
 ```
 
+To save mining status in JSON to a file, add `-s pminer.json` to the command:
+
+```
+nohup tonlib/tonlib-cuda-cli -v 3 -C global.config.json -e 'pminer start Ef-FV4QTxLl-7Ct3E6MqOtMt-RGXMxi27g4I645lw6MTWg0f kQBWkNKqzCAwA9vjMwRmg7aY75Rf8lByPA9zKXoqGkHi8SM7 0 32' -s pminer.json
+```
+
 ## TONLIB CLI automation
 
 Actually, tonlib-*-cli miner does not know how to restart itself.
