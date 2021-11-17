@@ -16,7 +16,7 @@ void OpenCL::load_source(const char *filename) {
 
   fp = fopen(filename, "r");
   if (!fp) {
-    LOG(ERROR) << "[ OpenCL: failed to load kernel source '" <<  filename << "' ]";
+    LOG(ERROR) << "[ OpenCL: failed to load kernel source '" << filename << "' ]";
     exit(1);
   }
   source_str_ = (char *)malloc(MAX_SOURCE_SIZE);
@@ -36,10 +36,9 @@ void OpenCL::set_source(unsigned char *source, unsigned int length) {
   }
 }
 
-void OpenCL::print_devices() {
-  
+void OpenCL::print_devices(bool count) {
   cl_int cl_err = CL_SUCCESS;
-  
+
   // platform
   CL_WRAPPER(clGetPlatformIDs(0, NULL, &platform_count_));
   platforms_ = (cl_platform_id *)malloc(platform_count_ * sizeof(cl_platform_id));
@@ -49,48 +48,39 @@ void OpenCL::print_devices() {
   char buf[1024];
   num_devices_ = 0;
   for (uint p = 0; p < platform_count_; p++) {
-    
     cl_err = clGetDeviceIDs(platforms_[p], CL_DEVICE_TYPE_ALL, 0, NULL, &device_count_);
-	if(cl_err != CL_SUCCESS) {
-	  LOG(PLAIN) << "[ OpenCL: platform #" << p << " ERROR on calling \"clGetDeviceIDs(...)\", error code = " << cl_err << " ]";
-	  continue;
-	}
-	
-	devices_ = (cl_device_id *)malloc(device_count_ * sizeof(cl_device_id));
+    if (cl_err != CL_SUCCESS) {
+      LOG(PLAIN) << "[ OpenCL: platform #" << p << " ERROR on calling \"clGetDeviceIDs(...)\", error code = " << cl_err
+                 << " ]";
+      continue;
+    }
+
+    devices_ = (cl_device_id *)malloc(device_count_ * sizeof(cl_device_id));
     CL_WRAPPER(clGetDeviceIDs(platforms_[p], CL_DEVICE_TYPE_ALL, device_count_, devices_, NULL));
     for (uint i = 0; i < device_count_; i++) {
       CL_WRAPPER(clGetDeviceInfo(devices_[i], CL_DEVICE_NAME, sizeof(buf), buf, NULL));
-      if (GET_VERBOSITY_LEVEL() >= VERBOSITY_NAME(INFO)) {
+      if (!count && GET_VERBOSITY_LEVEL() >= VERBOSITY_NAME(INFO)) {
         LOG(PLAIN) << "[ OpenCL: platform #" << p << " device #" << i << " " << buf << " ]";
       }
       num_devices_++;
     }
   }
-    
 }
 
 int OpenCL::get_num_devices() {
   return num_devices_;
 }
 
-int OpenCL::get_temperature() {
-  cl_int temperature = 0;
-#ifdef cl_altera_device_temperature
-  CL_WRAPPER(clGetDeviceInfo(device, CL_DEVICE_CORE_TEMPERATURE_ALTERA, sizeof(cl_int), &temperature, NULL));
-#endif
-  return temperature;
-}
-
 void OpenCL::create_context(cl_uint platform_idx, cl_uint device_idx) {
   char buf[1024];
-  
-  if(devices_ != NULL) 
-	free(devices_);
-  
+
+  if (devices_ != NULL)
+    free(devices_);
+
   CL_WRAPPER(clGetDeviceIDs(platforms_[platform_idx], CL_DEVICE_TYPE_ALL, 0, NULL, &device_count_));
-  
+
   devices_ = (cl_device_id *)malloc(device_count_ * sizeof(cl_device_id));
-  
+
   CL_WRAPPER(clGetDeviceIDs(platforms_[platform_idx], CL_DEVICE_TYPE_ALL, device_count_, devices_, NULL));
   CL_WRAPPER(clGetDeviceInfo(devices_[device_idx], CL_DEVICE_NAME, sizeof(buf), buf, NULL));
   CL_WRAPPER(clGetDeviceInfo(devices_[device_idx], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(max_work_group_size_),

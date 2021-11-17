@@ -630,6 +630,8 @@ class TonlibCli : public td::actor::Actor {
     bool need_run_miners_{false};
     td::CancellationTokenSource source_;
     ton::Miner::Options miner_options_copy_;
+    std::atomic<td::uint64> hashes_computed_{0};
+    std::atomic<td::uint64> instant_hashes_computed_{0};
     std::size_t threads_alive_{0};
     std::vector<td::thread> threads_;
 
@@ -644,6 +646,7 @@ class TonlibCli : public td::actor::Actor {
     }
 
     void start_up() override {
+      alarm_timestamp() = td::Timestamp::in(5.0);
       next_options_query_at_ = td::Timestamp::now();
       loop();
     }
@@ -656,6 +659,15 @@ class TonlibCli : public td::actor::Actor {
       if (threads_alive_ == 0) {
         LOG(INFO) << "pminer: stopped";
         stop();
+      }
+    }
+    void alarm() override {
+      alarm_timestamp() = td::Timestamp::in(5.0);
+      if (miner_options_copy_.verbosity >= 2) {
+        ton::Miner::print_stats("mining in progress", miner_options_copy_.start_at, hashes_computed_, miner_options_copy_.instant_start_at,
+                                instant_hashes_computed_);
+        miner_options_copy_.instant_start_at = td::Timestamp::now();
+        instant_hashes_computed_ = 0;
       }
     }
 
@@ -674,6 +686,8 @@ class TonlibCli : public td::actor::Actor {
         LOG(INFO) << "pminer: start workers";
         need_run_miners_ = false;
         miner_options_copy_ = miner_options_.value();
+        miner_options_copy_.hashes_computed = &hashes_computed_;
+        miner_options_copy_.instant_hashes_computed = &instant_hashes_computed_;
         // non-bounceable by default
         miner_options_copy_.my_address.bounceable = false;
         miner_options_copy_.token_ = source_.get_cancellation_token();
@@ -682,6 +696,7 @@ class TonlibCli : public td::actor::Actor {
         miner_options_copy_.threads = options_.threads;
         miner_options_copy_.factor = options_.factor;
         miner_options_copy_.start_at = td::Timestamp::now();
+        miner_options_copy_.instant_start_at = td::Timestamp::now();
         miner_options_copy_.verbosity = GET_VERBOSITY_LEVEL();
         if (options_.gpu_threads > 0) {
           miner_options_copy_.gpu_threads = options_.gpu_threads;

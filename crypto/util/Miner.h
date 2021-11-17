@@ -52,12 +52,15 @@ class Miner {
     td::int32 threads;
     td::uint32 gpu_threads = 16;
     td::uint64 factor = 16;
+    td::Timestamp instant_start_at;
+    std::atomic<td::uint64>* instant_hashes_computed{nullptr};
+    bool benchmark = false;
   };
 
   static td::optional<std::string> run(const Options& options);
 
-  static void print_stats(td::Timestamp start_at, td::uint64 hashes_computed, td::Timestamp instant_start_at,
-                          td::uint64 instant_hashes_computed);
+  static double print_stats(std::string status, td::Timestamp start_at, td::uint64 hashes_computed,
+                            td::Timestamp instant_start_at, td::uint64 instant_hashes_computed);
 };
 
 class MinerCuda : public Miner {

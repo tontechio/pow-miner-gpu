@@ -27,9 +27,8 @@ class OpenCL {
   OpenCL() = default;
   void load_source(const char *filename);
   void set_source(unsigned char *source, unsigned int length);
-  void print_devices();
+  void print_devices(bool count = false);
   int get_num_devices();
-  int get_temperature();
   void create_context(cl_uint platform_idx, cl_uint device_idx);
   void create_kernel();
   void load_objects(uint32_t gpu_id, uint32_t cpu_id, unsigned char *data, const uint8_t *target, unsigned char *rdata, uint32_t gpu_threads);

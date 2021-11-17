@@ -114,22 +114,25 @@ block::StdAddress miner_address;
 
 int verbosity = 0;
 std::atomic<td::uint64> hashes_computed{0};
+std::atomic<td::uint64> instant_hashes_computed{0};
 long long hash_rate = 0;
 td::Timestamp start_at;
 td::CancellationTokenSource token;
 bool boc_created = false;
 
-double print_stats() {
-  auto passed = td::Timestamp::now().at() - start_at.at();
-  if (passed < 1e-9) {
-    passed = 1;
+// do not use the scheduler
+void print_stats(std::string status, ton::Miner::Options options) {
+  auto print_at = td::Timestamp::in(5);
+  while (!options.token_) {
+    if (options.verbosity >= 2 && print_at.is_in_past()) {
+      ton::Miner::print_stats(status, options.start_at, *options.hashes_computed, options.instant_start_at,
+                              *options.instant_hashes_computed);
+      options.instant_start_at = td::Timestamp::now();
+      instant_hashes_computed = 0;
+      print_at = td::Timestamp::in(5);
+      usleep(100);
+    }
   }
-  double speed = static_cast<double>(hashes_computed) / passed;
-  std::stringstream ss;
-  ss << std::fixed << std::setprecision(3) << speed / 1e+6;
-  LOG(INFO) << "[ passed: " << td::format::as_time(passed) << ", hashes computed: " << hashes_computed
-            << ", average speed: " << ss.str() << " Mhash/s ]";
-  return speed;
 }
 
 int found(td::Slice data) {
@@ -159,17 +162,19 @@ int found(td::Slice data) {
 
 void miner(const ton::Miner::Options& options) {
 #if defined MINERCUDA
-  // init cuda device for thread
-  cudaSetDevice(options.gpu_id);
-  cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
-  cudaDeviceSetCacheConfig(cudaFuncCachePreferL1);
-
+  // init cuda device for a thread
+  if (!options.benchmark) {
+    cudaSetDevice(options.gpu_id);
+    cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
+    cudaDeviceSetCacheConfig(cudaFuncCachePreferL1);
+  }
   auto res = ton::MinerCuda::run(options);
 #elif defined MINEROPENCL
   auto res = ton::MinerOpenCL::run(options);
 #else
   auto res = ton::Miner::run(options);
 #endif
+  token.cancel();
   if (res) {
     found(res.value());
     // exit immediately, won't wait for all threads to terminate
@@ -195,20 +200,25 @@ class MinerBench : public td::Benchmark {
 
   void run(int n) override {
     for (int i = 0; i <= MAX_BOOST_POW; i++) {
-      start_at = td::Timestamp::now();
       hashes_computed.store(0);
+      instant_hashes_computed.store(0);
       options_.factor = 1 << i;
-      options_.start_at = start_at;
+      options_.start_at = td::Timestamp::now();
+      options_.instant_start_at = td::Timestamp::now();
       options_.expire_at = td::Timestamp::in(timeout_);
-#if defined MINERCUDA
-      CHECK(!ton::MinerCuda::run(options_));
-#elif defined MINEROPENCL
-      CHECK(!ton::MinerOpenCL::run(options_));
-#else
-      CHECK(!ton::Miner::run(options_));
-#endif
 
-      double speed = print_stats();
+      token = td::CancellationTokenSource{};
+      options_.token_ = token.get_cancellation_token();
+
+      std::vector<std::thread> T;
+      T.emplace_back(miner, options_);
+      T.emplace_back(print_stats, "mining in progress", options_);
+      for (auto& thr : T) {
+        thr.join();
+      }
+
+      double speed = ton::Miner::print_stats("done", options_.start_at, hashes_computed, options_.instant_start_at,
+                                             instant_hashes_computed);
       // delta 1%
       if (speed - best_speed_ > best_speed_ * 0.01) {
         best_speed_ = speed;
@@ -243,7 +253,7 @@ int main(int argc, char* const argv[]) {
 
   progname = argv[0];
   int i, threads = 1, factor = 16, gpu_id = -1, platform_id = 0, timeout = 0;
-  bool bounce = false, benchmark = false;
+  bool bounce = false;
   while ((i = getopt(argc, argv, "bnvw:g:p:G:F:t:Bh:V")) != -1) {
     switch (i) {
       case 'v':
@@ -281,7 +291,7 @@ int main(int argc, char* const argv[]) {
         break;
       }
       case 'B':
-        benchmark = true;
+        options.benchmark = true;
         break;
       case 'b':
         bounce = true;
@@ -321,7 +331,7 @@ int main(int argc, char* const argv[]) {
 
 #if defined MINEROPENCL
   auto opencl = opencl::OpenCL();
-  opencl.print_devices();
+  opencl.print_devices(true);
   if (opencl.get_num_devices() == 0) {
     std::cerr << "No OpenCL-capable devices is detected!" << std::endl;
     exit(1);
@@ -363,11 +373,14 @@ int main(int argc, char* const argv[]) {
   options.verbosity = verbosity;
   options.start_at = start_at;
   options.hashes_computed = &hashes_computed;
+  options.instant_start_at = start_at;
+  options.instant_hashes_computed = &instant_hashes_computed;
 
   if (verbosity >= 2) {
     LOG(INFO) << "[ expected required hashes for success: " << hash_rate << " ]";
   }
-  if (benchmark) {
+
+  if (options.benchmark) {
 #if defined MINERCUDA
     // init cuda device for thread
     cudaSetDevice(options.gpu_id);
@@ -377,20 +390,17 @@ int main(int argc, char* const argv[]) {
     td::bench(MinerBench(options, timeout));
   }
 
-  // may invoke several miner threads
-  if (threads <= 0) {
-    miner(options);
-  } else {
-    std::vector<std::thread> T;
-    for (int i = 0; i < threads; i++) {
-      T.emplace_back(miner, options);
-    }
-    for (auto& thr : T) {
-      thr.join();
-    }
+  // invoke several miner threads
+  std::vector<std::thread> T;
+  for (int i = 0; i < threads; i++) {
+    T.emplace_back(miner, options);
+  }
+  T.emplace_back(print_stats, "mining in progress", options);
+  for (auto& thr : T) {
+    thr.join();
   }
   if (verbosity > 0) {
-    print_stats();
+    ton::Miner::print_stats("done", options.start_at, hashes_computed, options.instant_start_at, instant_hashes_computed);
   }
   if (!boc_created) {
     std::exit(1);
