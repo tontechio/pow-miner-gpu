@@ -61,6 +61,7 @@ class Miner {
 
   static double print_stats(std::string status, td::Timestamp start_at, td::uint64 hashes_computed,
                             td::Timestamp instant_start_at, td::uint64 instant_hashes_computed);
+  static void write_stats(std::string filename, const ton::Miner::Options &options, std::string giver);
 };
 
 class MinerCuda : public Miner {

@@ -151,6 +151,7 @@ class TonlibCli : public td::actor::Actor {
     bool daemon{false};
     std::string cmd;
     std::string logfile;
+    std::string statfile;
   };
   TonlibCli(Options options) : options_(std::move(options)) {
   }
@@ -613,6 +614,7 @@ class TonlibCli : public td::actor::Actor {
       td::int32 threads;
       td::uint32 gpu_threads = 16;
       td::uint32 factor = 16;
+      std::string statfile = "";
     };
 
     PowMiner(Options options, td::actor::ActorId<tonlib::TonlibClient> client)
@@ -666,6 +668,7 @@ class TonlibCli : public td::actor::Actor {
       if (miner_options_copy_.verbosity >= 2) {
         ton::Miner::print_stats("mining in progress", miner_options_copy_.start_at, hashes_computed_, miner_options_copy_.instant_start_at,
                                 instant_hashes_computed_);
+        ton::Miner::write_stats(options_.statfile, miner_options_copy_, options_.giver_address.address->account_address_);
         miner_options_copy_.instant_start_at = td::Timestamp::now();
         instant_hashes_computed_ = 0;
       }
@@ -898,6 +901,7 @@ class TonlibCli : public td::actor::Actor {
     options.platform_id = platform_id;
     options.threads = threads;
     options.factor = factor;
+    options.statfile = options_.statfile;
 
     pow_miners_.emplace(id, td::actor::create_actor<PowMiner>("PowMiner", std::move(options), client_.get()));
     LOG(INFO) << "Miner #" << id << " created";
@@ -2531,6 +2535,9 @@ int main(int argc, char* argv[]) {
     options.logfile = fname.str();
     logger_ = td::TsFileLog::create(fname.str(), td::TsFileLog::DEFAULT_ROTATE_THRESHOLD, true, true).move_as_ok();
     td::log_interface = logger_.get();
+  });
+  p.add_option('s', "stat", "save mining statistics to file", [&](td::Slice fname) {
+    options.statfile = fname.str();
   });
 
   auto S = p.run(argc, argv);
