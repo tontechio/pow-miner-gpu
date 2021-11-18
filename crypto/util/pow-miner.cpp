@@ -137,10 +137,7 @@ void print_stats(std::string status, ton::Miner::Options options) {
 }
 
 int found(td::Slice data) {
-  for (unsigned i = 0; i < data.size(); i++) {
-    printf("%02X", data.ubegin()[i]);
-  }
-  printf("\n");
+  LOG(PLAIN) << "00f2" << hex_encode(data);
   if (make_boc) {
     vm::CellBuilder cb;
     td::Ref<vm::Cell> ext_msg, body;
