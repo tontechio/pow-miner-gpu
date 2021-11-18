@@ -132,8 +132,8 @@ void Miner::write_stats(std::string filename, const ton::Miner::Options &options
   td::JsonBuilder jb;
   auto jo = jb.enter_object();
   jo("giver", giver);
-  jo("seed", buffer_to_hex(td::Slice(options.seed.data(), options.seed.size())));
-  jo("complexity", buffer_to_hex(td::Slice(options.complexity.data(), options.complexity.size())));
+  jo("seed", hex_encode(td::Slice(options.seed.data(), options.seed.size())));
+  jo("complexity", hex_encode(td::Slice(options.complexity.data(), options.complexity.size())));
   jo("passed", std::to_string(passed));
   jo("hashes_computed", std::to_string(*options.hashes_computed));
   jo("speed", ss.str());
@@ -150,7 +150,6 @@ void Miner::write_stats(std::string filename, const ton::Miner::Options &options
 
 td::optional<std::string> build_mine_result(int cpu_id, ton::HDataEnv H, const ton::Miner::Options &options,
                                             unsigned char *rdata, uint64_t nonce, uint64_t vcpu, uint32_t expired) {
-  LOG(ERROR) << "FOUND! GPU ID: " << options.gpu_id << ", nonce=" << nonce << ", expired=" << expired;
 
   //    std::cout << cpu_id << ": "<< "rdata[" << vcpu << "]: ";
   //    for (int i = 0; i < 32; i++) {
@@ -184,6 +183,18 @@ td::optional<std::string> build_mine_result(int cpu_id, ton::HDataEnv H, const t
   // set expire
   H.body.set_expire(expired);
 
-  return H.body.as_slice().str();
+  // check solution
+  SHA256_CTX shactx1;
+  td::Slice data = H.as_slice();
+  std::array<td::uint8, 32> hash;
+  SHA256_Init(&shactx1);
+  SHA256_Update(&shactx1, data.ubegin(), data.size());
+  SHA256_Final(hash.data(), &shactx1);
+
+  if (memcmp(hash.data(), options.complexity.data(), 32) < 0) {
+    LOG(ERROR) << "FOUND! GPU ID: " << options.gpu_id << ", nonce=" << nonce << ", expired=" << expired;
+    return H.body.as_slice().str();
+  }
+  return {};
 }
 }  // namespace ton

@@ -46,8 +46,11 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
       if (options.instant_hashes_computed) {
         *options.instant_hashes_computed += foundNonce.nonce * foundNonce.vcpu;
       }
-      opencl.release();
-      return ton::build_mine_result(cpu_id, H, options, rdata, foundNonce.nonce, foundNonce.vcpu, expired);
+      auto result = ton::build_mine_result(cpu_id, H, options, rdata, foundNonce.nonce, foundNonce.vcpu, expired);
+      if (result) {
+        opencl.release();
+        return result;
+      }
     }
     i += throughput;
     if (options.hashes_computed) {

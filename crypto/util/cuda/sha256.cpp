@@ -31,7 +31,10 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
 
   // found
   if (rc != 0) {
-    return ton::build_mine_result(cpu_id, H, options, rdata, pdata[0], pdata[1], (uint32_t)pdata[2]);
+    auto result = ton::build_mine_result(cpu_id, H, options, rdata, pdata[0], pdata[1], (uint32_t)pdata[2]);
+    if (result) {
+      return result;
+    }
   }
   return {};
 }
