@@ -770,7 +770,7 @@ class TonlibCli : public td::actor::Actor {
       if (status.is_error()) {
         auto lite_client = client_.get_actor_unsafe().get_lite_client();
         CHECK(lite_client);
-        LOG(ERROR) << "pminer: " << status << " (#" << lite_client->address.get_ipv4() << ")";
+        LOG(ERROR) << "pminer: " << status << " (#" << (int32_t)lite_client->address.get_ipv4() << ")";
         // need to restart if liteserver is not ready
         hangup();
         std::exit(3);
@@ -925,7 +925,7 @@ class TonlibCli : public td::actor::Actor {
         if (R.is_error()) {
           auto lite_client = client_.get_actor_unsafe().get_lite_client();
           CHECK(lite_client);
-          LOG(ERROR) << R.move_as_error() << " (#" << lite_client->address.get_ipv4() << ")";
+          LOG(ERROR) << R.move_as_error() << " (#" << (int32_t)lite_client->address.get_ipv4() << ")";
           std::exit(3);
         }
       });
