@@ -37,6 +37,7 @@
 #include <thread>
 #include <cstdlib>
 #include <getopt.h>
+#include <chrono>
 #include "git.h"
 #include "Miner.h"
 
@@ -130,7 +131,7 @@ void print_stats(std::string status, ton::Miner::Options options) {
       options.instant_start_at = td::Timestamp::now();
       instant_hashes_computed = 0;
       print_at = td::Timestamp::in(5);
-      usleep(100);
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
   }
 }
