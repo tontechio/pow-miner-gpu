@@ -131,6 +131,7 @@ void Miner::write_stats(std::string filename, const ton::Miner::Options &options
 
   td::JsonBuilder jb;
   auto jo = jb.enter_object();
+  jo("timestamp", std::to_string(td::Timestamp::now().at_unix()));
   jo("giver", giver);
   jo("seed", hex_encode(td::Slice(options.seed.data(), options.seed.size())));
   jo("complexity", hex_encode(td::Slice(options.complexity.data(), options.complexity.size())));
