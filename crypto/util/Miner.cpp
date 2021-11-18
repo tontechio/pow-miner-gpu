@@ -18,7 +18,9 @@
 */
 #include "Miner.h"
 
+#include "td/utils/JsonBuilder.h"
 #include "td/utils/Random.h"
+#include "td/utils/filesystem.h"
 #include "td/utils/format.h"
 #include "td/utils/misc.h"
 #include "td/utils/crypto.h"
@@ -84,7 +86,7 @@ td::optional<std::string> Miner::run(const Options &options) {
   return {};
 }
 
-void Miner::print_stats(td::Timestamp start_at, td::uint64 hashes_computed, td::Timestamp instant_start_at,
+double Miner::print_stats(std::string status, td::Timestamp start_at, td::uint64 hashes_computed, td::Timestamp instant_start_at,
                         td::uint64 instant_hashes_computed) {
   auto passed = td::Timestamp::now().at() - start_at.at();
   if (passed < 1e-9) {
@@ -101,14 +103,54 @@ void Miner::print_stats(td::Timestamp start_at, td::uint64 hashes_computed, td::
   double instant_speed = static_cast<double>(instant_hashes_computed) / instant_passed;
   ss2 << std::fixed << std::setprecision(3) << instant_speed / 1e+6;
 
-  LOG(INFO) << "[ mining in progress, passed: " << td::format::as_time(passed)
+  LOG(INFO) << "[ " << status << ", passed: " << td::format::as_time(passed)
             << ", hashes computed: " << hashes_computed << ", instant speed: " << ss2.str()
             << " Mhash/s, average speed: " << ss.str() << " Mhash/s ]";
+
+  return speed;
 };
+
+void Miner::write_stats(std::string filename, const ton::Miner::Options &options, std::string giver) {
+  if (!filename.length()) {
+    return;
+  }
+  auto passed = td::Timestamp::now().at() - options.start_at.at();
+  if (passed < 1e-9) {
+    passed = 1;
+  }
+  double speed = static_cast<double>(*options.hashes_computed) / passed;
+  std::stringstream ss, ss2;
+  ss << std::fixed << std::setprecision(3) << speed / 1e+6;
+
+  auto instant_passed = td::Timestamp::now().at() - options.instant_start_at.at();
+  if (instant_passed < 1e-9) {
+    instant_passed = 1;
+  }
+  double instant_speed = static_cast<double>(*options.instant_hashes_computed) / instant_passed;
+  ss2 << std::fixed << std::setprecision(3) << instant_speed / 1e+6;
+
+  td::JsonBuilder jb;
+  auto jo = jb.enter_object();
+  jo("timestamp", std::to_string(td::Timestamp::now().at_unix()));
+  jo("giver", giver);
+  jo("seed", hex_encode(td::Slice(options.seed.data(), options.seed.size())));
+  jo("complexity", hex_encode(td::Slice(options.complexity.data(), options.complexity.size())));
+  jo("passed", std::to_string(passed));
+  jo("hashes_computed", std::to_string(*options.hashes_computed));
+  jo("speed", ss.str());
+  jo("instant_passed", std::to_string(instant_passed));
+  jo("instant_hashes_computed", std::to_string(*options.instant_hashes_computed));
+  jo("instant_speed", ss2.str());
+  jo.leave();
+  auto s = jb.string_builder().as_cslice();
+  auto S = td::write_file(filename, s);
+  if (S.is_error()) {
+    LOG(ERROR) << S.move_as_error();
+  }
+}
 
 td::optional<std::string> build_mine_result(int cpu_id, ton::HDataEnv H, const ton::Miner::Options &options,
                                             unsigned char *rdata, uint64_t nonce, uint64_t vcpu, uint32_t expired) {
-  LOG(ERROR) << "FOUND! GPU ID: " << options.gpu_id << ", nonce=" << nonce << ", expired=" << expired;
 
   //    std::cout << cpu_id << ": "<< "rdata[" << vcpu << "]: ";
   //    for (int i = 0; i < 32; i++) {
@@ -142,6 +184,18 @@ td::optional<std::string> build_mine_result(int cpu_id, ton::HDataEnv H, const t
   // set expire
   H.body.set_expire(expired);
 
-  return H.body.as_slice().str();
+  // check solution
+  SHA256_CTX shactx1;
+  td::Slice data = H.as_slice();
+  std::array<td::uint8, 32> hash;
+  SHA256_Init(&shactx1);
+  SHA256_Update(&shactx1, data.ubegin(), data.size());
+  SHA256_Final(hash.data(), &shactx1);
+
+  if (memcmp(hash.data(), options.complexity.data(), 32) < 0) {
+    LOG(ERROR) << "FOUND! GPU ID: " << options.gpu_id << ", nonce=" << nonce << ", expired=" << expired;
+    return H.body.as_slice().str();
+  }
+  return {};
 }
 }  // namespace ton

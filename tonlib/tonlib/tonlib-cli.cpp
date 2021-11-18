@@ -151,6 +151,7 @@ class TonlibCli : public td::actor::Actor {
     bool daemon{false};
     std::string cmd;
     std::string logfile;
+    std::string statfile;
   };
   TonlibCli(Options options) : options_(std::move(options)) {
   }
@@ -613,6 +614,7 @@ class TonlibCli : public td::actor::Actor {
       td::int32 threads;
       td::uint32 gpu_threads = 16;
       td::uint32 factor = 16;
+      std::string statfile = "";
     };
 
     PowMiner(Options options, td::actor::ActorId<tonlib::TonlibClient> client)
@@ -630,6 +632,8 @@ class TonlibCli : public td::actor::Actor {
     bool need_run_miners_{false};
     td::CancellationTokenSource source_;
     ton::Miner::Options miner_options_copy_;
+    std::atomic<td::uint64> hashes_computed_{0};
+    std::atomic<td::uint64> instant_hashes_computed_{0};
     std::size_t threads_alive_{0};
     std::vector<td::thread> threads_;
 
@@ -644,6 +648,7 @@ class TonlibCli : public td::actor::Actor {
     }
 
     void start_up() override {
+      alarm_timestamp() = td::Timestamp::in(5.0);
       next_options_query_at_ = td::Timestamp::now();
       loop();
     }
@@ -656,6 +661,16 @@ class TonlibCli : public td::actor::Actor {
       if (threads_alive_ == 0) {
         LOG(INFO) << "pminer: stopped";
         stop();
+      }
+    }
+    void alarm() override {
+      alarm_timestamp() = td::Timestamp::in(5.0);
+      if (miner_options_copy_.verbosity >= 2) {
+        ton::Miner::print_stats("mining in progress", miner_options_copy_.start_at, hashes_computed_, miner_options_copy_.instant_start_at,
+                                instant_hashes_computed_);
+        ton::Miner::write_stats(options_.statfile, miner_options_copy_, options_.giver_address.address->account_address_);
+        miner_options_copy_.instant_start_at = td::Timestamp::now();
+        instant_hashes_computed_ = 0;
       }
     }
 
@@ -674,6 +689,8 @@ class TonlibCli : public td::actor::Actor {
         LOG(INFO) << "pminer: start workers";
         need_run_miners_ = false;
         miner_options_copy_ = miner_options_.value();
+        miner_options_copy_.hashes_computed = &hashes_computed_;
+        miner_options_copy_.instant_hashes_computed = &instant_hashes_computed_;
         // non-bounceable by default
         miner_options_copy_.my_address.bounceable = false;
         miner_options_copy_.token_ = source_.get_cancellation_token();
@@ -682,6 +699,7 @@ class TonlibCli : public td::actor::Actor {
         miner_options_copy_.threads = options_.threads;
         miner_options_copy_.factor = options_.factor;
         miner_options_copy_.start_at = td::Timestamp::now();
+        miner_options_copy_.instant_start_at = td::Timestamp::now();
         miner_options_copy_.verbosity = GET_VERBOSITY_LEVEL();
         if (options_.gpu_threads > 0) {
           miner_options_copy_.gpu_threads = options_.gpu_threads;
@@ -752,7 +770,7 @@ class TonlibCli : public td::actor::Actor {
       if (status.is_error()) {
         auto lite_client = client_.get_actor_unsafe().get_lite_client();
         CHECK(lite_client);
-        LOG(ERROR) << "pminer: " << status << " (#" << lite_client->address.get_ipv4() << ")";
+        LOG(ERROR) << "pminer: " << status << " (#" << (int32_t)lite_client->address.get_ipv4() << ")";
         // need to restart if liteserver is not ready
         hangup();
         std::exit(3);
@@ -883,6 +901,7 @@ class TonlibCli : public td::actor::Actor {
     options.platform_id = platform_id;
     options.threads = threads;
     options.factor = factor;
+    options.statfile = options_.statfile;
 
     pow_miners_.emplace(id, td::actor::create_actor<PowMiner>("PowMiner", std::move(options), client_.get()));
     LOG(INFO) << "Miner #" << id << " created";
@@ -904,7 +923,9 @@ class TonlibCli : public td::actor::Actor {
     if (cmd == "start") {
       auto P = td::PromiseCreator::lambda([&](td::Result<td::Unit> R) mutable {
         if (R.is_error()) {
-          LOG(ERROR) << R.move_as_error();
+          auto lite_client = client_.get_actor_unsafe().get_lite_client();
+          CHECK(lite_client);
+          LOG(ERROR) << R.move_as_error() << " (#" << (int32_t)lite_client->address.get_ipv4() << ")";
           std::exit(3);
         }
       });
@@ -2516,6 +2537,9 @@ int main(int argc, char* argv[]) {
     options.logfile = fname.str();
     logger_ = td::TsFileLog::create(fname.str(), td::TsFileLog::DEFAULT_ROTATE_THRESHOLD, true, true).move_as_ok();
     td::log_interface = logger_.get();
+  });
+  p.add_option('s', "statname", "save mining status to file", [&](td::Slice fname) {
+    options.statfile = fname.str();
   });
 
   auto S = p.run(argc, argv);
