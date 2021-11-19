@@ -648,7 +648,6 @@ class TonlibCli : public td::actor::Actor {
     }
 
     void start_up() override {
-      alarm_timestamp() = td::Timestamp::in(5.0);
       next_options_query_at_ = td::Timestamp::now();
       loop();
     }
@@ -663,16 +662,6 @@ class TonlibCli : public td::actor::Actor {
         stop();
       }
     }
-    void alarm() override {
-      alarm_timestamp() = td::Timestamp::in(5.0);
-      if (miner_options_copy_.verbosity >= 2) {
-        ton::Miner::print_stats("mining in progress", miner_options_copy_.start_at, hashes_computed_, miner_options_copy_.instant_start_at,
-                                instant_hashes_computed_);
-        ton::Miner::write_stats(options_.statfile, miner_options_copy_, options_.giver_address.address->account_address_);
-        miner_options_copy_.instant_start_at = td::Timestamp::now();
-        instant_hashes_computed_ = 0;
-      }
-    }
 
     void loop() override {
       if (close_flag_) {
@@ -683,6 +672,15 @@ class TonlibCli : public td::actor::Actor {
         send_query(tonlib_api::smc_load(options_.giver_address.tonlib_api()),
                    promise_send_closure(td::actor::actor_id(this), &PowMiner::with_giver_state));
         next_options_query_at_ = {};
+
+        // show status
+        if (miner_options_copy_.verbosity >= 2) {
+          ton::Miner::print_stats("mining in progress", miner_options_copy_.start_at, hashes_computed_, miner_options_copy_.instant_start_at,
+                                  instant_hashes_computed_);
+          ton::Miner::write_stats(options_.statfile, miner_options_copy_, options_.giver_address.address->account_address_);
+          miner_options_copy_.instant_start_at = td::Timestamp::now();
+          instant_hashes_computed_ = 0;
+        }
       }
 
       if (miner_options_ && threads_.empty() && need_run_miners_) {
