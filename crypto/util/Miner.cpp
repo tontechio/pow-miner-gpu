@@ -194,6 +194,8 @@ td::optional<std::string> build_mine_result(int cpu_id, ton::HDataEnv H, const t
   if (memcmp(hash.data(), options.complexity.data(), 32) < 0) {
     LOG(ERROR) << "FOUND! GPU ID: " << options.gpu_id << ", nonce=" << nonce << ", expired=" << expired;
     return H.body.as_slice().str();
+  } else {
+    LOG(ERROR) << "OVERCLOCK DETECTED! GPU ID: " << options.gpu_id;
   }
   return {};
 }
