@@ -685,6 +685,7 @@ class TonlibCli : public td::actor::Actor {
 
       if (miner_options_ && threads_.empty() && need_run_miners_) {
         LOG(INFO) << "pminer: start workers";
+        hashes_computed_.store(0);
         need_run_miners_ = false;
         miner_options_copy_ = miner_options_.value();
         miner_options_copy_.hashes_computed = &hashes_computed_;

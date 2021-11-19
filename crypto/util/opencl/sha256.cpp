@@ -44,6 +44,7 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
     expired = (uint32_t)td::Clocks::system() + 900;
     td::Timestamp instant_start_at = td::Timestamp::now();
     HashResult foundNonce = opencl.scan_hash(cpu_id, options.gpu_threads, throughput, i, expired);
+    *options.instant_passed = td::Timestamp::now().at() - instant_start_at.at();
     if (foundNonce.nonce != UINT64_MAX && foundNonce.vcpu != UINT64_MAX) {
       if (options.hashes_computed) {
         *options.hashes_computed += foundNonce.nonce * foundNonce.vcpu;
@@ -57,7 +58,6 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
         return result;
       }
     }
-    *options.instant_passed = td::Timestamp::now().at() - instant_start_at.at();
     i += throughput;
     if (options.hashes_computed) {
       *options.hashes_computed += throughput;
