@@ -52,7 +52,7 @@ class Miner {
     td::int32 threads;
     td::uint32 gpu_threads = 16;
     td::uint64 factor = 16;
-    td::Timestamp instant_start_at;
+    std::atomic<double>* instant_passed{nullptr};
     std::atomic<td::uint64>* instant_hashes_computed{nullptr};
     bool benchmark = false;
   };
@@ -60,7 +60,7 @@ class Miner {
   static td::optional<std::string> run(const Options& options);
 
   static double print_stats(std::string status, td::Timestamp start_at, td::uint64 hashes_computed,
-                            td::Timestamp instant_start_at, td::uint64 instant_hashes_computed);
+                            double instant_passed, td::uint64 instant_hashes_computed);
   static void write_stats(std::string filename, const ton::Miner::Options &options, std::string giver);
 };
 

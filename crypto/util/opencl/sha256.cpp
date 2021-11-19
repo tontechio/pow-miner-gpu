@@ -34,17 +34,22 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
   memcpy(input, data.ubegin(), data.size());
   opencl.load_objects(options.gpu_id, cpu_id, input, options.complexity.data(), rdata, options.gpu_threads);
 
+  if (options.instant_hashes_computed) {
+    *options.instant_hashes_computed = throughput;
+  }
+
   uint32_t expired;
   td::int64 i = 0;
   for (; i < options.max_iterations;) {
     expired = (uint32_t)td::Clocks::system() + 900;
+    td::Timestamp instant_start_at = td::Timestamp::now();
     HashResult foundNonce = opencl.scan_hash(cpu_id, options.gpu_threads, throughput, i, expired);
     if (foundNonce.nonce != UINT64_MAX && foundNonce.vcpu != UINT64_MAX) {
       if (options.hashes_computed) {
         *options.hashes_computed += foundNonce.nonce * foundNonce.vcpu;
       }
       if (options.instant_hashes_computed) {
-        *options.instant_hashes_computed += foundNonce.nonce * foundNonce.vcpu;
+        *options.instant_hashes_computed = foundNonce.nonce * foundNonce.vcpu;
       }
       auto result = ton::build_mine_result(cpu_id, H, options, rdata, foundNonce.nonce, foundNonce.vcpu, expired);
       if (result) {
@@ -52,12 +57,10 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
         return result;
       }
     }
+    *options.instant_passed = td::Timestamp::now().at() - instant_start_at.at();
     i += throughput;
     if (options.hashes_computed) {
       *options.hashes_computed += throughput;
-    }
-    if (options.instant_hashes_computed) {
-      *options.instant_hashes_computed += throughput;
     }
     if (options.token_) {
       break;

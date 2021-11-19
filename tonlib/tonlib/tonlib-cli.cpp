@@ -632,6 +632,7 @@ class TonlibCli : public td::actor::Actor {
     bool need_run_miners_{false};
     td::CancellationTokenSource source_;
     ton::Miner::Options miner_options_copy_;
+    std::atomic<double> instant_passed_{0};
     std::atomic<td::uint64> hashes_computed_{0};
     std::atomic<td::uint64> instant_hashes_computed_{0};
     std::size_t threads_alive_{0};
@@ -675,11 +676,10 @@ class TonlibCli : public td::actor::Actor {
 
         // show status
         if (miner_options_copy_.verbosity >= 2) {
-          ton::Miner::print_stats("mining in progress", miner_options_copy_.start_at, hashes_computed_, miner_options_copy_.instant_start_at,
-                                  instant_hashes_computed_);
-          ton::Miner::write_stats(options_.statfile, miner_options_copy_, options_.giver_address.address->account_address_);
-          miner_options_copy_.instant_start_at = td::Timestamp::now();
-          instant_hashes_computed_ = 0;
+          ton::Miner::print_stats("mining in progress", miner_options_copy_.start_at, hashes_computed_,
+                                  instant_passed_, instant_hashes_computed_);
+          ton::Miner::write_stats(options_.statfile, miner_options_copy_,
+                                  options_.giver_address.address->account_address_);
         }
       }
 
@@ -697,7 +697,7 @@ class TonlibCli : public td::actor::Actor {
         miner_options_copy_.threads = options_.threads;
         miner_options_copy_.factor = options_.factor;
         miner_options_copy_.start_at = td::Timestamp::now();
-        miner_options_copy_.instant_start_at = td::Timestamp::now();
+        miner_options_copy_.instant_passed = &instant_passed_;
         miner_options_copy_.verbosity = GET_VERBOSITY_LEVEL();
         if (options_.gpu_threads > 0) {
           miner_options_copy_.gpu_threads = options_.gpu_threads;
