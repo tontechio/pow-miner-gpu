@@ -49,6 +49,7 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
     expired = (uint32_t)td::Clocks::system() + 900;
     td::Timestamp instant_start_at = td::Timestamp::now();
     HashResult foundNonce = bitcredit_cpu_hash(gpu_id, cpu_id, options.gpu_threads, throughput, i, expired);
+    *options.instant_passed = td::Timestamp::now().at() - instant_start_at.at();
     if (foundNonce.nonce != UINT64_MAX && foundNonce.vcpu != UINT64_MAX) {
       pdata[0] = foundNonce.nonce;
       pdata[1] = foundNonce.vcpu;
@@ -57,11 +58,10 @@ extern "C" int scanhash_credits(int gpu_id, int cpu_id, ton::HDataEnv H, const t
         *options.hashes_computed += foundNonce.nonce * foundNonce.vcpu;
       }
       if (options.instant_hashes_computed) {
-        *options.instant_hashes_computed += foundNonce.nonce * foundNonce.vcpu;
+        *options.instant_hashes_computed = foundNonce.nonce * foundNonce.vcpu;
       }
       return 1;
     }
-    *options.instant_passed = td::Timestamp::now().at() - instant_start_at.at();
     i += throughput;
     if (options.hashes_computed) {
       *options.hashes_computed += throughput;
