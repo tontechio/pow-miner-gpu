@@ -118,6 +118,7 @@ std::atomic<td::uint64> hashes_computed{0};
 std::atomic<td::uint64> instant_hashes_computed{0};
 long long hash_rate = 0;
 td::Timestamp start_at;
+std::atomic<double> instant_passed{0};
 td::CancellationTokenSource token;
 bool boc_created = false;
 
@@ -126,10 +127,8 @@ void print_stats(std::string status, ton::Miner::Options options) {
   auto print_at = td::Timestamp::in(5);
   while (!options.token_) {
     if (options.verbosity >= 2 && print_at.is_in_past()) {
-      ton::Miner::print_stats(status, options.start_at, *options.hashes_computed, options.instant_start_at,
+      ton::Miner::print_stats(status, options.start_at, *options.hashes_computed, *options.instant_passed,
                               *options.instant_hashes_computed);
-      options.instant_start_at = td::Timestamp::now();
-      instant_hashes_computed = 0;
       print_at = td::Timestamp::in(5);
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
@@ -202,7 +201,6 @@ class MinerBench : public td::Benchmark {
       instant_hashes_computed.store(0);
       options_.factor = 1 << i;
       options_.start_at = td::Timestamp::now();
-      options_.instant_start_at = td::Timestamp::now();
       options_.expire_at = td::Timestamp::in(timeout_);
 
       token = td::CancellationTokenSource{};
@@ -215,7 +213,7 @@ class MinerBench : public td::Benchmark {
         thr.join();
       }
 
-      double speed = ton::Miner::print_stats("done", options_.start_at, hashes_computed, options_.instant_start_at,
+      double speed = ton::Miner::print_stats("done", options_.start_at, hashes_computed, instant_passed,
                                              instant_hashes_computed);
       // delta 1%
       if (speed - best_speed_ > best_speed_ * 0.01) {
@@ -371,7 +369,7 @@ int main(int argc, char* const argv[]) {
   options.verbosity = verbosity;
   options.start_at = start_at;
   options.hashes_computed = &hashes_computed;
-  options.instant_start_at = start_at;
+  options.instant_passed = &instant_passed;
   options.instant_hashes_computed = &instant_hashes_computed;
 
   if (verbosity >= 2) {
@@ -398,7 +396,8 @@ int main(int argc, char* const argv[]) {
     thr.join();
   }
   if (verbosity > 0) {
-    ton::Miner::print_stats("done", options.start_at, hashes_computed, options.instant_start_at, instant_hashes_computed);
+    ton::Miner::print_stats("done", options.start_at, hashes_computed, instant_passed,
+                            instant_hashes_computed);
   }
   if (!boc_created) {
     std::exit(1);

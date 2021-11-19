@@ -86,7 +86,7 @@ td::optional<std::string> Miner::run(const Options &options) {
   return {};
 }
 
-double Miner::print_stats(std::string status, td::Timestamp start_at, td::uint64 hashes_computed, td::Timestamp instant_start_at,
+double Miner::print_stats(std::string status, td::Timestamp start_at, td::uint64 hashes_computed, double instant_passed,
                         td::uint64 instant_hashes_computed) {
   auto passed = td::Timestamp::now().at() - start_at.at();
   if (passed < 1e-9) {
@@ -96,7 +96,6 @@ double Miner::print_stats(std::string status, td::Timestamp start_at, td::uint64
   std::stringstream ss, ss2;
   ss << std::fixed << std::setprecision(3) << speed / 1e+6;
 
-  auto instant_passed = td::Timestamp::now().at() - instant_start_at.at();
   if (instant_passed < 1e-9) {
     instant_passed = 1;
   }
@@ -122,7 +121,7 @@ void Miner::write_stats(std::string filename, const ton::Miner::Options &options
   std::stringstream ss, ss2;
   ss << std::fixed << std::setprecision(3) << speed / 1e+6;
 
-  auto instant_passed = td::Timestamp::now().at() - options.instant_start_at.at();
+  double instant_passed = *options.instant_passed;
   if (instant_passed < 1e-9) {
     instant_passed = 1;
   }
