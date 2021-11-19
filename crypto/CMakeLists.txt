@@ -320,7 +320,7 @@ if(MINERCUDA)
   target_link_libraries(pow-miner-cuda-lib PUBLIC ton_crypto ton_block ${CUDA_LIBRARIES})
 
   add_executable(pow-miner-cuda util/pow-miner.cpp)
-  target_compile_definitions(pow-miner-cuda PRIVATE MINERCUDA=${MINERCUDA})
+  target_compile_definitions(pow-miner-cuda PRIVATE MINERCUDA=${MINERCUDA} $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_11,code=sm_11>)
   target_link_libraries(pow-miner-cuda PRIVATE ton_crypto ton_block pow-miner-cuda-lib git)
 endif()
 

@@ -79,7 +79,8 @@ if(MINERCUDA)
   include_directories("${CUDA_INCLUDE_DIRS}")
 
   add_executable(tonlib-cuda-cli tonlib/tonlib-cli.cpp)
-  target_compile_definitions(tonlib-cuda-cli PRIVATE MINERCUDA=${MINERCUDA})
+  target_compile_definitions(tonlib-cuda-cli PRIVATE MINERCUDA=${MINERCUDA} $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_11,code=sm_11>)
+
   target_link_libraries(tonlib-cuda-cli tonlib tdactor tdutils terminal pow-miner-cuda-lib git ${CUDA_LIBRARIES})
 endif()
 
