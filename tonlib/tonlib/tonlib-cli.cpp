@@ -129,6 +129,11 @@ td::Result<Grams> parse_grams(td::Slice grams) {
   return Grams{value};
 }
 
+std::atomic<bool> rotate_logs_flags{false};
+void force_rotate_logs(int sig) {
+  rotate_logs_flags.store(true);
+}
+
 // Temporary hack
 td::actor::Scheduler* global_scheduler_{nullptr};
 
@@ -680,6 +685,13 @@ class TonlibCli : public td::actor::Actor {
                                   instant_passed_, instant_hashes_computed_);
           ton::Miner::write_stats(options_.statfile, miner_options_copy_,
                                   options_.giver_address.address->account_address_);
+        }
+
+        // rotate logs
+        if (rotate_logs_flags.exchange(false)) {
+          if (td::log_interface) {
+            td::log_interface->rotate();
+          }
         }
       }
 
@@ -2534,7 +2546,9 @@ int main(int argc, char* argv[]) {
   });
   p.add_option('l', "logname", "log to file", [&](td::Slice fname) {
     options.logfile = fname.str();
-    logger_ = td::TsFileLog::create(fname.str(), td::TsFileLog::DEFAULT_ROTATE_THRESHOLD, true, true).move_as_ok();
+    // 1 Mb log threshold
+    logger_ = td::TsFileLog::create(fname.str(), 1 * (1 << 20), true, true).move_as_ok();
+    td::set_signal_handler(td::SignalType::HangUp, force_rotate_logs).ensure();
     td::log_interface = logger_.get();
   });
   p.add_option('s', "statname", "save mining status to file", [&](td::Slice fname) {
