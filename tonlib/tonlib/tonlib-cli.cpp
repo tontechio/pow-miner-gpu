@@ -764,7 +764,11 @@ class TonlibCli : public td::actor::Actor {
     }
 
     void on_query_sent(td::Result<tonlib_api::object_ptr<tonlib_api::ok>> r_ok) {
-      LOG_IF(ERROR, r_ok.is_error()) << "pminer: " << r_ok.error();
+      if (r_ok.is_error()) {
+        auto lite_client = client_.get_actor_unsafe().get_lite_client();
+        CHECK(lite_client);
+        LOG(ERROR) << "pminer: " << r_ok.move_as_error() << " (#" << (int32_t)lite_client->address.get_ipv4() << ")";
+      }
     }
 
     void with_giver_state(td::Result<tonlib_api::object_ptr<tonlib_api::smc_info>> r_info) {
