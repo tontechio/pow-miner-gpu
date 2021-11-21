@@ -654,7 +654,7 @@ class TonlibCli : public td::actor::Actor {
 
     bool need_run_miners_{false};
     td::CancellationTokenSource source_;
-    ton::Miner::Options miner_options_copy_{.start_at = td::Timestamp::now()};
+    ton::Miner::Options miner_options_copy_;
     std::atomic<double> instant_passed_{0};
     std::atomic<td::uint64> hashes_computed_{0};
     std::atomic<td::uint64> instant_hashes_computed_{0};
@@ -687,6 +687,7 @@ class TonlibCli : public td::actor::Actor {
     }
 
     void start_up() override {
+      miner_options_copy_.start_at = td::Timestamp::now();
       if (options_.strategy.empty()) {
         giver_params_checked_ = true;
       } else {
@@ -904,8 +905,10 @@ class TonlibCli : public td::actor::Actor {
     }
 
     PowParams get_giver_params(std::string strategy) {
-      PowParams pow_params = PowParams{
-          .seed = td::RefInt256{true, 0}, .complexity = td::RefInt256{true, 0}, .hashes_expected = td::BigInt256(0)};
+      PowParams pow_params;
+      pow_params.seed = td::RefInt256{true, 0};
+      pow_params.complexity = td::RefInt256{true, 0};
+      pow_params.hashes_expected = td::BigInt256(0);
       if (strategy == "auto") {
         for (auto& params : giver_params_) {
           if (params.complexity > pow_params.complexity) {
@@ -967,7 +970,10 @@ class TonlibCli : public td::actor::Actor {
       TRY_RESULT_PROMISE(promise, complexity, to_number(info->stack_[1], 256));
       td::BigInt256 bigpower, hrate;
       bigpower.set_pow2(256).mod_div(*complexity, hrate);
-      auto params = PowParams{.seed = seed, .complexity = complexity, .hashes_expected = hrate};
+      PowParams params;
+      params.seed = seed;
+      params.complexity = complexity;
+      params.hashes_expected = hrate;
       promise.set_value(std::move(params));
     }
   };
