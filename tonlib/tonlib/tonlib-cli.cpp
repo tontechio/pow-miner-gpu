@@ -63,6 +63,8 @@
 #include <iostream>
 #include <map>
 #include <stdlib.h>
+#include <random>
+#include <iterator>
 #include "git.h"
 
 #if defined MINERCUDA
@@ -612,6 +614,7 @@ class TonlibCli : public td::actor::Actor {
      public:
     };
     struct Options {
+      std::string strategy = "";
       Address giver_address;
       Address my_address;
       td::int32 gpu_id;
@@ -627,6 +630,21 @@ class TonlibCli : public td::actor::Actor {
     }
 
    private:
+    template <typename Iter, typename RandomGenerator>
+    Iter select_randomly(Iter start, Iter end, RandomGenerator& g) {
+      std::uniform_int_distribution<> dis(0, std::distance(start, end) - 1);
+      std::advance(start, dis(g));
+      return start;
+    }
+
+    template <typename Iter>
+    Iter select_randomly(Iter start, Iter end) {
+      static std::random_device rd;
+      static std::mt19937 gen(rd());
+      return select_randomly(start, end, gen);
+    }
+
+   private:
     Options options_;
     td::actor::ActorId<tonlib::TonlibClient> client_;
 
@@ -636,7 +654,7 @@ class TonlibCli : public td::actor::Actor {
 
     bool need_run_miners_{false};
     td::CancellationTokenSource source_;
-    ton::Miner::Options miner_options_copy_;
+    ton::Miner::Options miner_options_copy_{.start_at = td::Timestamp::now()};
     std::atomic<double> instant_passed_{0};
     std::atomic<td::uint64> hashes_computed_{0};
     std::atomic<td::uint64> instant_hashes_computed_{0};
@@ -644,6 +662,21 @@ class TonlibCli : public td::actor::Actor {
     std::vector<td::thread> threads_;
 
     bool close_flag_{false};
+
+    struct PowParams {
+      std::string address;
+      td::RefInt256 seed;
+      td::RefInt256 complexity;
+      td::BigInt256 hashes_expected{1};
+    };
+    std::vector<PowParams> giver_params_;
+    std::vector<std::string> givers_ = {
+        "kf-kkdY_B7p-77TLn2hUhM6QidWrrsl8FYWCIvBMpZKprBtN", "kf8SYc83pm5JkGt0p3TQRkuiM58O9Cr3waUtR9OoFq716lN-",
+        "kf-FV4QTxLl-7Ct3E6MqOtMt-RGXMxi27g4I645lw6MTWraV", "kf_NSzfDJI1A3rOM0GQm7xsoUXHTgmdhN5-OrGD8uwL2JMvQ",
+        "kf8gf1PQy4u2kURl-Gz4LbS29eaN4sVdrVQkPO-JL80VhOe6", "kf8kO6K6Qh6YM4ddjRYYlvVAK7IgyW8Zet-4ZvNrVsmQ4EOF",
+        "kf-P_TOdwcCh0AXHhBpICDMxStxHenWdLCDLNH5QcNpwMHJ8", "kf91o4NNTryJ-Cw3sDGt9OTiafmETdVFUMvylQdFPoOxIsLm",
+        "kf9iWhwk9GwAXjtwKG-vN7rmXT3hLIT23RBY6KhVaynRrIK7", "kf8JfFUEJhhpRW80_jqD7zzQteH6EBHOzxiOhygRhBdt4z2N"};
+    bool giver_params_checked_{false};
 
     template <class QueryT>
     void send_query(QueryT query, td::Promise<typename QueryT::ReturnType> promise) {
@@ -654,6 +687,11 @@ class TonlibCli : public td::actor::Actor {
     }
 
     void start_up() override {
+      if (options_.strategy.empty()) {
+        giver_params_checked_ = true;
+      } else {
+        query_givers_params();
+      }
       next_options_query_at_ = td::Timestamp::now();
       loop();
     }
@@ -674,7 +712,12 @@ class TonlibCli : public td::actor::Actor {
         try_stop();
         return;
       }
-      if (next_options_query_at_ && next_options_query_at_.is_in_past()) {
+      if (!giver_params_checked_ && giver_params_.size() >= givers_.size()) {
+        auto giver_params = get_giver_params(options_.strategy);
+        options_.giver_address.address = make_object<tonlib_api::accountAddress>(giver_params.address);
+        giver_params_checked_ = true;
+      }
+      if (giver_params_checked_ && next_options_query_at_ && next_options_query_at_.is_in_past()) {
         send_query(tonlib_api::smc_load(options_.giver_address.tonlib_api()),
                    promise_send_closure(td::actor::actor_id(this), &PowMiner::with_giver_state));
         next_options_query_at_ = {};
@@ -695,7 +738,7 @@ class TonlibCli : public td::actor::Actor {
         }
       }
 
-      if (miner_options_ && threads_.empty() && need_run_miners_) {
+      if (giver_params_checked_ && miner_options_ && threads_.empty() && need_run_miners_) {
         LOG(INFO) << "pminer: start workers";
         hashes_computed_.store(0);
         need_run_miners_ = false;
@@ -760,6 +803,8 @@ class TonlibCli : public td::actor::Actor {
                        vm::std_boc_serialize(cb.finalize_novm()).move_as_ok().as_slice().str()),
                    promise_send_closure(td::actor::actor_id(this), &PowMiner::on_query_sent));
       }
+      giver_params_checked_ = false;
+      query_givers_params();
       loop();
     }
 
@@ -827,7 +872,20 @@ class TonlibCli : public td::actor::Actor {
 
       if (miner_options_ && miner_options_.value().seed == options.seed) {
         auto s = seed->to_dec_string();
-        LOG(INFO) << "mining seed " << s.substr(0, 4) << "..." << s.substr(s.length() - 4, 4);
+        LOG(INFO) << "pminer: mining seed " << s.substr(0, 4) << "..." << s.substr(s.length() - 4, 4);
+        return td::Status::OK();
+      }
+
+      // have strategy
+      if (miner_options_ && !options_.strategy.empty()) {
+        LOG(WARNING) << "pminer: " << options_.giver_address.address->account_address_ << " seed changed";
+        miner_options_ = {};
+
+        // query givers params on empty answer in got_answer
+
+        need_run_miners_ = true;
+        source_.cancel();
+
         return td::Status::OK();
       }
 
@@ -844,6 +902,74 @@ class TonlibCli : public td::actor::Actor {
 
       return td::Status::OK();
     }
+
+    PowParams get_giver_params(std::string strategy) {
+      PowParams pow_params = PowParams{
+          .seed = td::RefInt256{true, 0}, .complexity = td::RefInt256{true, 0}, .hashes_expected = td::BigInt256(0)};
+      if (strategy == "auto") {
+        for (auto& params : giver_params_) {
+          if (params.complexity > pow_params.complexity) {
+            pow_params = params;
+          }
+        }
+      } else if (strategy == "random") {
+        pow_params = *select_randomly(giver_params_.begin(), giver_params_.end());
+      }
+      LOG(INFO) << "pminer: SELECTED GIVER (" << strategy << "): " << pow_params.address
+                << " complexity=" << pow_params.complexity->to_dec_string();
+      return pow_params;
+    }
+
+    void query_givers_params() {
+      giver_params_.clear();
+      for (auto &giver : givers_) {
+        auto P = td::PromiseCreator::lambda([&](td::Result<PowParams> R) mutable {
+          if (R.is_error()) {
+            auto lite_client = client_.get_actor_unsafe().get_lite_client();
+            CHECK(lite_client);
+            LOG(ERROR) << R.move_as_error() << " (#" << (int32_t)lite_client->address.get_ipv4() << ")";
+          }
+          auto params = R.move_as_ok();
+          params.address = giver;
+          giver_params_.push_back(params);
+          LOG(INFO) << "pminer: got " << params.address << " complexity=" << params.complexity->to_dec_string();
+        });
+        td::actor::send_closure(td::actor::actor_id(this), &PowMiner::get_giver_pow_params, giver, std::move(P));
+      }
+    }
+
+    void get_giver_pow_params(std::string address, td::Promise<PowParams> promise) {
+      auto smc_address = make_object<tonlib_api::accountAddress>(address);
+      send_query(tonlib_api::smc_load(std::move(smc_address)),
+                 promise.send_closure(td::actor::actor_id(this), &PowMiner::get_giver_pow_params_with_giver_state));
+    }
+
+    void get_giver_pow_params_with_giver_state(td::Result<tonlib_api::object_ptr<tonlib_api::smc_info>> r_info,
+                                               td::Promise<PowParams> promise) {
+      if (r_info.is_error()) {
+        return promise.set_error(r_info.move_as_error());
+      }
+      tonlib_api::object_ptr<tonlib_api::smc_info> info = r_info.move_as_ok();
+      send_query(tonlib_api::smc_runGetMethod(info->id_,
+                 make_object<tonlib_api::smc_methodIdName>("get_pow_params"), {}),
+          promise.send_closure(td::actor::actor_id(this), &PowMiner::get_giver_pow_params_with_giver_info));
+    }
+
+    void get_giver_pow_params_with_giver_info(td::Result<tonlib_api::object_ptr<tonlib_api::smc_runResult>> r_info, td::Promise<PowParams> promise) {
+      if (r_info.is_error()) {
+        return promise.set_error(r_info.move_as_error());
+      }
+      tonlib_api::object_ptr<tonlib_api::smc_runResult> info = r_info.move_as_ok();
+      if (info->stack_.size() < 2) {
+        return promise.set_error(td::Status::Error("Unexpected `get_pow_params` result format "));
+      }
+      TRY_RESULT_PROMISE(promise, seed, to_number(info->stack_[0], 128));
+      TRY_RESULT_PROMISE(promise, complexity, to_number(info->stack_[1], 256));
+      td::BigInt256 bigpower, hrate;
+      bigpower.set_pow2(256).mod_div(*complexity, hrate);
+      auto params = PowParams{.seed = seed, .complexity = complexity, .hashes_expected = hrate};
+      promise.set_value(std::move(params));
+    }
   };
 
   td::uint64 pow_miner_id_{0};
@@ -853,7 +979,20 @@ class TonlibCli : public td::actor::Actor {
     if (!pow_miners_.empty()) {
       promise.set_error(td::Status::Error("One pminer is already running"));
     }
-    TRY_RESULT_PROMISE_PREFIX(promise, giver_address, to_account_address(parser.read_word(), false), "giver address");
+
+    auto strategy = parser.read_word().str();
+    Address giver_address;
+    if (!(strategy == "auto" || strategy == "random")) {
+      auto r_giver_address = to_account_address(strategy, false);
+      if (r_giver_address.is_error()) {
+        strategy = "auto";
+        // giver address is empty
+      } else {
+        strategy = "";
+        giver_address = r_giver_address.move_as_ok();
+      }
+    }
+
     TRY_RESULT_PROMISE_PREFIX(promise, my_address, to_account_address(parser.read_word(), false), "my address");
 
     td::int32 threads = 0, factor = 16, gpu_id = -1, platform_id = 0;
@@ -910,6 +1049,7 @@ class TonlibCli : public td::actor::Actor {
     auto id = ++pow_miner_id_;
 
     PowMiner::Options options;
+    options.strategy = strategy;
     options.giver_address = std::move(giver_address);
     options.my_address = std::move(my_address);
     options.gpu_id = gpu_id;
