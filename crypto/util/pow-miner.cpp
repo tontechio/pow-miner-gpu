@@ -160,11 +160,9 @@ int found(td::Slice data) {
 void miner(const ton::Miner::Options& options) {
 #if defined MINERCUDA
   // init cuda device for a thread
-  if (!options.benchmark) {
-    cudaSetDevice(options.gpu_id);
-    cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
-    cudaDeviceSetCacheConfig(cudaFuncCachePreferL1);
-  }
+  cudaSetDevice(options.gpu_id);
+  cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
+  cudaDeviceSetCacheConfig(cudaFuncCachePreferL1);
   auto res = ton::MinerCuda::run(options);
 #elif defined MINEROPENCL
   auto res = ton::MinerOpenCL::run(options);
@@ -377,12 +375,6 @@ int main(int argc, char* const argv[]) {
   }
 
   if (options.benchmark) {
-#if defined MINERCUDA
-    // init cuda device for thread
-    cudaSetDevice(options.gpu_id);
-    cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
-    cudaDeviceSetCacheConfig(cudaFuncCachePreferL1);
-#endif
     td::bench(MinerBench(options, timeout));
   }
 
