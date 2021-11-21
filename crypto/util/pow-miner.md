@@ -131,6 +131,7 @@ usage: /usr/bin/ton/tonlib/tonlib-cli [-v] -C <lite-server-config> -e 'pminer st
 Starts miner daemon. It uses the specified number of [cpu-threads], lightserver is selected randomly. 
 The process automatically receives tasks from the specified <giver_addess>. During operation the process checks the parameters of the giver every 5 seconds. 
 If they change, the task is restarted. If a solution is found, it sends it to the selected <giver_addess> and <my_address> is rewarded.
+Instead of giver address you can specify the strategy "auto"/"random". 
 ```
 
 ### `/usr/bin/ton/tonlib/tonlib-cuda-cli`

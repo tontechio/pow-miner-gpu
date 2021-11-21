@@ -51,10 +51,15 @@ GPU #0: SM 6.1 NVIDIA GeForce GTX 1080
 The process automatically receives tasks from the specified <giver_address>. During operation the process checks the parameters of the giver every 5 seconds. 
 If they change, the task is restarted. If a solution is found, it sends it to the selected <giver_address> and <my_address> is rewarded.
 
+Instead of giver address you can specify the strategy:
+    
+- "auto" to choose easiest giver
+- "random" to choose random giver
+
 Invoke the tonlib-cuda-cli (tonlib-opencl-cli) utility as follows:
 
 ```
-$  tonlib/tonlib-cuda-cli -v 3 -C <lite-server-config> -e 'pminer start <giver_address> <my_address> <gpu-id> [boost-factor] [platform-id]'
+$  tonlib/tonlib-cuda-cli -v 3 -C <lite-server-config> -e 'pminer start <giver_address|strategy> <my_address> <gpu-id> [boost-factor] [platform-id]'
 ```
 
 Here:
@@ -63,7 +68,7 @@ Here:
 - `gpu-id`: GPU device ID
 - `platform-id`: GPU platform ID (OpenCl only)
 - `boost-factor`: 1..65536, the multiplier for throughput, affects the number of hashes processed per iteration on the GPU
-- `giver_address`: the address of the selected giver
+- `giver_address|strategy`: the address of the selected giver or strategy ("auto", "random")
 - `my_address`: the address of your wallet (possibly not initialized yet), either in the masterchain or in the workchain (note that you need a masterchain wallet to control a validator)
 
 ### Example
@@ -110,6 +115,7 @@ It will save the data in the following format:
 {"timestamp":"1637264251.112240","giver":"Ef-FV4QTxLl-7Ct3E6MqOtMt-RGXMxi27g4I645lw6MTWg0f","seed":"B2A077AA6FCFE63FB0C8AAAEE1397A49","complexity":"000000000000E3C331D02EA44D1582443748E77D3997E69B37C5FD95D818D972","passed":"44.829463","hashes_computed":"13740539904","speed":"306.507","instant_passed":"4.981751","instant_hashes_computed":"1275068416","instant_speed":"255.948"}
 ```
 
+Log rotation is an automated process. To force rotate logs send the HANGUP to the tonlib-*-cli process. Log rotate threshold is 1Mb.
 
 ## TONLIB CLI automation
 
