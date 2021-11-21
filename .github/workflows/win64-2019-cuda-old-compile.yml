@@ -132,14 +132,14 @@ jobs:
         with:
             files: deploy_cuda_dir/
             recursive: false
-            dest: artifacts_dir/minertools-cuda-windows-x86-64-winsrv16-cuda-10-1.zip
+            dest: artifacts_dir/minertools-cuda-windows-x86-64-winsrv19-cuda-10-1.zip
             
       - name: Compress collected opencl binaries
         uses: papeloto/action-zip@v1
         with:
             files: deploy_opencl_dir/
             recursive: false
-            dest: artifacts_dir/minertools-opencl-windows-x86-64-winsrv16-cuda-10-1.zip
+            dest: artifacts_dir/minertools-opencl-windows-x86-64-winsrv19-cuda-10-1.zip
 
       - name: Packing binary files to the GITHUB Release Tag
         uses: ncipollo/release-action@v1
