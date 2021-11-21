@@ -804,8 +804,10 @@ class TonlibCli : public td::actor::Actor {
                        vm::std_boc_serialize(cb.finalize_novm()).move_as_ok().as_slice().str()),
                    promise_send_closure(td::actor::actor_id(this), &PowMiner::on_query_sent));
       }
-      giver_params_checked_ = false;
-      query_givers_params();
+      if (!options_.strategy.empty()) {
+        giver_params_checked_ = false;
+        query_givers_params();
+      }
       loop();
     }
 
