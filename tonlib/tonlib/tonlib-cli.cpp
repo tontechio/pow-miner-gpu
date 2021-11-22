@@ -2698,7 +2698,7 @@ int main(int argc, char* argv[]) {
   });
   p.add_option('l', "logname", "log to file", [&](td::Slice fname) {
     options.logfile = fname.str();
-    // 1 Mb log threshold
+    // 1MB log threshold
     logger_ = td::TsFileLog::create(fname.str(), 1 * (1 << 20), true, true).move_as_ok();
     td::set_signal_handler(td::SignalType::HangUp, force_rotate_logs).ensure();
     td::log_interface = logger_.get();

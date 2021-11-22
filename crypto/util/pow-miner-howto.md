@@ -115,7 +115,7 @@ It will save the data in the following format:
 {"timestamp":"1637264251.112240","giver":"Ef-FV4QTxLl-7Ct3E6MqOtMt-RGXMxi27g4I645lw6MTWg0f","seed":"B2A077AA6FCFE63FB0C8AAAEE1397A49","complexity":"000000000000E3C331D02EA44D1582443748E77D3997E69B37C5FD95D818D972","passed":"44.829463","hashes_computed":"13740539904","speed":"306.507","instant_passed":"4.981751","instant_hashes_computed":"1275068416","instant_speed":"255.948"}
 ```
 
-Log rotation is an automated process. To force rotate logs send the HANGUP to the tonlib-*-cli process. Log rotate threshold is 1Mb.
+Log rotation is an automated process. To force rotate logs send the HANGUP to the tonlib-*-cli process. Log rotate threshold is 1MB.
 
 ## TONLIB CLI automation
 
