@@ -117,15 +117,21 @@ void Miner::write_stats(std::string filename, const ton::Miner::Options &options
   if (passed < 1e-9) {
     passed = 1;
   }
-  double speed = static_cast<double>(*options.hashes_computed) / passed;
+  double hashes_computed = options.hashes_computed ? static_cast<double>(*options.hashes_computed) : 0;
+  double speed = hashes_computed / passed;
   std::stringstream ss, ss2;
   ss << std::fixed << std::setprecision(3) << speed / 1e+6;
 
-  double instant_passed = *options.instant_passed;
+  double instant_passed = 1;
+  if (options.instant_passed) {
+    instant_passed = *options.instant_passed;
+  }
   if (instant_passed < 1e-9) {
     instant_passed = 1;
   }
-  double instant_speed = static_cast<double>(*options.instant_hashes_computed) / instant_passed;
+
+  double instant_hashes_computed = options.instant_hashes_computed ? static_cast<double>(*options.instant_hashes_computed) : 0;
+  double instant_speed = instant_hashes_computed / instant_passed;
   ss2 << std::fixed << std::setprecision(3) << instant_speed / 1e+6;
 
   td::JsonBuilder jb;
@@ -135,10 +141,10 @@ void Miner::write_stats(std::string filename, const ton::Miner::Options &options
   jo("seed", hex_encode(td::Slice(options.seed.data(), options.seed.size())));
   jo("complexity", hex_encode(td::Slice(options.complexity.data(), options.complexity.size())));
   jo("passed", std::to_string(passed));
-  jo("hashes_computed", std::to_string(*options.hashes_computed));
+  jo("hashes_computed", std::to_string(hashes_computed));
   jo("speed", ss.str());
   jo("instant_passed", std::to_string(instant_passed));
-  jo("instant_hashes_computed", std::to_string(*options.instant_hashes_computed));
+  jo("instant_hashes_computed", std::to_string(instant_hashes_computed));
   jo("instant_speed", ss2.str());
   jo.leave();
   auto s = jb.string_builder().as_cslice();

@@ -724,7 +724,7 @@ class TonlibCli : public td::actor::Actor {
         next_options_query_at_ = {};
 
         // show status
-        if (miner_options_copy_.verbosity >= 2) {
+        if (miner_options_copy_.verbosity >= 2 && options_.giver_address.address) {
           ton::Miner::print_stats("mining in progress", miner_options_copy_.start_at, hashes_computed_,
                                   instant_passed_, instant_hashes_computed_);
           ton::Miner::write_stats(options_.statfile, miner_options_copy_,
