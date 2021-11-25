@@ -724,7 +724,7 @@ class TonlibCli : public td::actor::Actor {
         next_options_query_at_ = {};
 
         // show status
-        if (miner_options_copy_.verbosity >= 2) {
+        if (miner_options_copy_.verbosity >= 2 && options_.giver_address.address) {
           ton::Miner::print_stats("mining in progress", miner_options_copy_.start_at, hashes_computed_,
                                   instant_passed_, instant_hashes_computed_);
           ton::Miner::write_stats(options_.statfile, miner_options_copy_,
@@ -2698,7 +2698,7 @@ int main(int argc, char* argv[]) {
   });
   p.add_option('l', "logname", "log to file", [&](td::Slice fname) {
     options.logfile = fname.str();
-    // 1 Mb log threshold
+    // 1MB log threshold
     logger_ = td::TsFileLog::create(fname.str(), 1 * (1 << 20), true, true).move_as_ok();
     td::set_signal_handler(td::SignalType::HangUp, force_rotate_logs).ensure();
     td::log_interface = logger_.get();
