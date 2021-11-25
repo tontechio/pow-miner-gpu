@@ -36,7 +36,7 @@ void OpenCL::set_source(unsigned char *source, unsigned int length) {
   }
 }
 
-void OpenCL::print_devices(bool count) {
+void OpenCL::print_devices() {
   cl_int cl_err = CL_SUCCESS;
 
   // platform
@@ -59,7 +59,7 @@ void OpenCL::print_devices(bool count) {
     CL_WRAPPER(clGetDeviceIDs(platforms_[p], CL_DEVICE_TYPE_ALL, device_count_, devices_, NULL));
     for (uint i = 0; i < device_count_; i++) {
       CL_WRAPPER(clGetDeviceInfo(devices_[i], CL_DEVICE_NAME, sizeof(buf), buf, NULL));
-      if (!count && GET_VERBOSITY_LEVEL() >= VERBOSITY_NAME(INFO)) {
+      if (GET_VERBOSITY_LEVEL() >= VERBOSITY_NAME(INFO)) {
         LOG(PLAIN) << "[ OpenCL: platform #" << p << " device #" << i << " " << buf << " ]";
       }
       num_devices_++;

@@ -325,7 +325,7 @@ int main(int argc, char* const argv[]) {
 
 #if defined MINEROPENCL
   auto opencl = opencl::OpenCL();
-  opencl.print_devices(true);
+  opencl.print_devices();
   if (opencl.get_num_devices() == 0) {
     std::cerr << "No OpenCL-capable devices is detected!" << std::endl;
     exit(1);

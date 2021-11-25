@@ -27,7 +27,7 @@ class OpenCL {
   OpenCL() = default;
   void load_source(const char *filename);
   void set_source(unsigned char *source, unsigned int length);
-  void print_devices(bool count = false);
+  void print_devices();
   int get_num_devices();
   void create_context(cl_uint platform_idx, cl_uint device_idx);
   void create_kernel();
