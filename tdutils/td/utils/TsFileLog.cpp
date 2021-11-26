@@ -80,6 +80,9 @@ class TsFileLog : public LogInterface {
   }
 
   Info *get_current_info() {
+    if (merge_thread_logs_) {
+      return &logs_[0];
+    }
     return &logs_[get_thread_id()];
   }
 
@@ -90,7 +93,7 @@ class TsFileLog : public LogInterface {
   }
 
   string get_path(Info *info) {
-    if (info->id == 0 || merge_thread_logs_) {
+    if (info->id == 0) {
       return path_;
     }
     return PSTRING() << path_ << ".thread" << info->id << ".log";
