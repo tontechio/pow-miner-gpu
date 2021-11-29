@@ -55,7 +55,7 @@ The two first large numbers in the "result:" line are the "seed" and the "comple
 
 Next, you invoke the pow-miner utility as follows:
 
-      $ crypto/pow-miner -vv -w<num-threads> -t<timeout-in-sec> <your-wallet-address> <seed> <complexity> <iterations> <pow-testgiver-address> <boc-filename>
+      $ crypto/pow-miner -vv -w<num-threads> [-t<timeout-in-sec>] [-e<expire-at>] <your-wallet-address> <seed> <complexity> <iterations> <pow-testgiver-address> <boc-filename>
 
 Here <num-threads> is the number of CPU cores that you want to use for mining, <timeout-in-sec> is the maximal amount of seconds that the miner would run before admitting failure, <your-wallet-address> is the address of your wallet (possibly not initialized yet), either in the masterchain or in the workchain (note that you need a masterchain wallet to control a validator), <seed> and <complexity> are the most recent values obtained by running get-method 'get-pow-params', <pow-testgiver-address> is the address of the chosen proof-of-work testgiver smartcontract, and <boc-filename> is the filename of the output file where the external message with the proof of work will be saved in the case of success.
 

@@ -98,7 +98,7 @@ All done, now you have binaries for mining (depends on GPU device):
 This is a standard TON pow-miner designed for CPU. Can be used in conjunction with GPU-compatible miner on the same system simultaneously.
 
 ```shell
-usage: /usr/bin/ton/crypto/pow-miner [-v][-B][-w<threads>] [-t<timeout>] <my-address> <pow-seed> <pow-complexity> <iterations> [<miner-addr> <output-ext-msg-boc>] [-V]
+usage: /usr/bin/ton/crypto/pow-miner [-v][-B][-w<threads>] [-t<timeout>][-e<expire-at>] <my-address> <pow-seed> <pow-complexity> <iterations> [<miner-addr> <output-ext-msg-boc>] [-V]
 Outputs a valid <rdata> value for proof-of-work testgiver after computing at most <iterations> hashes or terminates with non-zero exit code
 ```
 
@@ -108,7 +108,7 @@ This is a GPU-miner compatible with Nvidia hardware. Can be used in multi-GPU en
 to see the list of available GPUs in the system.
 
 ```shell
-usage: crypto/pow-miner-cuda [-v][-B][-g<gpu-id>][-p<platform-id>][-F<boost factor>] [-t<timeout>] <my-address> <pow-seed> <pow-complexity> <iterations> [<miner-addr> <output-ext-msg-boc>] [-V]
+usage: crypto/pow-miner-cuda [-v][-B][-g<gpu-id>][-p<platform-id>][-F<boost factor>] [-t<timeout>][-e<expire-at>] <my-address> <pow-seed> <pow-complexity> <iterations> [<miner-addr> <output-ext-msg-boc>] [-V]
 Outputs a valid <rdata> value for proof-of-work testgiver after computing at most <iterations> hashes or terminates with non-zero exit code
 ```
 
@@ -118,7 +118,7 @@ This is a GPU-miner compatible with AMD hardware. Can be used in multi-GPU envir
 to see the list of available GPUs in the system.
 
 ```shell
-usage: crypto/pow-miner-cuda [-v][-B][-g<gpu-id>][-p<platform-id>][-F<boost factor>] [-t<timeout>] <my-address> <pow-seed> <pow-complexity> <iterations> [<miner-addr> <output-ext-msg-boc>] [-V]
+usage: crypto/pow-miner-cuda [-v][-B][-g<gpu-id>][-p<platform-id>][-F<boost factor>] [-t<timeout>][-e<expire-at>] <my-address> <pow-seed> <pow-complexity> <iterations> [<miner-addr> <output-ext-msg-boc>] [-V]
 Outputs a valid <rdata> value for proof-of-work testgiver after computing at most <iterations> hashes or terminates with non-zero exit code
 ```
 
