@@ -39,7 +39,7 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
   }
 
   // set once at start
-  uint32_t expired = options.expire_base + 900;
+  uint32_t expired = options.expire_base;
   td::int64 i = 0;
   for (; i < options.max_iterations;) {
     td::Timestamp instant_start_at = td::Timestamp::now();

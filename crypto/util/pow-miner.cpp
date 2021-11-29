@@ -72,7 +72,7 @@ int usage() {
 #else
                "[-w<threads>]"
 #endif
-               " [-t<timeout>][-e<expire-base>] <my-address> <pow-seed> <pow-complexity> <iterations> "
+               " [-t<timeout>][-e<expire-at>] <my-address> <pow-seed> <pow-complexity> <iterations> "
                "[<miner-addr> <output-ext-msg-boc>] [-V]\n"
                "Outputs a valid <rdata> value for proof-of-work testgiver after computing at most <iterations> hashes "
                "or terminates with non-zero exit code\n";
@@ -246,7 +246,7 @@ int main(int argc, char* const argv[]) {
   ton::Miner::Options options;
 
   progname = argv[0];
-  int i, threads = 1, factor = 16, gpu_id = -1, platform_id = 0, timeout = 0;
+  int i, threads = 1, factor = 16, gpu_id = -1, platform_id = 0, timeout = 890;
   bool bounce = false;
   while ((i = getopt(argc, argv, "bnvw:g:p:G:F:t:e:Bh:V")) != -1) {
     switch (i) {
@@ -281,16 +281,21 @@ int main(int argc, char* const argv[]) {
       case 't': {
         timeout = atoi(optarg);
         CHECK(timeout > 0);
-        if (timeout > 900) {
-          timeout = 900;
+        if (timeout > 890) {
+          timeout = 890;
         }
         options.expire_at = td::Timestamp::in(timeout);
         break;
       }
       case 'e': {
         unsigned int expire_base = (unsigned int)atol(optarg);
-        CHECK(expire_base > 0);
+        CHECK(expire_base >= (unsigned int)td::Clocks::system() + 10);
+        CHECK(expire_base <= (unsigned int)td::Clocks::system() + 1000);
         options.expire_base = expire_base;
+        timeout = expire_base - (unsigned int)td::Clocks::system() - 10;
+        if (td::Timestamp::in(timeout).is_in_past(options.expire_at.value())) {
+          options.expire_at = td::Timestamp::in(timeout);
+        }
         break;
       }
       case 'B':
