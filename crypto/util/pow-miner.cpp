@@ -72,7 +72,7 @@ int usage() {
 #else
                "[-w<threads>]"
 #endif
-               " [-t<timeout>] <my-address> <pow-seed> <pow-complexity> <iterations> "
+               " [-t<timeout>][-e<expire-base>] <my-address> <pow-seed> <pow-complexity> <iterations> "
                "[<miner-addr> <output-ext-msg-boc>] [-V]\n"
                "Outputs a valid <rdata> value for proof-of-work testgiver after computing at most <iterations> hashes "
                "or terminates with non-zero exit code\n";
@@ -248,7 +248,7 @@ int main(int argc, char* const argv[]) {
   progname = argv[0];
   int i, threads = 1, factor = 16, gpu_id = -1, platform_id = 0, timeout = 0;
   bool bounce = false;
-  while ((i = getopt(argc, argv, "bnvw:g:p:G:F:t:Bh:V")) != -1) {
+  while ((i = getopt(argc, argv, "bnvw:g:p:G:F:t:e:Bh:V")) != -1) {
     switch (i) {
       case 'v':
         ++verbosity;
@@ -281,7 +281,16 @@ int main(int argc, char* const argv[]) {
       case 't': {
         timeout = atoi(optarg);
         CHECK(timeout > 0);
+        if (timeout > 900) {
+          timeout = 900;
+        }
         options.expire_at = td::Timestamp::in(timeout);
+        break;
+      }
+      case 'e': {
+        unsigned int expire_base = (unsigned int)atol(optarg);
+        CHECK(expire_base > 0);
+        options.expire_base = expire_base;
         break;
       }
       case 'B':

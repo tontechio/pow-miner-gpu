@@ -40,13 +40,14 @@ class Miner {
     block::StdAddress my_address;
     std::array<td::uint8, 16> seed;
     std::array<td::uint8, 32> complexity;
-    td::optional<td::Timestamp> expire_at;
+    td::optional<td::Timestamp> expire_at = td::Timestamp::in(900);
     td::int64 max_iterations = std::numeric_limits<td::int64>::max();
     std::atomic<td::uint64>* hashes_computed{nullptr};
     td::uint64 hashes_expected = 1;
     td::CancellationToken token_;
     td::Timestamp start_at;
     int verbosity;
+    td::uint32 expire_base = (uint32_t)td::Clocks::system();
     td::int32 gpu_id;
     td::int32 platform_id;
     td::int32 threads;
