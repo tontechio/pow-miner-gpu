@@ -36,6 +36,7 @@ Windows-утилиты:
 - [tonlib-cli, tonlib-cuda-cli, tonlib-opencl-cli](ru/tool-tonlib.md)
 - [pow-miner, pow-miner-cuda, pow-miner-opencl](ru/tool-pow-miner.md)
 - [lite-client](ru/tool-lite-client.md)
+- [Алгоритм работы майнера](ru/miner-solution-explained.md)
 
 ## Поддерживаемые ОС и драйверы
 
