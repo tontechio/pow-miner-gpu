@@ -3,7 +3,7 @@
 Invoke the pow-miner-cuda (pow-miner-opencl) utility as follows:
 
 ```
-$ crypto/pow-miner-cuda -vv -g<gpu-id> -p<platform-id> -F<boost-factor> -t<timeout-in-sec> <your-wallet-address> <seed> <complexity> <iterations> <pow-giver-address> <boc-filename>
+$ crypto/pow-miner-cuda -vv -g<gpu-id> -p<platform-id> -F<boost-factor> [-t<timeout-in-sec>] [-e<expire-at>] <your-wallet-address> <seed> <complexity> <iterations> <pow-giver-address> <boc-filename>
 ```
 
 Here:
@@ -11,7 +11,8 @@ Here:
 - `gpu-id`: GPU device ID
 - `platform-id`: GPU platform ID (OpenCl only)
 - `boost-factor`: 1..65536, the multiplier for throughput, affects the number of hashes processed per iteration on the GPU
-- `timeout-in-sec`: max amount of seconds that the miner would run before admitting failure
+- `timeout-in-sec`: 1..890, max amount of seconds that the miner would run before admitting failure
+- `expire-at`: (now+10)..(now+1000), unix timestamp, the 'expire' value for the proof of work body
 - `your-wallet-address`: the address of your wallet (possibly not initialized yet), either in the masterchain or in the workchain (note that you need a masterchain wallet to control a validator)
 - `seed` and `complexity` are the most recent values obtained by running get-method get-pow-params
 - `pow-giver-address`: the address of the chosen proof-of-work giver smartcontract [https://ton.org/docs/#/howto/pow-givers?id=_1-proof-of-work-giver-smart-contracts](https://ton.org/docs/#/howto/pow-givers?id=_1-proof-of-work-giver-smart-contracts)

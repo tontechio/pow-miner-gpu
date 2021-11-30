@@ -38,10 +38,10 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
     *options.instant_hashes_computed = throughput;
   }
 
-  uint32_t expired;
+  // set once at start
+  uint32_t expired = options.expire_base;
   td::int64 i = 0;
   for (; i < options.max_iterations;) {
-    expired = (uint32_t)td::Clocks::system() + 900;
     td::Timestamp instant_start_at = td::Timestamp::now();
     HashResult foundNonce = opencl.scan_hash(cpu_id, options.gpu_threads, throughput, i, expired);
     *options.instant_passed = td::Timestamp::now().at() - instant_start_at.at();
