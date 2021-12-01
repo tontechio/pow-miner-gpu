@@ -36,6 +36,7 @@ Windows utilities:
 - [tonlib](en/tool-tonlib.md)
 - [lite-client](en/tool-lite-client.md)
 - [pow-miner](en/tool-pow-miner.md)
+- [Miner algorithm](ru/miner-solution-explained.md)
 
 ## Supported OS and drivers
 
