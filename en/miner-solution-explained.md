@@ -1,3 +1,8 @@
+<style type="text/css" rel="stylesheet">
+body {
+  font:14px/22px Helvetica, Arial, sans-serif;
+}
+</style>
 *v20211126-1, Dr. Elias, Dr. Andreas*
 
 ## Miner operation algorithm
@@ -104,3 +109,7 @@ The constant memory size in GPU allows us to simultaneously iterate up to 1024-1
 
 Each GPU thread independently computes a hash: gets a thread index, current nonce value (iteration, `nonce = 0 .. max_iterations`), takes *rdata1* from the memory (by shift, by a corresponding thread), adds *nonce*, puts *expired at*, *rdata1_nonced* and *rdata2_nonced* values to *data* , computes hash and compares it to *complexity*. If it is meet the condition *hash < complexity*, it is recorded as the solution. After a group of values is processed, a miner checks whether it has the valid solution and forms a .boc file with it, if yes, or computes the next group of hashes, if no. The group size is determined by  *throughput* variable (`boost_factor * 2^19`).
 
+
+
+
+#### [Back](./../index_ru.md)
