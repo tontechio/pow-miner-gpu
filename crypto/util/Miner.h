@@ -111,7 +111,7 @@ struct HDataEnv {
     std::memcpy(body.pseed, seed.data(), 16);
     std::memcpy(body.op, "Mine", 4);
 
-#ifdef MINERCUDA
+#if defined MINERCUDA || defined MINEROPENCL
     // empty rdata1
 #else
     td::Random::secure_bytes(body.rdata1, 32);
