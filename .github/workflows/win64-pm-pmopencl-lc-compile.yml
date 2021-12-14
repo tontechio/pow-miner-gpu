@@ -29,6 +29,7 @@ jobs:
         with:
           repository: desktop-app/zlib
           path: zlib
+          ref: 390669a1658bca846faa29e738ff9520251ee010
 
       - name: Check out vcpkg repository
         uses: actions/checkout@v2
