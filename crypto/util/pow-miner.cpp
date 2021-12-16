@@ -130,8 +130,8 @@ void print_stats(std::string status, ton::Miner::Options options) {
       ton::Miner::print_stats(status, options.start_at, *options.hashes_computed, *options.instant_passed,
                               *options.instant_hashes_computed);
       print_at = td::Timestamp::in(5);
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 }
 
