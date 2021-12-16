@@ -1,4 +1,3 @@
-/* Inspired by https://github.com/B-Con/crypto-algorithms/blob/master/sha256.c implementation */
 #include <cuda_runtime.h>
 
 #include "miner.h"
@@ -285,6 +284,8 @@ __host__ HashResult bitcredit_cpu_hash(uint32_t gpu_id, uint32_t cpu_id, uint32_
   dim3 grid((unsigned)((threads + threads_per_gpu_threads_block - 1) / threads_per_gpu_threads_block), gpu_threads);
 
   bitcredit_gpu_hash<<<grid, block>>>(start_nonce / gpu_threads, d_result);
+
+  CUDA_CALL_OR_RET_X(cudaDeviceSynchronize(), r);
   CUDA_CALL_OR_RET_X(cudaMemcpy(&devresult, d_result, sizeof(devresult), cudaMemcpyDeviceToHost), r);
 
   r.nonce = devresult.nonce;
