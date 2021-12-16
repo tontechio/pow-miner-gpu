@@ -123,5 +123,6 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
             allowUpdates: true
+            prerelease: true
             artifacts: minertools-cuda-windows-x86-64\minertools-*
             token: ${{ secrets.GITHUB_TOKEN }}
