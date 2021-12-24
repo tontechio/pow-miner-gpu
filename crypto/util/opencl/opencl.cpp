@@ -67,6 +67,44 @@ void OpenCL::print_devices() {
   }
 }
 
+// ton-stratum-miner method
+void OpenCL::print_amd_devices() {
+  cl_int cl_err = CL_SUCCESS;
+
+  // platform
+  CL_WRAPPER(clGetPlatformIDs(0, NULL, &platform_count_));
+  platforms_ = (cl_platform_id *)malloc(platform_count_ * sizeof(cl_platform_id));
+  CL_WRAPPER(clGetPlatformIDs(platform_count_, platforms_, NULL));
+
+  // devices
+  char device_name[1024];
+  char device_vendor[1024];
+  num_devices_ = 0;
+
+  for (uint p = 0; p < platform_count_; p++) {
+    cl_err = clGetDeviceIDs(platforms_[p], CL_DEVICE_TYPE_GPU, 0, NULL, &device_count_);
+
+    if (cl_err != CL_SUCCESS) {
+      LOG(PLAIN) << "[ OpenCL: platform #" << p << " ERROR on calling \"clGetDeviceIDs(...)\", error code = " << cl_err << " ]";
+      continue;
+    }
+
+    devices_ = (cl_device_id *)malloc(device_count_ * sizeof(cl_device_id));
+    CL_WRAPPER(clGetDeviceIDs(platforms_[p], CL_DEVICE_TYPE_GPU, device_count_, devices_, NULL));
+
+    for (uint i = 0; i < device_count_; i++) {
+      CL_WRAPPER(clGetDeviceInfo(devices_[i], CL_DEVICE_VENDOR, sizeof(device_vendor), device_vendor, NULL));
+
+      if (strcmp(device_vendor, "Advanced Micro Devices, Inc.") == 0 || strcmp(device_vendor, "AMD") == 0) {
+        CL_WRAPPER(clGetDeviceInfo(devices_[i], CL_DEVICE_NAME, sizeof(device_name), device_name, NULL));
+
+        LOG(PLAIN) << "OpenCL: platform #" << p << " device_id #" << i << " device_name " << device_name;
+        num_devices_++;
+      }
+    }
+  }
+}
+
 int OpenCL::get_num_devices() {
   return num_devices_;
 }

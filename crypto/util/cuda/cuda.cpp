@@ -1,4 +1,4 @@
-﻿    
+﻿
 #include <stdio.h>
 #include <memory.h>
 #include <string.h>
@@ -68,6 +68,18 @@ void cuda_devicenames() {
 
     device_name[i] = strdup(props.name);
     device_sm[i] = (props.major * 100 + props.minor * 10);
+  }
+}
+
+// ton-stratum-miner method
+void print_cuda_devices() {
+  int ngpus = cuda_num_devices();
+
+  for (int n = 0; n < ngpus; n++) {
+    int m = device_map[n];
+    cudaDeviceProp props;
+    cudaGetDeviceProperties(&props, m);
+    LOG(PLAIN) << "CUDA: device_id #" << m << " device_name " << props.name;
   }
 }
 
@@ -195,7 +207,7 @@ void cuda_reset_device(int gpu_id, bool *init) {
       }
     }
     // force exit from algo's scan loops/function
-#ifndef _WIN32    
+#ifndef _WIN32
     restart_threads();
 #endif
     cudaDeviceSynchronize();

@@ -243,6 +243,32 @@ class MinerBench : public td::Benchmark {
 int main(int argc, char* const argv[]) {
   ton::Miner::Options options;
 
+#if defined MINEROPENCL
+  if (strcmp(argv[1], "--list-devices") == 0) {
+    auto opencl = opencl::OpenCL();
+    opencl.print_amd_devices();
+    exit(0);
+  }
+#endif
+
+#if defined MINERCUDA
+  if (strcmp(argv[1], "--list-devices") == 0) {
+    if (cuda_num_devices() == 0) {
+      exit(0);
+    }
+
+    for (short int i = 0; i < MAX_GPUS; i++) {
+      device_map[i] = i;
+      device_name[i] = NULL;
+    }
+
+    cuda_devicenames();
+    print_cuda_devices();
+
+    exit(0);
+  }
+#endif
+
   progname = argv[0];
   int i, threads = 1, factor = 16, gpu_id = -1, platform_id = 0, timeout = 890;
   bool bounce = false;
