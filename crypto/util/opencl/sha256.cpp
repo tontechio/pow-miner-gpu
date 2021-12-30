@@ -3,7 +3,7 @@
 #include "sha256.h"
 #include "miner.h"
 #include "opencl.h"
-#include "sha256_cl.h"
+#include "../cruncher_h.h"
 
 #include "crypto/util/Miner.h"
 
@@ -13,8 +13,8 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
                                       int cpu_id) {
   // opencl
   auto opencl = OpenCL();
-  //opencl.load_source("sha256.cl");
-  opencl.set_source(sha256_cl, sha256_cl_len);
+  //opencl.load_source("cruncher.h");
+  opencl.set_source(cruncher_h, cruncher_h_len);
   opencl.print_devices();
   opencl.create_context(options.platform_id, options.gpu_id);
   opencl.create_kernel();
@@ -22,24 +22,25 @@ td::optional<std::string> SHA256::run(ton::HDataEnv H, unsigned char *rdata, con
   // data
   td::Slice data = H.as_slice();
 
-  td::uint64 throughput = (td::uint64)((1U << 19) * options.factor);// 256*256*64*8*factor/64
+  td::uint64 throughput = (td::uint64)((1U << 19) * options.factor);  // 256*256*64*8*factor/64
   if (options.max_iterations < throughput) {
     throughput = options.max_iterations;
   }
   LOG(WARNING) << "[ START MINER, GPU ID: " << options.gpu_id << ", boost factor: " << options.factor << ", throughput: " << throughput << " ]";
 
-      // set data
+  // set once at start
+  uint32_t expired = options.expire_base;
+
+  // set data
   //std::cout << "data: " << hex_encode(data) << std::endl;
   unsigned char input[123], complexity[32];
   memcpy(input, data.ubegin(), data.size());
-  opencl.load_objects(options.gpu_id, cpu_id, input, options.complexity.data(), rdata, options.gpu_threads);
+  opencl.load_objects(options.gpu_id, cpu_id, expired, input, options.complexity.data(), rdata, options.gpu_threads);
 
   if (options.instant_hashes_computed) {
     *options.instant_hashes_computed = throughput;
   }
 
-  // set once at start
-  uint32_t expired = options.expire_base;
   td::int64 i = 0;
   for (; i < options.max_iterations;) {
     td::Timestamp instant_start_at = td::Timestamp::now();
