@@ -104,13 +104,18 @@ void OpenCL::create_context(cl_uint platform_idx, cl_uint device_idx) {
   platform_idx_ = platform_idx;
 }
 
-void OpenCL::create_kernel() {
+void OpenCL::create_kernel(uint64_t ocl_throughput, uint64_t ocl_hpf) {
+// void OpenCL::create_kernel() {
   // printf("[ OpenCL: create kernel ]\n");
   cl_int ret;
+  char additional_build_args[256] = {"\0"};
+  
+  sprintf(additional_build_args, "-D THROUGHPUT=%d -D HPF=%d", ocl_throughput, ocl_hpf);
+  
   program_ = clCreateProgramWithSource(context_, 1, (const char **)&source_str_, (const size_t *)&source_size_, &ret);
   CL_WRAPPER(ret);
 
-  ret = clBuildProgram(program_, 1, &devices_[device_idx_], NULL, NULL, NULL);
+  ret = clBuildProgram(program_, 1, &devices_[device_idx_], additional_build_args, NULL, NULL);
   if (ret != CL_SUCCESS) {
     size_t blen = 0;
     CL_WRAPPER(clGetProgramBuildInfo(program_, devices_[device_idx_], CL_PROGRAM_BUILD_LOG, 0, NULL, &blen));

@@ -32,7 +32,8 @@ class OpenCL {
   void print_devices();
   int get_num_devices();
   void create_context(cl_uint platform_idx, cl_uint device_idx);
-  void create_kernel();
+  void create_kernel(uint64_t ocl_throughput, uint64_t ocl_hpf);
+  // void create_kernel();
   void load_objects(uint32_t gpu_id, uint32_t cpu_id, uint32_t expired, const unsigned char *data,
                     const uint8_t *target, const unsigned char *rdata, uint32_t gpu_threads);
   HashResult scan_hash(uint cpu_id, uint32_t gpu_threads, uint64_t threads, uint64_t start_nonce, uint expired);
