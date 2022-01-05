@@ -111,6 +111,75 @@ static vec8u sha256_transform(vec16u data, vec8u state)
 	return state;
 }
 
+#if defined(__NVCC__)
+__forceinline__ __device__ __host__
+#else
+inline
+#endif
+static vec8u sha256_transform_2(vec16u data, vec8u state)
+{
+	const uint32_t ksha[] = {
+		0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5, 0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5,
+		0xD807AA98, 0x12835B01, 0x243185BE, 0x550C7DC3, 0x72BE5D74, 0x80DEB1FE, 0x9BDC06A7, 0xC19BF174,
+		0xE49B69C1, 0xEFBE4786, 0x0FC19DC6, 0x240CA1CC, 0x2DE92C6F, 0x4A7484AA, 0x5CB0A9DC, 0x76F988DA,
+		0x983E5152, 0xA831C66D, 0xB00327C8, 0xBF597FC7, 0xC6E00BF3, 0xD5A79147, 0x06CA6351, 0x14292967,
+		0x27B70A85, 0x2E1B2138, 0x4D2C6DFC, 0x53380D13, 0x650A7354, 0x766A0ABB, 0x81C2C92E, 0x92722C85,
+		0xA2BFE8A1, 0xA81A664B, 0xC24B8B70, 0xC76C51A3, 0xD192E819, 0xD6990624, 0xF40E3585, 0x106AA070,
+		0x19A4C116, 0x1E376C08, 0x2748774C, 0x34B0BCB5, 0x391C0CB3, 0x4ED8AA4A, 0x5B9CCA4F, 0x682E6FF3,
+		0x748F82EE, 0x78A5636F, 0x84C87814, 0x8CC70208, 0x90BEFFFA, 0xA4506CEB, 0xBEF9A3F7, 0xC67178F2
+	};
+
+	uint32_t m[64];
+
+	for (int i = 0; i < 16; i += 1)
+		m[i] = data.v[i];
+
+	for (int i = 16; i < 64; i += 1)
+		m[i] = SIG1(m[i - 2]) + m[i - 7] + SIG0(m[i - 15]) + m[i - 16];
+
+	uint32_t a = state.v[0], b = state.v[1], c = state.v[2], d = state.v[3];
+	uint32_t e = state.v[4], f = state.v[5], g = state.v[6], h = state.v[7];
+
+#if defined(__CUDA_ARCH__) || defined(__OPENCL_VERSION__)
+	#pragma unroll
+#endif
+	for (int i = 0; i < 15; i += 1)
+	{
+		uint32_t t1 = h + EP1(e) + CH(e, f, g) + ksha[i]; // + m[i];
+		uint32_t t2 = EP0(a) + MAJ(a, b, c);
+		h = g;
+		g = f;
+		f = e;
+		e = d + t1;
+		d = c;
+		c = b;
+		b = a;
+		a = t1 + t2;
+	}
+
+#if defined(__CUDA_ARCH__) || defined(__OPENCL_VERSION__)
+	#pragma unroll
+#endif
+	for (int i = 15; i < 64; i += 1)
+	{
+		uint32_t t1 = h + EP1(e) + CH(e, f, g) + ksha[i] + m[i];
+		uint32_t t2 = EP0(a) + MAJ(a, b, c);
+		h = g;
+		g = f;
+		f = e;
+		e = d + t1;
+		d = c;
+		c = b;
+		b = a;
+		a = t1 + t2;
+	}
+
+	state.v[0] += a, state.v[1] += b, state.v[2] += c, state.v[3] += d;
+	state.v[4] += e, state.v[5] += f, state.v[6] += g, state.v[7] += h;
+
+	return state;
+}
+
 
 #if !defined(__OPENCL_VERSION__)
 static const vec8u h256 = {
@@ -244,24 +313,10 @@ DevHashResult;
 	const MsgData *msg = &c_msg;
 	const ThreadData *thrdata = &c_msg.thrdata[vcpu];
 #endif
-
-	vec8u state = thrdata->state;
-
+	
 	vec16u data;
-	uint64_t nonce = start_nonce + idx;
+	vec16u data_2;
 
-	uint32_t rdata6 = thrdata->rdata[0], rdata7 = thrdata->rdata[1], rdata8 = thrdata->rdata[2];
-	uint64_t rdata = (((uint64_t)rdata6 << 56) | ((uint64_t)rdata7 << 24) | ((uint64_t)rdata8 >> 8)) + nonce;
-
-	rdata6 = (uint32_t)(rdata >> 56) | (rdata6 & 0xFFFFFF00);
-	rdata7 = (uint32_t)(rdata >> 24);
-
-	uint32_t rdata10 = (uint32_t)(rdata << 8) | 0x80;
-	rdata8 = (uint32_t)(rdata << 8) | (rdata8 & 0xFF);
-
-	data.v[0x0] = rdata6;
-	data.v[0x1] = rdata7;
-	data.v[0x2] = rdata8;
 	data.v[0x3] = msg->pseed[0];
 	data.v[0x4] = msg->pseed[1];
 	data.v[0x5] = msg->pseed[2];
@@ -271,69 +326,109 @@ DevHashResult;
 	data.v[0x9] = thrdata->rdata[6];
 	data.v[0xA] = thrdata->rdata[7];
 	data.v[0xB] = thrdata->rdata[8];
-	data.v[0xC] = rdata6;
-	data.v[0xD] = rdata7;
-	data.v[0xE] = rdata10;
+
 	data.v[0xF] = 0x00000000;
+	
+	data_2.v[0x0] = 0x00000000;
+	data_2.v[0x1] = 0x00000000;
+	data_2.v[0x2] = 0x00000000;
+	data_2.v[0x3] = 0x00000000;
+	data_2.v[0x4] = 0x00000000;
+	data_2.v[0x5] = 0x00000000;
+	data_2.v[0x6] = 0x00000000;
+	data_2.v[0x7] = 0x00000000;
+	data_2.v[0x8] = 0x00000000;
+	data_2.v[0x9] = 0x00000000;
+	data_2.v[0xA] = 0x00000000;
+	data_2.v[0xB] = 0x00000000;
+	data_2.v[0xC] = 0x00000000;
+	data_2.v[0xD] = 0x00000000;
+	data_2.v[0xE] = 0x00000000;
+	data_2.v[0xF] = 0x000003d8;
+			
+	for( int i = 0; i < HPF; i++ ) {
+	
+		vec8u state = thrdata->state;
+		
+		uint64_t nonce = start_nonce + idx + i*THROUGHPUT;
 
-	/*if (vcpu == 0 && idx == 0)
-		printf(
-			"%04x %04x %04x %04x %04x %04x %04x %04x\n%04x %04x %04x %04x %04x %04x %04x %04x\n\n",
-			data.v[0], data.v[1], data.v[2], data.v[3], data.v[4], data.v[5], data.v[6], data.v[7],
-			data.v[8], data.v[9], data.v[10], data.v[11], data.v[12], data.v[13], data.v[14], data.v[15]
-		);*/
+		uint32_t rdata6 = thrdata->rdata[0], rdata7 = thrdata->rdata[1], rdata8 = thrdata->rdata[2];
+		uint64_t rdata = (((uint64_t)rdata6 << 56) | ((uint64_t)rdata7 << 24) | ((uint64_t)rdata8 >> 8)) + nonce;
 
-	state = sha256_transform(data, state);
+		rdata6 = (uint32_t)(rdata >> 56) | (rdata6 & 0xFFFFFF00);
+		rdata7 = (uint32_t)(rdata >> 24);
 
-	data.v[0x0] = 0x00000000;
-	data.v[0x1] = 0x00000000;
-	data.v[0x2] = 0x00000000;
-	data.v[0x3] = 0x00000000;
-	data.v[0x4] = 0x00000000;
-	data.v[0x5] = 0x00000000;
-	data.v[0x6] = 0x00000000;
-	data.v[0x7] = 0x00000000;
-	data.v[0x8] = 0x00000000;
-	data.v[0x9] = 0x00000000;
-	data.v[0xA] = 0x00000000;
-	data.v[0xB] = 0x00000000;
-	data.v[0xC] = 0x00000000;
-	data.v[0xD] = 0x00000000;
-	data.v[0xE] = 0x00000000;
-	data.v[0xF] = 0x000003d8;
+		uint32_t rdata10 = (uint32_t)(rdata << 8) | 0x80;
+		rdata8 = (uint32_t)(rdata << 8) | (rdata8 & 0xFF);
 
-	/*if (vcpu == 0 && idx == 0)
-		printf(
-			"%04x %04x %04x %04x %04x %04x %04x %04x\n%04x %04x %04x %04x %04x %04x %04x %04x\n\n",
-			data.v[0], data.v[1], data.v[2], data.v[3], data.v[4], data.v[5], data.v[6], data.v[7],
-			data.v[8], data.v[9], data.v[10], data.v[11], data.v[12], data.v[13], data.v[14], data.v[15]
-		);*/
+		data.v[0x0] = rdata6;
+		data.v[0x1] = rdata7;
+		data.v[0x2] = rdata8;
 
-	state = sha256_transform(data, state);
+		data.v[0xC] = rdata6;
+		data.v[0xD] = rdata7;
+		data.v[0xE] = rdata10;
+		
 
-	/*if (vcpu == 0 && idx == 0)
-		printf(
-			"%04x %04x %04x %04x %04x %04x %04x %04x\n\n",
-			state.v[0], state.v[1], state.v[2], state.v[3], state.v[4], state.v[5], state.v[6], state.v[7]
-		);*/
+		/*if (vcpu == 0 && idx == 0)
+			printf(
+				"%04x %04x %04x %04x %04x %04x %04x %04x\n%04x %04x %04x %04x %04x %04x %04x %04x\n\n",
+				data.v[0], data.v[1], data.v[2], data.v[3], data.v[4], data.v[5], data.v[6], data.v[7],
+				data.v[8], data.v[9], data.v[10], data.v[11], data.v[12], data.v[13], data.v[14], data.v[15]
+			);*/
 
-	for (int i = 0; i < 8; i += 1)
-	{
-		if (state.v[i] > msg->target.v[i])
-			return;
+		state = sha256_transform(data, state);
 
-		if (state.v[i] < msg->target.v[i])
+		
+		/*if (vcpu == 0 && idx == 0)
+			printf(
+				"%04x %04x %04x %04x %04x %04x %04x %04x\n%04x %04x %04x %04x %04x %04x %04x %04x\n\n",
+				data.v[0], data.v[1], data.v[2], data.v[3], data.v[4], data.v[5], data.v[6], data.v[7],
+				data.v[8], data.v[9], data.v[10], data.v[11], data.v[12], data.v[13], data.v[14], data.v[15]
+			);*/
+
+		state = sha256_transform_2(data_2, state);
+
+		/*
+		printf( "%04x %04x %04x %04x %04x %04x %04x %04x\n\n",
+			state.v[0], state.v[1], state.v[2], state.v[3], state.v[4], state.v[5], state.v[6], state.v[7] );
+		//*/
+		
+		/*if (vcpu == 0 && idx == 0)
+			printf(
+				"%04x %04x %04x %04x %04x %04x %04x %04x\n\n",
+				state.v[0], state.v[1], state.v[2], state.v[3], state.v[4], state.v[5], state.v[6], state.v[7]
+			);*/
+
+
+		for (int i = 0; i < 8; i += 1)
 		{
-#if defined(__OPENCL_VERSION__)
-			if (atomic_add(&result->found, 1) == 0)
-#else
-			if (atomicAdd(&result->found, 1) == 0)
-#endif
-				result->nonce = nonce, result->vcpu = vcpu;
-
-			return;
+			
+			if (state.v[i] > msg->target.v[i])
+				// return;
+			    goto next_try;
+	
+			if (state.v[i] < msg->target.v[i])
+			{
+				
+	#if defined(__OPENCL_VERSION__)
+				// if (atomic_add(&result->found, 1) == 0)
+			    result->found++;
+	#else
+				if (atomicAdd(&result->found, 1) == 0)
+	#endif
+					result->nonce = nonce, result->vcpu = vcpu;
+					
+				return;
+				
+			}
+			
 		}
+		
+		next_try : ;
+		
 	}
+	
 }
 
 #endif
