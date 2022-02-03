@@ -1,4 +1,4 @@
-/* 
+/*
     This file is part of TON Blockchain source code.
 
     TON Blockchain is free software; you can redistribute it and/or
@@ -14,13 +14,13 @@
     You should have received a copy of the GNU General Public License
     along with TON Blockchain.  If not, see <http://www.gnu.org/licenses/>.
 
-    In addition, as a special exception, the copyright holders give permission 
-    to link the code of portions of this program with the OpenSSL library. 
-    You must obey the GNU General Public License in all respects for all 
-    of the code used other than OpenSSL. If you modify file(s) with this 
-    exception, you may extend this exception to your version of the file(s), 
-    but you are not obligated to do so. If you do not wish to do so, delete this 
-    exception statement from your version. If you delete this exception statement 
+    In addition, as a special exception, the copyright holders give permission
+    to link the code of portions of this program with the OpenSSL library.
+    You must obey the GNU General Public License in all respects for all
+    of the code used other than OpenSSL. If you modify file(s) with this
+    exception, you may extend this exception to your version of the file(s),
+    but you are not obligated to do so. If you do not wish to do so, delete this
+    exception statement from your version. If you delete this exception statement
     from all source files in the program, then also delete it here.
 
     Copyright 2017-2020 Telegram Systems LLP
@@ -131,12 +131,11 @@ void print_stats(std::string status, ton::Miner::Options options) {
                               *options.instant_hashes_computed);
       print_at = td::Timestamp::in(5);
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
   }
 }
 
 int found(td::Slice data) {
-  LOG(PLAIN) << "00f2" << hex_encode(data);
   if (make_boc) {
     vm::CellBuilder cb;
     td::Ref<vm::Cell> ext_msg, body;
@@ -149,8 +148,7 @@ int found(td::Slice data) {
           && cb.store_ref_bool(std::move(body))                  // body:^Cell
           && cb.finalize_to(ext_msg));
     auto boc = vm::std_boc_serialize(std::move(ext_msg), 2).move_as_ok();
-    LOG(INFO) << "Saving " << boc.size() << " bytes of serialized external message into file `" << boc_filename << "`";
-    td::write_file(boc_filename, boc).ensure();
+    LOG(PLAIN) << "FOUND BOC: " << hex_encode(boc);
   }
   token.cancel();
   boc_created = true;
@@ -244,6 +242,32 @@ class MinerBench : public td::Benchmark {
 
 int main(int argc, char* const argv[]) {
   ton::Miner::Options options;
+
+#if defined MINEROPENCL
+  if (strcmp(argv[1], "--list-devices") == 0) {
+    auto opencl = opencl::OpenCL();
+    opencl.print_amd_devices();
+    exit(0);
+  }
+#endif
+
+#if defined MINERCUDA
+  if (strcmp(argv[1], "--list-devices") == 0) {
+    if (cuda_num_devices() == 0) {
+      exit(0);
+    }
+
+    for (short int i = 0; i < MAX_GPUS; i++) {
+      device_map[i] = i;
+      device_name[i] = NULL;
+    }
+
+    cuda_devicenames();
+    print_cuda_devices();
+
+    exit(0);
+  }
+#endif
 
   progname = argv[0];
   int i, threads = 1, factor = 16, gpu_id = -1, platform_id = 0, timeout = 890;
@@ -392,20 +416,22 @@ int main(int argc, char* const argv[]) {
     td::bench(MinerBench(options, timeout));
   }
 
-  // invoke several miner threads
-  std::vector<std::thread> T;
-  for (int i = 0; i < threads; i++) {
+  while (options.expire_at.value().is_in_past(td::Timestamp::now()) == false) {
+    token = td::CancellationTokenSource{};
+    options.token_ = token.get_cancellation_token();
+    options.start_at = td::Timestamp::now();
+    std::atomic<td::uint64> hashes_computed{0};
+    std::atomic<double> instant_passed{0};
+    std::atomic<td::uint64> instant_hashes_computed{0};
+    options.hashes_computed = &hashes_computed;
+    options.instant_passed = &instant_passed;
+    options.instant_hashes_computed = &instant_hashes_computed;
+
+    std::vector<std::thread> T;
     T.emplace_back(miner, options);
-  }
-  T.emplace_back(print_stats, "mining in progress", options);
-  for (auto& thr : T) {
-    thr.join();
-  }
-  if (verbosity > 0) {
-    ton::Miner::print_stats("done", options.start_at, hashes_computed, instant_passed,
-                            instant_hashes_computed);
-  }
-  if (!boc_created) {
-    std::exit(1);
+    T.emplace_back(print_stats, "mining in progress", options);
+    for (auto& thr : T) {
+      thr.join();
+    }
   }
 }

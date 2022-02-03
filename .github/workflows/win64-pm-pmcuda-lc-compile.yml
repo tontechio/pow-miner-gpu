@@ -74,28 +74,10 @@ jobs:
           cd build
           cmake -DCMAKE_TOOLCHAIN_FILE=%root%/vcpkg/scripts/buildsystems/vcpkg.cmake -DMINERCUDA=true -DZLIB_FOUND=1 -DZLIB_INCLUDE_DIR=%root%\zlib -DZLIB_LIBRARY=%root%\zlib\contrib\vstudio\vc14\x64\ZlibStatReleaseWithoutAsm\zlibstat.lib -DCMAKE_CXX_FLAGS="/DTD_WINDOWS=1 /EHsc /bigobj /W0" -DTON_USE_ABSEIL=OFF -DCMAKE_BUILD_TYPE=Release ..
 
-      - name: Compile pow-miner
-        run: |
-          cd build
-          cmake --build . --target pow-miner --config Release
-        continue-on-error: true
-
       - name: Compile pow-miner-cuda
         run: |
           cd build
           cmake --build . --target pow-miner-cuda --config Release
-        continue-on-error: true
-
-      - name: Compile tonlib-cuda-cli
-        run: |
-          cd build
-          cmake --build . --target tonlib-cuda-cli --config Release
-        continue-on-error: true
-
-      - name: Compile lite-client
-        run: |
-          cd build
-          cmake --build . --target lite-client --config Release
         continue-on-error: true
 
       - name: Show executables
@@ -109,8 +91,6 @@ jobs:
 
           copy /Y "build\crypto\Release\libcrypto-1_1-x64.dll"    "minertools-cuda-windows-x86-64\"
           copy /Y "build\crypto\Release\pow-miner-cuda.exe"       "minertools-cuda-windows-x86-64\"
-          copy /Y "build\lite-client\Release\lite-client.exe"     "minertools-cuda-windows-x86-64\"
-          copy /Y "build\tonlib\Release\tonlib-cuda-cli.exe"    "minertools-cuda-windows-x86-64\"
 
       - name: Compress collected binaries
         uses: papeloto/action-zip@v1
